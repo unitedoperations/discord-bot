@@ -1,1 +1,5 @@
-# uo-discordbot
+# UO Discord Bot
+
+## License
+
+[MIT](./LICENSE)
