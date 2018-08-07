@@ -1,0 +1,20 @@
+{
+  "name": "uo-discordbot",
+  "version": "1.0.0",
+  "description": "Discord bot for the United Operations server",
+  "repository": "https://github.com/unitedoperations/uo-discordbot.git",
+  "author": "Matthew Callens <callensmatt@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ts-node index.ts"
+  },
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "dotenv": "^6.0.0",
+    "ts-node": "^7.0.0",
+    "typescript": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^4.0.3"
+  }
+}
