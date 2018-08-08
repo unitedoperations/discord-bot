@@ -113,7 +113,7 @@ export class Bot {
           this._log(msg.guild, msg.author.tag, [cmd, ...args].join(' '), output)
         })
       } else {
-        signale.error(`Not command function found for ${cmdKey}`)
+        signale.error(`No command function found for '!${cmdKey}'`)
       }
     }
   }
