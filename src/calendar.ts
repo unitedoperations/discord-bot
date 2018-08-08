@@ -1,5 +1,6 @@
 import FeedParser from 'feedparser'
 import request from 'request'
+import signale from 'signale'
 
 export interface CalendarEvent {
   guid: string
@@ -10,18 +11,10 @@ export interface CalendarEvent {
 }
 
 /**
- * Uses a regular expression to parse and find the header image for the
- * RSS event's summary that is being passed in
- * @param html {string}
- * @returns {string | null}
+ * @description Handles the RSS feed and parsing from the forums calendar
+ * @export
+ * @class CalendarFeed
  */
-function findImage(html: string): string | null {
-  const exp: RegExp = /<img\sclass='bbc_img'\ssrc='(.*)'\salt=.*\/>/g
-  const match = exp.exec(html)
-  if (match) return match[1]
-  return null
-}
-
 export class CalendarFeed {
   private _feed: FeedParser
   private _req: request.Request
@@ -39,7 +32,7 @@ export class CalendarFeed {
    * @memberof CalendarFeed
    */
   pull() {
-    this._req.on('error', err => console.log(err.message))
+    this._req.on('error', signale.error)
     this._req.on('response', this._onResponse)
   }
 
@@ -48,7 +41,7 @@ export class CalendarFeed {
    * @returns {CalendarEvent[]}
    * @memberof CalendarFeed
    */
-  events() {
+  getEvents(): CalendarEvent[] {
     return this._eventsCache
   }
 
@@ -57,7 +50,7 @@ export class CalendarFeed {
    * is fulfilled with the event RSS data, it is piped to the
    * RSS feed parser
    * @private
-   * @param res {request.Response}
+   * @param {request.Response} res
    * @memberof CalendarFeed
    */
   private _onResponse = (res: request.Response) => {
@@ -77,7 +70,7 @@ export class CalendarFeed {
     let e: FeedParser.Item
 
     while ((e = this._feed.read())) {
-      const imgUrl: string = findImage(e.summary) || ''
+      const imgUrl: string = this._findImage(e.summary) || ''
       events.push({
         guid: e.guid,
         title: e.title,
@@ -88,5 +81,18 @@ export class CalendarFeed {
     }
 
     if (events.length > 0) this._eventsCache = events
+  }
+
+  /**
+   * Uses a regular expression to parse and find the header image for the
+   * RSS event's summary that is being passed in
+   * @param {string} html
+   * @returns {string | null}
+   */
+  private _findImage(html: string): string | null {
+    const exp: RegExp = /<img\sclass='bbc_img'\ssrc='(.*)'\salt=.*\/>/g
+    const match = exp.exec(html)
+    if (match) return match[1]
+    return null
   }
 }

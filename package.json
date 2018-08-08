@@ -9,16 +9,20 @@
     "dev": "ts-node ./src/index.ts"
   },
   "dependencies": {
+    "dateformat": "^3.0.3",
     "discord.js": "^11.3.2",
     "dotenv": "^6.0.0",
     "feedparser": "^2.2.9",
     "request": "^2.87.0",
+    "signale": "^1.2.1",
     "ts-node": "^7.0.0",
     "typescript": "^3.0.1"
   },
   "devDependencies": {
+    "@types/dateformat": "^1.0.1",
     "@types/dotenv": "^4.0.3",
     "@types/feedparser": "^2.2.1",
-    "@types/request": "^2.47.1"
+    "@types/request": "^2.47.1",
+    "@types/signale": "^1.2.0"
   }
 }

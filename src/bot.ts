@@ -1,4 +1,6 @@
 import * as Discord from 'discord.js'
+import dateformat from 'dateformat'
+import signale from 'signale'
 import { CalendarFeed, CalendarEvent } from './calendar'
 
 interface EmbedMessageImage {
@@ -20,17 +22,35 @@ interface EmbedMessage {
   fields?: EmbedMessageField[]
 }
 
+type BotAction = (msg: Discord.Message, ...args: string[]) => string
+
+interface BotCommandMap {
+  [cmd: string]: BotAction
+}
+
+const MENTION_REGEX: RegExp = /<@(\d+)>/g
+
+/**
+ * @description Wrapper class for the Discord SDK and handling custom commands
+ * @export
+ * @class Bot
+ * @property calendar {readonly CalendarFeed}
+ */
 export class Bot {
+  private static readonly LOG_CHANNEL: string = 'bot-logs'
+  private static readonly MAIN_CHANNEL: string = 'general'
+
+  public readonly calendar: CalendarFeed
   private _client: Discord.Client
-  private _calendar: CalendarFeed
+  private _commands: BotCommandMap = {}
 
   constructor() {
     this._client = new Discord.Client()
-    this._client.on('ready', () => console.log(`Logged in as ${this._client.user.tag}`))
+    this._client.on('ready', () => signale.info(`Logged in as ${this._client.user.tag}`))
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
 
-    this._calendar = new CalendarFeed(
+    this.calendar = new CalendarFeed(
       'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/'
     )
   }
@@ -43,8 +63,20 @@ export class Bot {
    * @memberof Bot
    */
   start = (token: string): Promise<string> => {
-    this._calendar.pull()
+    this.calendar.pull()
     return this._client.login(token)
+  }
+
+  /**
+   * Adds a new command action to the map under a key
+   * that is the command string for application to the
+   * _onMessage handler at start
+   * @param {string} cmd
+   * @param {(Discord.Message) => void} action
+   * @memberof Bot
+   */
+  addCommand = (cmd: string, action: BotAction) => {
+    this._commands[cmd] = action
   }
 
   /**
@@ -52,7 +84,7 @@ export class Bot {
    * it generates a welcome message and send it through a
    * private message to the new user
    * @private
-   * @param member {Discord.GuildMember}
+   * @param {Discord.GuildMember} member
    * @memberof Bot
    */
   private _onNewMember = (member: Discord.GuildMember) => {
@@ -66,29 +98,26 @@ export class Bot {
    * command found. If the message it determined now to be a valid
    * command or was a message create by the bot, nothing happens
    * @private
-   * @param msg {Discord.Message}
+   * @param {Discord.Message} msg
    * @memberof Bot
    */
   private _onMessage = (msg: Discord.Message) => {
     if (msg.author.bot) return
 
-    const command: string[] = msg.content.split(' ')
-    if (msg.content === 'new_user_test') {
-      msg.channel.send({ embed: this._welcomeMessage(msg.author.username) })
-    } else if (msg.content === 'test_events') {
-      const events = this._calendar.events()
-      const chan = msg.guild.channels.find('name', 'general') as Discord.TextChannel
-      chan.send(`@here`, { embed: this._eventMessage(events[0]) as Discord.RichEmbed })
-    } else if (command[0] === 'join_group') {
-      const role = msg.guild.roles.find('name', command[1])
-      msg.member.addRole(role, 'Role request through UO Bot')
+    const [mention, cmd, ...args] = msg.content.split(' ')
+    const match = MENTION_REGEX.exec(mention)
+
+    if (match !== null && match[1] === this._client.user.id) {
+      const fn = this._commands[cmd]
+      const output = fn.call(this, msg, args)
+      msg.delete().then(_ => this._log(msg.guild, msg.author.tag, [cmd, ...args].join(' '), output))
     }
   }
 
   /**
    * Compiles the JSON object for the new users' welcome message
    * @private
-   * @param name {string}
+   * @param {string} name
    * @returns {EmbedMessage}
    * @memberof Bot
    */
@@ -106,12 +135,24 @@ export class Bot {
     },
     fields: [
       {
-        name: 'Server Information',
-        value: 'http://forums.unitedoperations.net/index.php/page/servers'
+        name: 'Getting Started (UOA3)',
+        value: 'http://www.unitedoperations.net/wiki/Getting_Started_Guide_(Arma_3)'
+      },
+      {
+        name: 'Community Wiki',
+        value: 'http://www.unitedoperations.net/wiki/Main_Page'
+      },
+      {
+        name: 'Forums',
+        value: 'http://forums.unitedoperations.net/'
       },
       {
         name: 'Charter',
         value: 'http://www.unitedoperations.net/wiki/United_Operations_Charter'
+      },
+      {
+        name: 'Server Information',
+        value: 'http://forums.unitedoperations.net/index.php/page/servers'
       }
     ]
   })
@@ -120,7 +161,7 @@ export class Bot {
    * Compiles the JSON object for an embed calendar event message
    * to remind everyone is the Discord server of the upcoming event
    * @private
-   * @param event {CalendarEvent}
+   * @param {CalendarEvent} event
    * @returns {EmbedMessage}
    * @memberof Bot
    */
@@ -133,4 +174,20 @@ export class Bot {
       url: event.img
     }
   })
+
+  /**
+   * Logs all commands run through the bot to the designated logging
+   * channel on the Discord server with the essential date and timestamp
+   * @private
+   * @param {Discord.Guild} guild
+   * @param {string} tag
+   * @param {string} cmd
+   * @param {string} output
+   * @memberof Bot
+   */
+  private _log = (guild: Discord.Guild, tag: string, cmd: string, output: string) => {
+    const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
+    const logChannel = guild.channels.find('name', Bot.LOG_CHANNEL) as Discord.TextChannel
+    logChannel.send(`${tag} ran "${cmd}" at time ${timestamp}: "${output}"`)
+  }
 }
