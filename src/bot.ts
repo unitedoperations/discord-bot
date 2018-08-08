@@ -108,10 +108,11 @@ export class Bot {
       // Look for a handler function is the map that matches the command
       const fn = this._commands.get(cmdKey)
       if (fn) {
-        fn(msg, args).then(async (output: string) => {
-          await msg.delete()
-          this._log(msg.guild, msg.author.tag, [cmd, ...args].join(' '), output)
-        })
+        // Delete the original command, run the handler and log the response
+        msg
+          .delete()
+          .then(() => fn(msg, args))
+          .then(output => this._log(msg.guild, msg.author.tag, [cmd, ...args].join(' '), output))
       } else {
         signale.error(`No command function found for '!${cmdKey}'`)
       }
