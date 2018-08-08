@@ -22,13 +22,7 @@ interface EmbedMessage {
   fields?: EmbedMessageField[]
 }
 
-type BotAction = (msg: Discord.Message, ...args: string[]) => string
-
-interface BotCommandMap {
-  [cmd: string]: BotAction
-}
-
-const MENTION_REGEX: RegExp = /<@(\d+)>/g
+type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
 /**
  * @description Wrapper class for the Discord SDK and handling custom commands
@@ -37,12 +31,12 @@ const MENTION_REGEX: RegExp = /<@(\d+)>/g
  * @property calendar {readonly CalendarFeed}
  */
 export class Bot {
-  private static readonly LOG_CHANNEL: string = 'bot-logs'
-  private static readonly MAIN_CHANNEL: string = 'general'
+  private static readonly LOG_CHANNEL: string = process.env.BOT_LOG_CHANNEL!
+  private static readonly MAIN_CHANNEL: string = process.env.BOT_MAIN_CHANNEL!
 
   public readonly calendar: CalendarFeed
   private _client: Discord.Client
-  private _commands: BotCommandMap = {}
+  private _commands: Map<string, BotAction> = new Map()
 
   constructor() {
     this._client = new Discord.Client()
@@ -76,7 +70,7 @@ export class Bot {
    * @memberof Bot
    */
   addCommand = (cmd: string, action: BotAction) => {
-    this._commands[cmd] = action
+    this._commands.set(cmd, action)
   }
 
   /**
@@ -102,15 +96,25 @@ export class Bot {
    * @memberof Bot
    */
   private _onMessage = (msg: Discord.Message) => {
+    // Skip message if came from bot
     if (msg.author.bot) return
 
-    const [mention, cmd, ...args] = msg.content.split(' ')
-    const match = MENTION_REGEX.exec(mention)
+    // Get the command and its arguments from received message
+    const [cmd, ...args] = msg.content.split(' ')
+    const cmdKey = cmd.slice(1)
 
-    if (match !== null && match[1] === this._client.user.id) {
-      const fn = this._commands[cmd]
-      const output = fn.call(this, msg, args)
-      msg.delete().then(_ => this._log(msg.guild, msg.author.tag, [cmd, ...args].join(' '), output))
+    // Check if the message actually is a command (starts with '!')
+    if (cmd.startsWith('!')) {
+      // Look for a handler function is the map that matches the command
+      const fn = this._commands.get(cmdKey)
+      if (fn) {
+        fn(msg, args).then(async (output: string) => {
+          await msg.delete()
+          this._log(msg.guild, msg.author.tag, [cmd, ...args].join(' '), output)
+        })
+      } else {
+        signale.error(`Not command function found for ${cmdKey}`)
+      }
     }
   }
 
