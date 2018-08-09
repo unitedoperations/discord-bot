@@ -175,10 +175,11 @@ export class Bot implements Routinable {
    * command found. If the message it determined now to be a valid
    * command or was a message create by the bot, nothing happens
    * @private
+   * @async
    * @param {Discord.Message} msg
    * @memberof Bot
    */
-  private _onMessage = (msg: Discord.Message) => {
+  private _onMessage = async (msg: Discord.Message) => {
     // Skip message if came from bot
     if (msg.author.bot) return
 
@@ -186,20 +187,18 @@ export class Bot implements Routinable {
     const [cmd, ...args] = msg.content.split(' ')
     const cmdKey = cmd.slice(1)
 
-    if (msg.content === 'test_events') {
-      this._calendar.events.forEach(e => msg.channel.send({ embed: eventMessage(e, '2 hours') }))
-    }
-
     // Check if the message actually is a command (starts with '!')
     if (cmd.startsWith('!')) {
       // Look for a handler function is the map that matches the command
       const fn = this._commands.get(cmdKey)
       if (fn) {
         // Delete the original command, run the handler and log the response
-        msg
-          .delete()
-          .then(() => fn(msg, args))
-          .then(output => this._log(msg.author.tag, [cmd, ...args].join(' '), output))
+        await msg.delete()
+
+        const output = await fn(msg, args)
+        await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
+
+        if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
       } else {
         signale.error(`No command function found for '!${cmdKey}'`)
       }
@@ -214,11 +213,12 @@ export class Bot implements Routinable {
    * @param {string} tag
    * @param {string} cmd
    * @param {string} output
+   * @returns {Promise<any>}
    * @memberof Bot
    */
-  private _log(tag: string, cmd: string, output: string) {
+  private _log(tag: string, cmd: string, output: string): Promise<any> {
     const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
     const logChannel = this._guild!.channels.find('id', Bot.LOG_CHANNEL) as Discord.TextChannel
-    logChannel.send(`${tag} ran "${cmd}" at time ${timestamp}: "${output}"`)
+    return logChannel.send(`${tag} ran "${cmd}" at time ${timestamp}: "${output}"`)
   }
 }

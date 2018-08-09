@@ -19,10 +19,11 @@ export async function help(msg: Message, _: string[]): Promise<string> {
   const output = `
   **Commands**
   \`!?\`, \`!help\`: _help for usage on commands_
-  \`!ratio <total> <a> <b>\`: _calculate the player ratio for teams with A:B_
-  \`!primary\`: _get the information about the current missino on the A3 primary_
   \`!join_group <group>\`: _join the argued group if it exists and have permission_
   \`!leave_group <group>\`: _leave the argued group if it exists and you are in it_
+  \`!primary\`: _get the information about the current missino on the A3 primary_
+  \`!ratio <total> <a> <b>\`: _calculate the player ratio for teams with A:B_
+  \`!shutdown <pwd>\`: _turns off the Discord bot with the correct password_
   `
   await msg.author.send(output)
   return 'HELP_OUTPUT'
@@ -106,6 +107,30 @@ export async function primary(msg: Message, _: string[]): Promise<string> {
     await msg.author.send(output)
     return output
   }
+}
+
+/**
+ * Shuts down the bot application until restarted manually
+ * @export
+ * @async
+ * @param {Discord.Message} msg
+ * @param {string[]} args
+ * @returns {Promise<string>}
+ */
+export async function shutdown(msg: Message, args: string[]): Promise<string> {
+  // Check if password was given as an argument
+  if (args.length != 1) {
+    await msg.author.send('`!shutdown` expects 1 argument that is the password')
+    return 'shutdown failed'
+  }
+
+  if (args[0] === process.env.SHUTDOWN_PWD) {
+    await msg.author.send(`You shutdown me down!`)
+    return 'shutdown successful'
+  }
+
+  await msg.author.send(`\`${args[0]}\` is not the correct password`)
+  return `invalid password ${args[0]}`
 }
 
 /**
