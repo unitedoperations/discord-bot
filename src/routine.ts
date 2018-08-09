@@ -1,20 +1,4 @@
 /**
- * Converts a number into hours in milliseconds
- * @export
- * @param {number} x
- * @returns {number}
- */
-export const hours = (x: number): number => x * 1000 * 60 * 60
-
-/**
- * Converts a number into minutes in milliseconds
- * @export
- * @param {number} x
- * @returns {number}
- */
-export const minutes = (x: number): number => x * 1000 * 60
-
-/**
  * Implementable interface for classes using the Routine class
  * @export
  * @interface Routinable

@@ -1,14 +1,12 @@
 import Discord from 'discord.js'
 import dateformat from 'dateformat'
 import signale from 'signale'
-import { CalendarFeed } from './calendar'
+import distanceInWords from 'date-fns/distance_in_words_strict'
+import { CalendarFeed, reminderIntervals } from './calendar'
 import { welcomeMessage, eventMessage } from './lib/messages'
-import { Routine, Routinable, hours, minutes } from './routine'
+import { Routine, Routinable } from './routine'
 
 type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
-
-// Get the environment variable for alert times in hours
-const timeChecks: number[] = process.env.ALERT_TIMES!.split(',').map(parseFloat)
 
 /**
  * Wrapper class for the Discord SDK and handling custom commands
@@ -25,11 +23,14 @@ const timeChecks: number[] = process.env.ALERT_TIMES!.split(',').map(parseFloat)
  */
 export class Bot implements Routinable {
   // Static and readonly variables for the Bot class
-  private static readonly GUILD_NAME: string = process.env.DISCORD_SERVER_NAME!
+  private static readonly GUILD_ID: string = process.env.DISCORD_SERVER_ID!
   private static readonly LOG_CHANNEL: string = process.env.DISCORD_LOG_CHANNEL!
   private static readonly MAIN_CHANNEL: string = process.env.DISCORD_MAIN_CHANNEL!
+  private static readonly ARMA_CHANNEL: string = process.env.DISCORD_ARMA_CHANNEL!
+  private static readonly BMS_CHANNEL: string = process.env.DISCORD_BMS_CHANNEL!
 
   // Bot instance variables
+  private _guild?: Discord.Guild
   private _calendar: CalendarFeed
   private _client: Discord.Client
   private _commands: Map<string, BotAction> = new Map()
@@ -41,7 +42,10 @@ export class Bot implements Routinable {
    */
   constructor() {
     this._client = new Discord.Client()
-    this._client.on('ready', () => signale.info(`Logged in as ${this._client.user.tag}`))
+    this._client.on('ready', () => {
+      signale.fav(`Logged in as ${this._client.user.tag}`)
+      this._guild = this._client.guilds.find('id', Bot.GUILD_ID)
+    })
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
 
@@ -59,14 +63,14 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   async start(token: string): Promise<string> {
-    // Initial calendar feed pull
+    // Initial calendar feed pull, handled by routine in CalendarFeed instance after
     await this._calendar.pull()
 
     // Create a new routine to check for notifications on events on an interval
     this._calendarRoutine = new Routine<void>(
       async () => await this._notifyOfEvents(),
       [],
-      minutes(1)
+      1 * 60 * 1000 // Minutes to millisecond
     )
 
     // Login with the Discord client
@@ -102,20 +106,50 @@ export class Bot implements Routinable {
    */
   private async _notifyOfEvents() {
     const now = new Date()
-    for (const e of this._calendar.getEvents()) {
-      // Get the difference in hours between the two dates and check if
-      // the difference in hours is equal to any of the alert trigger times
-      const hourDiff = Math.abs(e.date.getTime() - now.getTime()) / hours(1)
-      if (timeChecks.some(t => t.toFixed(2) === hourDiff.toFixed(2))) {
+    this._calendar.events.forEach(async e => {
+      // Get the time difference between now and the event date
+      const diff = distanceInWords(e.date, now)
+
+      // Check if the time difference matches a configured time reminder
+      if (reminderIntervals.some(r => r === diff) && !e.reminders.get(diff)) {
         signale.star(`Sending notification for event: ${e.title}`)
+
+        // Ensure it won't send this same reminder type again
+        e.reminders.set(diff, true)
+
         // If hour difference is within the remind window, send message to
-        // all active Discord users (@here) with the reminder in the main channel
-        const channel = this._client.guilds
-          .find('name', Bot.GUILD_NAME)
-          .channels.find('name', Bot.MAIN_CHANNEL) as Discord.TextChannel
-        await channel.send('@here', { embed: eventMessage(e, hourDiff) as Discord.RichEmbed })
+        // all users of the designated group with the reminder in the main channel
+        const msg = eventMessage(e, diff) as Discord.RichEmbed
+
+        // Determine the channel that the message should be send to and who to tag
+        let channel: Discord.TextChannel
+        let role: Discord.Role | null
+        switch (e.group) {
+          // ArmA 3 event reminder
+          case 'UOA3':
+            role = this._guild!.roles.find('name', e.group)
+            channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+            break
+          // BMS event reminder
+          case 'UOAF':
+            role = this._guild!.roles.find('name', e.group)
+            channel = this._guild!.channels.find('id', Bot.BMS_CHANNEL) as Discord.TextChannel
+            break
+          // UOTC course reminder
+          case 'UOTC':
+            role = null
+            channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+            break
+          // Unknown event type reminder
+          default:
+            role = null
+            channel = this._guild!.channels.find('id', Bot.MAIN_CHANNEL) as Discord.TextChannel
+        }
+
+        // Dispatch event reminder to correct group and channel
+        await channel.send(role ? role.toString() : '', { embed: msg })
       }
-    }
+    })
   }
 
   /**
@@ -150,7 +184,7 @@ export class Bot implements Routinable {
     const cmdKey = cmd.slice(1)
 
     if (msg.content === 'test_events') {
-      this._calendar.getEvents().forEach(e => msg.channel.send({ embed: eventMessage(e, 2) }))
+      this._calendar.events.forEach(e => msg.channel.send({ embed: eventMessage(e, '2 hours') }))
     }
 
     // Check if the message actually is a command (starts with '!')
@@ -182,7 +216,7 @@ export class Bot implements Routinable {
    */
   private _log(guild: Discord.Guild, tag: string, cmd: string, output: string) {
     const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
-    const logChannel = guild.channels.find('name', Bot.LOG_CHANNEL) as Discord.TextChannel
+    const logChannel = guild.channels.find('id', Bot.LOG_CHANNEL) as Discord.TextChannel
     logChannel.send(`${tag} ran "${cmd}" at time ${timestamp}: "${output}"`)
   }
 }
