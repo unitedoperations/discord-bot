@@ -67,7 +67,6 @@ export class CalendarFeed implements Routinable {
       [],
       CalendarFeed.HOURS_TO_REFRESH * 60 * 60 * 1000 // Hours to milliseconds
     )
-    this._feedRoutine.terminate()
   }
 
   /**

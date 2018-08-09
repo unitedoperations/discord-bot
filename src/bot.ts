@@ -199,7 +199,7 @@ export class Bot implements Routinable {
         msg
           .delete()
           .then(() => fn(msg, args))
-          .then(output => this._log(msg.guild, msg.author.tag, [cmd, ...args].join(' '), output))
+          .then(output => this._log(msg.author.tag, [cmd, ...args].join(' '), output))
       } else {
         signale.error(`No command function found for '!${cmdKey}'`)
       }
@@ -211,15 +211,14 @@ export class Bot implements Routinable {
    * channel on the Discord server with the essential date and timestamp
    * @private
    * @async
-   * @param {Discord.Guild} guild
    * @param {string} tag
    * @param {string} cmd
    * @param {string} output
    * @memberof Bot
    */
-  private _log(guild: Discord.Guild, tag: string, cmd: string, output: string) {
+  private _log(tag: string, cmd: string, output: string) {
     const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
-    const logChannel = guild.channels.find('id', Bot.LOG_CHANNEL) as Discord.TextChannel
+    const logChannel = this._guild!.channels.find('id', Bot.LOG_CHANNEL) as Discord.TextChannel
     logChannel.send(`${tag} ran "${cmd}" at time ${timestamp}: "${output}"`)
   }
 }
