@@ -16,10 +16,13 @@ type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
  * @property {string} GUILD_NAME
  * @property {string} LOG_CHANNEL
  * @property {string} MAIN_CHANNEL
+ * @property {string} ARMA_CHANNEL
+ * @property {string} BMS_CHANNEL
+ * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
  * @property {Discord.Client} _client
  * @property {Map<string, BotAction>} _commands
- * @property {Routine<void> | undefined} _calendarRoutine
+ * @property {Routine<void>?} _calendarRoutine
  */
 export class Bot implements Routinable {
   // Static and readonly variables for the Bot class

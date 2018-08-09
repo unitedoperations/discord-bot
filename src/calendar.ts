@@ -30,6 +30,7 @@ export interface CalendarEvent {
  * @export
  * @class CalendarFeed
  * @implements Routinable
+ * @property {number} HOURS_TO_REFRESH
  * @property {FeedParser} _feed
  * @property {Promise<Response>} _req
  * @property {Map<string, CalendarEvent>} _eventsCache
@@ -37,7 +38,9 @@ export interface CalendarEvent {
  */
 export class CalendarFeed implements Routinable {
   // Static and readonly variables for the CalendarFeed class
-  private static readonly HOURS_TO_REFRESH = parseFloat(process.env.HOURS_TO_REFRESH_CALENDAR!)
+  private static readonly HOURS_TO_REFRESH: number = parseFloat(
+    process.env.HOURS_TO_REFRESH_CALENDAR!
+  )
 
   // CalendarFeed instance variables
   private _feed: FeedParser
