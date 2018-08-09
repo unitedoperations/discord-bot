@@ -1,6 +1,6 @@
 require('dotenv').config()
 import { Bot } from './bot'
-import { help, ratio, primary, joinGroup, leaveGroup } from './commands'
+import { help, ratio, primary, joinGroup, leaveGroup } from './lib/commands'
 
 // Create new Bot instance and start
 const bot = new Bot()

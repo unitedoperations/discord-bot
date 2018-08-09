@@ -1,4 +1,4 @@
-import { CalendarEvent } from './calendar'
+import { CalendarEvent } from '../calendar'
 
 interface EmbedMessageImage {
   url: string | null
@@ -79,11 +79,11 @@ export const welcomeMessage = (name: string): EmbedMessage => ({
  * @param {CalendarEvent} event
  * @returns {EmbedMessage}
  */
-export const eventMessage = (event: CalendarEvent): EmbedMessage => ({
+export const eventMessage = (event: CalendarEvent, x: number): EmbedMessage => ({
   color: 11640433,
   title: `**Reminder:** *${event.title}*`,
+  description: `_...starting in **${x} hours**_`,
   url: event.link,
-  description: '*Placeholder description...*', // TODO: Insert description of event
   image: {
     url: event.img
   }

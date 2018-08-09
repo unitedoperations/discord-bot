@@ -2,23 +2,33 @@ import Discord from 'discord.js'
 import dateformat from 'dateformat'
 import signale from 'signale'
 import { CalendarFeed } from './calendar'
-import { welcomeMessage, eventMessage } from './messages'
+import { welcomeMessage, eventMessage } from './lib/messages'
+import { Routine, hours } from './routine'
 
 type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
 /**
- * @description Wrapper class for the Discord SDK and handling custom commands
+ * Wrapper class for the Discord SDK and handling custom commands
  * @export
  * @class Bot
- * @property calendar {readonly CalendarFeed}
+ * @property {string} GUILD_NAME
+ * @property {string} LOG_CHANNEL
+ * @property {string} MAIN_CHANNEL
+ * @property {CalendarFeed} _calendar
+ * @property {Discord.Client} _client
+ * @property {Map<string, BotAction>} _commands
  */
 export class Bot {
+  // Static and readonly variables for the Bot class
+  private static readonly GUILD_NAME: string = process.env.DISCORD_SERVER_NAME!
   private static readonly LOG_CHANNEL: string = process.env.BOT_LOG_CHANNEL!
-  // private static readonly MAIN_CHANNEL: string = process.env.BOT_MAIN_CHANNEL!
+  private static readonly MAIN_CHANNEL: string = process.env.BOT_MAIN_CHANNEL!
 
+  // Bot instance variables
   private _calendar: CalendarFeed
   private _client: Discord.Client
   private _commands: Map<string, BotAction> = new Map()
+  private _calendarRoutine?: Routine<number>
 
   constructor() {
     this._client = new Discord.Client()
@@ -39,8 +49,16 @@ export class Bot {
    * @memberof Bot
    */
   start = (token: string): Promise<string> => {
-    this._calendar.pull()
+    this._calendarRoutine = new Routine<number>(x => this._notifyOfEvents(x), [2], hours(1))
     return this._client.login(token)
+  }
+
+  /**
+   * Ends all routines running on intervals
+   * @memberof Bot
+   */
+  clear() {
+    ;(this._calendarRoutine as Routine<any>).terminate()
   }
 
   /**
@@ -53,6 +71,30 @@ export class Bot {
    */
   addCommand = (cmd: string, action: BotAction) => {
     this._commands.set(cmd, action)
+  }
+
+  /**
+   * Pulls updates from the RSS event feed and send reminds if necessary
+   * after comparing the start time of the event and the current time
+   * @private
+   * @memberof Bot
+   */
+  private _notifyOfEvents = (hoursBefore: number) => {
+    this._calendar.pull()
+    const now = new Date()
+
+    for (const e of this._calendar.getEvents()) {
+      // Get the difference in hours between the two dates
+      const hourDiff = Math.round(Math.abs(e.date.getTime() - now.getTime()) / hours(1))
+      if (hourDiff <= hoursBefore) {
+        // If hour difference is within the remind window, send message to
+        // all active Discord users (@here) with the reminder in the main channel
+        const channel = this._client.guilds
+          .find('name', Bot.GUILD_NAME)
+          .channels.find('name', Bot.MAIN_CHANNEL) as Discord.TextChannel
+        channel.send('@here', { embed: eventMessage(e, hourDiff) as Discord.RichEmbed })
+      }
+    }
   }
 
   /**
@@ -86,7 +128,7 @@ export class Bot {
     const cmdKey = cmd.slice(1)
 
     if (msg.content === 'test_events') {
-      this._calendar.getEvents().map(e => msg.channel.send({ embed: eventMessage(e) }))
+      this._calendar.getEvents().forEach(e => msg.channel.send({ embed: eventMessage(e, 2) }))
     }
 
     // Check if the message actually is a command (starts with '!')

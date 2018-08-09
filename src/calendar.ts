@@ -5,15 +5,18 @@ import cheerio from 'cheerio'
 export interface CalendarEvent {
   guid: string
   title: string
-  date: Date | null
+  date: Date
   link: string
   img: string
 }
 
 /**
- * @description Handles the RSS feed and parsing from the forums calendar
+ * Handles the RSS feed and parsing from the forums calendar
  * @export
  * @class CalendarFeed
+ * @property {FeedParser} _feed
+ * @property {Promise<Response>} _req
+ * @property {CalendarEvent[]} _eventsCache
  */
 export class CalendarFeed {
   private _feed: FeedParser
@@ -64,7 +67,7 @@ export class CalendarFeed {
       events.push({
         guid: e.guid,
         title: e.title,
-        date: e.date,
+        date: e.date as Date,
         link: e.link,
         img: imgUrl
       })
