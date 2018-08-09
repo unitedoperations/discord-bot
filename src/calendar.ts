@@ -1,6 +1,5 @@
 import FeedParser from 'feedparser'
-import request from 'request'
-import signale from 'signale'
+import fetch, { Response } from 'node-fetch'
 
 export interface CalendarEvent {
   guid: string
@@ -17,23 +16,25 @@ export interface CalendarEvent {
  */
 export class CalendarFeed {
   private _feed: FeedParser
-  private _req: request.Request
+  private _req: Promise<Response>
   private _eventsCache: CalendarEvent[] = []
 
   constructor(url: string) {
     this._feed = new FeedParser({ feedurl: url })
     this._feed.on('readable', this._onFeedReadable)
-    this._req = request(url)
+    this._req = fetch(url)
   }
 
   /**
    * Pull all of the calendar events from the forums that
-   * have not happened yet to parser them
+   * have not happened yet to parser them with the feed
+   * parser instance by pipping the RSS stream into it
+   * @async
    * @memberof CalendarFeed
    */
-  pull() {
-    this._req.on('error', signale.error)
-    this._req.on('response', this._onResponse)
+  async pull() {
+    const res = await this._req
+    res.body.pipe(this._feed)
   }
 
   /**
@@ -43,18 +44,6 @@ export class CalendarFeed {
    */
   getEvents(): CalendarEvent[] {
     return this._eventsCache
-  }
-
-  /**
-   * Event handler for when the request to the forums calendar
-   * is fulfilled with the event RSS data, it is piped to the
-   * RSS feed parser
-   * @private
-   * @param {request.Response} res
-   * @memberof CalendarFeed
-   */
-  private _onResponse = (res: request.Response) => {
-    this._req.pipe(this._feed)
   }
 
   /**

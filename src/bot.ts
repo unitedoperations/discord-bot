@@ -1,26 +1,8 @@
-import * as Discord from 'discord.js'
+import Discord from 'discord.js'
 import dateformat from 'dateformat'
 import signale from 'signale'
-import { CalendarFeed, CalendarEvent } from './calendar'
-
-interface EmbedMessageImage {
-  url: string | null
-}
-
-interface EmbedMessageField {
-  name: string
-  value: string
-}
-
-interface EmbedMessage {
-  color: number
-  title: string
-  url: string
-  description: string
-  thumbnail?: EmbedMessageImage
-  image?: EmbedMessageImage
-  fields?: EmbedMessageField[]
-}
+import { CalendarFeed } from './calendar'
+import { welcomeMessage } from './messages'
 
 type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
@@ -83,7 +65,7 @@ export class Bot {
    */
   private _onNewMember = (member: Discord.GuildMember) => {
     const username: string = member.user.username
-    member.send({ embed: this._welcomeMessage(username) })
+    member.send({ embed: welcomeMessage(username) })
   }
 
   /**
@@ -103,6 +85,9 @@ export class Bot {
     const [cmd, ...args] = msg.content.split(' ')
     const cmdKey = cmd.slice(1)
 
+    if (msg.content === 'new_user_test')
+      msg.channel.send({ embed: welcomeMessage(msg.author.username) })
+
     // Check if the message actually is a command (starts with '!')
     if (cmd.startsWith('!')) {
       // Look for a handler function is the map that matches the command
@@ -118,67 +103,6 @@ export class Bot {
       }
     }
   }
-
-  /**
-   * Compiles the JSON object for the new users' welcome message
-   * @private
-   * @param {string} name
-   * @returns {EmbedMessage}
-   * @memberof Bot
-   */
-  private _welcomeMessage = (name: string): EmbedMessage => ({
-    color: 11640433, // Integer representation of UO color #B19E71
-    title: `**Welcome to United Operations Discord, ${name}!**`, // Bolded with markdown
-    url: 'http://forums.unitedoperations.net',
-    description: '*Placeholder description...*', // Italisized with markdown TODO: insert descr
-    thumbnail: {
-      url: 'https://units.arma3.com/groups/img/1222/vSClUszph6.png'
-    },
-    image: {
-      url:
-        'http://forums.unitedoperations.net/public/style_images/United_Operations___Animated/scooby_banner_bg.png'
-    },
-    fields: [
-      {
-        name: 'Getting Started (UOA3)',
-        value: 'http://www.unitedoperations.net/wiki/Getting_Started_Guide_(Arma_3)'
-      },
-      {
-        name: 'Community Wiki',
-        value: 'http://www.unitedoperations.net/wiki/Main_Page'
-      },
-      {
-        name: 'Forums',
-        value: 'http://forums.unitedoperations.net/'
-      },
-      {
-        name: 'Charter',
-        value: 'http://www.unitedoperations.net/wiki/United_Operations_Charter'
-      },
-      {
-        name: 'Server Information',
-        value: 'http://forums.unitedoperations.net/index.php/page/servers'
-      }
-    ]
-  })
-
-  /**
-   * Compiles the JSON object for an embed calendar event message
-   * to remind everyone is the Discord server of the upcoming event
-   * @private
-   * @param {CalendarEvent} event
-   * @returns {EmbedMessage}
-   * @memberof Bot
-   */
-  private _eventMessage = (event: CalendarEvent): EmbedMessage => ({
-    color: 11640433,
-    title: `**Reminder:** *${event.title}*`, // Styled with markdown
-    url: event.link,
-    description: '*Placeholder description...*', // TODO: Insert description of event
-    image: {
-      url: event.img
-    }
-  })
 
   /**
    * Logs all commands run through the bot to the designated logging

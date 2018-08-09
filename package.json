@@ -9,12 +9,14 @@
     "dev": "ts-node ./src/index.ts"
   },
   "dependencies": {
+    "@types/cheerio": "^0.22.8",
+    "@types/node-fetch": "^2.1.2",
+    "cheerio": "^1.0.0-rc.2",
     "dateformat": "^3.0.3",
     "discord.js": "^11.3.2",
     "dotenv": "^6.0.0",
     "feedparser": "^2.2.9",
-    "puppeteer": "^1.6.2",
-    "request": "^2.87.0",
+    "node-fetch": "^2.2.0",
     "signale": "^1.2.1",
     "ts-node": "^7.0.0",
     "typescript": "^3.0.1"
@@ -23,8 +25,6 @@
     "@types/dateformat": "^1.0.1",
     "@types/dotenv": "^4.0.3",
     "@types/feedparser": "^2.2.1",
-    "@types/puppeteer": "^1.6.0",
-    "@types/request": "^2.47.1",
     "@types/signale": "^1.2.0"
   }
 }

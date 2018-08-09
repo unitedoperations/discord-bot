@@ -1,6 +1,8 @@
 import signale from 'signale'
 import { Message } from 'discord.js'
-import puppeteer from 'puppeteer'
+import fetch from 'node-fetch'
+import cheerio from 'cheerio'
+import { ServerInformation, serverMessage } from './messages'
 
 const PERMITTED_GROUPS: string[] = process.env.PERMITTED_GROUPS!.split(',')
 
@@ -17,7 +19,7 @@ export async function help(msg: Message, _: string[]): Promise<string> {
   **Commands**
   \`!?\`, \`!help\`: _help for usage on commands_
   \`!ratio <total> <a> <b>\`: _calculate the player ratio for teams with A:B_
-  \`!players\`: _get the number of players currently on the primary A3 server_
+  \`!primary\`: _get the information about the current missino on the A3 primary_
   \`!join_group <group>\`: _join the argued group if it exists and have permission_
   \`!leave_group <group>\`: _leave the argued group if it exists and you are in it_
   `
@@ -59,38 +61,51 @@ export async function ratio(msg: Message, args: string[]): Promise<string> {
 }
 
 /**
- * Get the number of players actively playing on the primary A3 server
+ * Get the data about the current mission on the A3 primary server
  * @export
  * @async
  * @param {Message} msg
  * @param {string[]} _
  * @returns {Promise<string>}
  */
-export async function players(msg: Message, _: string[]): Promise<string> {
-  let output: string = "Couldn't get the number of players right now"
+export async function primary(msg: Message, _: string[]): Promise<string> {
+  try {
+    const url = 'http://www.unitedoperations.net/tools/uosim/'
+    // Get the HTML of the server information page
+    const res = await fetch(url)
+    const body = await res.text()
 
-  // Open a new headless chrome browser with puppeteer
-  const url = 'https://www.gametracker.com/server_info/arma3.unitedoperations.net:2402/'
-  const browser = await puppeteer.launch({ headless: true })
+    // Parse the HTML into a mock DOM with cheerio
+    // Get an array of keys and array of values from the table data
+    const $ = cheerio.load(body)
 
-  // Navigate to the game tracker page for the primary on a new page
-  const page = await browser.newPage()
-  await page.goto(url)
+    // Keys from the table of server data
+    const keys: string[] = $('.sip_title')
+      .map((_, el) => {
+        const tmp = $(el)
+          .text()
+          .replace(':', '')
+        if (tmp.includes(' ')) return tmp.split(' ')[1]
+        return tmp
+      })
+      .get()
 
-  // Get the HTML content and close the headless chrome client
-  const html = await page.content()
-  await page.close()
-  await browser.close()
+    // Values from the table of server data
+    const values: string[] = $('.sip_value')
+      .map((_, el) => $(el).text())
+      .get()
 
-  // Use regular expression to find and get the active player count
-  const match = /"HTML_num_players">(\d{1,3})/g.exec(html)
-  if (match) {
-    // Send the current count matched to the user
-    const count = match[1]
-    output = `There are **${count}** players on A3 primary`
-    msg.member.send(output)
+    // Combine the keys and values into an object
+    const serverInfo: { [k: string]: string } = {}
+    for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
+    await msg.author.send({ embed: serverMessage(serverInfo as ServerInformation) })
+    return 'SERVER_OUTPUT'
+  } catch (e) {
+    // If there was an error in any asynchronous operation
+    const output = 'Could not retrieve primary server data right now'
+    await msg.author.send(output)
+    return output
   }
-  return output
 }
 
 /**
