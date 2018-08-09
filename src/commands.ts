@@ -56,7 +56,6 @@ export async function ratio(msg: Message, args: string[]): Promise<string> {
   // Send caluclation message
   output = `Ratio for ${players} ${ratioA}:${ratioB}\nSide A: ${sideA}\nSide B: ${sideB}`
   await msg.author.send(output)
-
   return output.replace('\n', '')
 }
 
@@ -144,7 +143,6 @@ export async function joinGroup(msg: Message, args: string[]): Promise<string> {
     await msg.member.addRole(role, 'Requested through bot command').catch(signale.error)
     await msg.author.send(output)
   }
-
   return output
 }
 
@@ -184,6 +182,5 @@ export async function leaveGroup(msg: Message, args: string[]): Promise<string> 
     await msg.member.removeRole(role, 'Requested through bot command').catch(signale.error)
     await msg.author.send(output)
   }
-
   return output
 }

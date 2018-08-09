@@ -1,12 +1,15 @@
 {
   "name": "uo-discordbot",
   "version": "1.0.0",
+  "homepage": "http://forums.unitedoperations.net",
   "description": "Discord bot for the United Operations server",
   "repository": "https://github.com/unitedoperations/uo-discordbot.git",
   "author": "Matthew Callens <callensmatt@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node ./src/index.ts"
+    "dev": "nodemon --config ./nodemon.json",
+    "build": "tsc --project .",
+    "start": "node build/index.js"
   },
   "dependencies": {
     "@types/cheerio": "^0.22.8",
@@ -25,6 +28,7 @@
     "@types/dateformat": "^1.0.1",
     "@types/dotenv": "^4.0.3",
     "@types/feedparser": "^2.2.1",
-    "@types/signale": "^1.2.0"
+    "@types/signale": "^1.2.0",
+    "nodemon": "^1.18.3"
   }
 }

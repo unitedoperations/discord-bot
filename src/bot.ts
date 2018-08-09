@@ -14,7 +14,7 @@ type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
  */
 export class Bot {
   private static readonly LOG_CHANNEL: string = process.env.BOT_LOG_CHANNEL!
-  private static readonly MAIN_CHANNEL: string = process.env.BOT_MAIN_CHANNEL!
+  // private static readonly MAIN_CHANNEL: string = process.env.BOT_MAIN_CHANNEL!
 
   public readonly calendar: CalendarFeed
   private _client: Discord.Client
