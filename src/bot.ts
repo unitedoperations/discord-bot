@@ -2,7 +2,7 @@ import Discord from 'discord.js'
 import dateformat from 'dateformat'
 import signale from 'signale'
 import { CalendarFeed } from './calendar'
-import { welcomeMessage } from './messages'
+import { welcomeMessage, eventMessage } from './messages'
 
 type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
@@ -16,7 +16,7 @@ export class Bot {
   private static readonly LOG_CHANNEL: string = process.env.BOT_LOG_CHANNEL!
   // private static readonly MAIN_CHANNEL: string = process.env.BOT_MAIN_CHANNEL!
 
-  public readonly calendar: CalendarFeed
+  private _calendar: CalendarFeed
   private _client: Discord.Client
   private _commands: Map<string, BotAction> = new Map()
 
@@ -26,7 +26,7 @@ export class Bot {
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
 
-    this.calendar = new CalendarFeed(
+    this._calendar = new CalendarFeed(
       'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/'
     )
   }
@@ -39,7 +39,7 @@ export class Bot {
    * @memberof Bot
    */
   start = (token: string): Promise<string> => {
-    this.calendar.pull()
+    this._calendar.pull()
     return this._client.login(token)
   }
 
@@ -85,8 +85,9 @@ export class Bot {
     const [cmd, ...args] = msg.content.split(' ')
     const cmdKey = cmd.slice(1)
 
-    if (msg.content === 'new_user_test')
-      msg.channel.send({ embed: welcomeMessage(msg.author.username) })
+    if (msg.content === 'test_events') {
+      this._calendar.getEvents().map(e => msg.channel.send({ embed: eventMessage(e) }))
+    }
 
     // Check if the message actually is a command (starts with '!')
     if (cmd.startsWith('!')) {

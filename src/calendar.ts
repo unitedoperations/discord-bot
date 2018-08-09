@@ -1,5 +1,6 @@
 import FeedParser from 'feedparser'
 import fetch, { Response } from 'node-fetch'
+import cheerio from 'cheerio'
 
 export interface CalendarEvent {
   guid: string
@@ -59,7 +60,7 @@ export class CalendarFeed {
     let e: FeedParser.Item
 
     while ((e = this._feed.read())) {
-      const imgUrl: string = this._findImage(e.summary) || ''
+      const imgUrl: string = this._findImage(e.summary)
       events.push({
         guid: e.guid,
         title: e.title,
@@ -69,7 +70,7 @@ export class CalendarFeed {
       })
     }
 
-    if (events.length > 0) this._eventsCache = events
+    if (events.length > 0) this._eventsCache = [...this._eventsCache, ...events]
   }
 
   /**
@@ -78,10 +79,11 @@ export class CalendarFeed {
    * @param {string} html
    * @returns {string | null}
    */
-  private _findImage(html: string): string | null {
-    const exp: RegExp = /<img\sclass='bbc_img'\ssrc='(.*)'\salt=.*\/>/g
-    const match = exp.exec(html)
-    if (match) return match[1]
-    return null
+  private _findImage(html: string): string {
+    const $: CheerioStatic = cheerio.load(html)
+    const img: string = $('img.bbc_img')
+      .first()
+      .attr('src')
+    return img
   }
 }

@@ -76,7 +76,7 @@ export async function primary(msg: Message, _: string[]): Promise<string> {
 
     // Parse the HTML into a mock DOM with cheerio
     // Get an array of keys and array of values from the table data
-    const $ = cheerio.load(body)
+    const $: CheerioStatic = cheerio.load(body)
 
     // Keys from the table of server data
     const keys: string[] = $('.sip_title')
