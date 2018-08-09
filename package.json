@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
+    "date-fns": "^1.29.0",
     "dateformat": "^3.0.3",
     "discord.js": "^11.3.2",
     "dotenv": "^6.0.0",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.8",
+    "@types/date-fns": "^2.6.0",
     "@types/dateformat": "^1.0.1",
     "@types/dotenv": "^4.0.3",
     "@types/feedparser": "^2.2.1",

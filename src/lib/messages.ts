@@ -19,6 +19,11 @@ interface EmbedMessage {
   fields?: EmbedMessageField[]
 }
 
+/**
+ * Interface type for primary server data
+ * @export
+ * @interface ServerInformation
+ */
 export interface ServerInformation {
   [k: string]: string
   players: string
@@ -30,6 +35,7 @@ export interface ServerInformation {
 
 /**
  * Compiles the JSON object for the new users' welcome message
+ * @export
  * @param {string} name
  * @returns {EmbedMessage}
  */
@@ -76,19 +82,27 @@ export const welcomeMessage = (name: string): EmbedMessage => ({
 /**
  * Compiles the JSON object for an embed calendar event message
  * to remind everyone is the Discord server of the upcoming event
+ * @export
  * @param {CalendarEvent} event
  * @returns {EmbedMessage}
  */
-export const eventMessage = (event: CalendarEvent, x: number): EmbedMessage => ({
+export const eventMessage = (event: CalendarEvent, away: string): EmbedMessage => ({
   color: 11640433,
   title: `**Reminder:** *${event.title}*`,
-  description: `_...starting in **${x} hours**_`,
+  description: `_...taking place in **${away}**_`,
   url: event.link,
   image: {
     url: event.img
   }
 })
 
+/**
+ * Creates the messaged structure for details requested for the
+ * primary A3 server
+ * @export
+ * @param {ServerInfo} info
+ * @returns {EmbedMessage}
+ */
 export const serverMessage = (info: ServerInformation): EmbedMessage => ({
   color: 11640433,
   title: info.mission,
