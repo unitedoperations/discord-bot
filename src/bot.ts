@@ -3,7 +3,7 @@ import dateformat from 'dateformat'
 import signale from 'signale'
 import { CalendarFeed } from './calendar'
 import { welcomeMessage, eventMessage } from './lib/messages'
-import { Routine, hours } from './routine'
+import { Routine, Routinable, hours, minutes } from './routine'
 
 type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
@@ -14,14 +14,16 @@ const timeChecks: number[] = process.env.ALERT_TIMES!.split(',').map(parseFloat)
  * Wrapper class for the Discord SDK and handling custom commands
  * @export
  * @class Bot
+ * @implements Routinable
  * @property {string} GUILD_NAME
  * @property {string} LOG_CHANNEL
  * @property {string} MAIN_CHANNEL
  * @property {CalendarFeed} _calendar
  * @property {Discord.Client} _client
  * @property {Map<string, BotAction>} _commands
+ * @property {Routine<void> | undefined} _calendarRoutine
  */
-export class Bot {
+export class Bot implements Routinable {
   // Static and readonly variables for the Bot class
   private static readonly GUILD_NAME: string = process.env.DISCORD_SERVER_NAME!
   private static readonly LOG_CHANNEL: string = process.env.DISCORD_LOG_CHANNEL!
@@ -33,6 +35,10 @@ export class Bot {
   private _commands: Map<string, BotAction> = new Map()
   private _calendarRoutine?: Routine<void>
 
+  /**
+   * Creates an instance of Bot
+   * @memberof Bot
+   */
   constructor() {
     this._client = new Discord.Client()
     this._client.on('ready', () => signale.info(`Logged in as ${this._client.user.tag}`))
@@ -47,12 +53,23 @@ export class Bot {
   /**
    * Wrapper function for the Discord client's login function
    * to initialize and start the chat bot in the Discord server
+   * @async
    * @param token {string}
    * @returns {Promise<string>}
    * @memberof Bot
    */
-  start = (token: string): Promise<string> => {
-    this._calendarRoutine = new Routine<void>(() => this._notifyOfEvents(), [], hours(1))
+  async start(token: string): Promise<string> {
+    // Initial calendar feed pull
+    await this._calendar.pull()
+
+    // Create a new routine to check for notifications on events on an interval
+    this._calendarRoutine = new Routine<void>(
+      async () => await this._notifyOfEvents(),
+      [],
+      minutes(1)
+    )
+
+    // Login with the Discord client
     return this._client.login(token)
   }
 
@@ -72,7 +89,7 @@ export class Bot {
    * @param {(Discord.Message) => void} action
    * @memberof Bot
    */
-  addCommand = (cmd: string, action: BotAction) => {
+  addCommand(cmd: string, action: BotAction) {
     this._commands.set(cmd, action)
   }
 
@@ -80,23 +97,23 @@ export class Bot {
    * Pulls updates from the RSS event feed and send reminds if necessary
    * after comparing the start time of the event and the current time
    * @private
+   * @async
    * @memberof Bot
    */
-  private _notifyOfEvents = () => {
-    this._calendar.pull()
+  private async _notifyOfEvents() {
     const now = new Date()
-
     for (const e of this._calendar.getEvents()) {
       // Get the difference in hours between the two dates and check if
       // the difference in hours is equal to any of the alert trigger times
-      const hourDiff = Math.round(Math.abs(e.date.getTime() - now.getTime()) / hours(1))
-      if (timeChecks.some(t => t === hourDiff)) {
+      const hourDiff = Math.abs(e.date.getTime() - now.getTime()) / hours(1)
+      if (timeChecks.some(t => t.toFixed(2) === hourDiff.toFixed(2))) {
+        signale.star(`Sending notification for event: ${e.title}`)
         // If hour difference is within the remind window, send message to
         // all active Discord users (@here) with the reminder in the main channel
         const channel = this._client.guilds
           .find('name', Bot.GUILD_NAME)
           .channels.find('name', Bot.MAIN_CHANNEL) as Discord.TextChannel
-        channel.send('@here', { embed: eventMessage(e, hourDiff) as Discord.RichEmbed })
+        await channel.send('@here', { embed: eventMessage(e, hourDiff) as Discord.RichEmbed })
       }
     }
   }
@@ -106,6 +123,7 @@ export class Bot {
    * it generates a welcome message and send it through a
    * private message to the new user
    * @private
+   * @async
    * @param {Discord.GuildMember} member
    * @memberof Bot
    */
@@ -155,13 +173,14 @@ export class Bot {
    * Logs all commands run through the bot to the designated logging
    * channel on the Discord server with the essential date and timestamp
    * @private
+   * @async
    * @param {Discord.Guild} guild
    * @param {string} tag
    * @param {string} cmd
    * @param {string} output
    * @memberof Bot
    */
-  private _log = (guild: Discord.Guild, tag: string, cmd: string, output: string) => {
+  private _log(guild: Discord.Guild, tag: string, cmd: string, output: string) {
     const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
     const logChannel = guild.channels.find('name', Bot.LOG_CHANNEL) as Discord.TextChannel
     logChannel.send(`${tag} ran "${cmd}" at time ${timestamp}: "${output}"`)

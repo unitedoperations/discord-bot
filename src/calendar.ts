@@ -1,6 +1,8 @@
 import FeedParser from 'feedparser'
 import fetch, { Response } from 'node-fetch'
 import cheerio from 'cheerio'
+import signale from 'signale'
+import { Routine, Routinable, hours } from './routine'
 
 export interface CalendarEvent {
   guid: string
@@ -14,19 +16,37 @@ export interface CalendarEvent {
  * Handles the RSS feed and parsing from the forums calendar
  * @export
  * @class CalendarFeed
+ * @implements Routinable
  * @property {FeedParser} _feed
  * @property {Promise<Response>} _req
  * @property {CalendarEvent[]} _eventsCache
+ * @property {Routine<void>} _feedRoutine
  */
-export class CalendarFeed {
+export class CalendarFeed implements Routinable {
+  // Static and readonly variables for the CalendarFeed class
+  private static readonly HOURS_TO_REFRESH = parseFloat(process.env.HOURS_TO_REFRESH_CALENDAR!)
+
+  // CalendarFeed instance variables
   private _feed: FeedParser
   private _req: Promise<Response>
   private _eventsCache: CalendarEvent[] = []
+  private _feedRoutine: Routine<void>
 
+  /**
+   * Creates an instance of CalendarFeed.
+   * @param {string} url
+   * @memberof CalendarFeed
+   */
   constructor(url: string) {
     this._feed = new FeedParser({ feedurl: url })
     this._feed.on('readable', this._onFeedReadable)
     this._req = fetch(url)
+    this._feedRoutine = new Routine<void>(
+      () => this.pull(),
+      [],
+      hours(CalendarFeed.HOURS_TO_REFRESH)
+    )
+    this._feedRoutine.terminate()
   }
 
   /**
@@ -37,6 +57,7 @@ export class CalendarFeed {
    * @memberof CalendarFeed
    */
   async pull() {
+    signale.note('Pulled updates from calendar RSS feed')
     const res = await this._req
     res.body.pipe(this._feed)
   }
@@ -48,6 +69,14 @@ export class CalendarFeed {
    */
   getEvents(): CalendarEvent[] {
     return this._eventsCache
+  }
+
+  /**
+   * Ends all routines running on intervals
+   * @memberof CalendarFeed
+   */
+  clear() {
+    this._feedRoutine.terminate()
   }
 
   /**
