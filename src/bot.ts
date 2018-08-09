@@ -7,6 +7,9 @@ import { Routine, hours } from './routine'
 
 type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
+// Get the environment variable for alert times in hours
+const timeChecks: number[] = process.env.ALERT_TIMES!.split(',').map(parseFloat)
+
 /**
  * Wrapper class for the Discord SDK and handling custom commands
  * @export
@@ -21,14 +24,14 @@ type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 export class Bot {
   // Static and readonly variables for the Bot class
   private static readonly GUILD_NAME: string = process.env.DISCORD_SERVER_NAME!
-  private static readonly LOG_CHANNEL: string = process.env.BOT_LOG_CHANNEL!
-  private static readonly MAIN_CHANNEL: string = process.env.BOT_MAIN_CHANNEL!
+  private static readonly LOG_CHANNEL: string = process.env.DISCORD_LOG_CHANNEL!
+  private static readonly MAIN_CHANNEL: string = process.env.DISCORD_MAIN_CHANNEL!
 
   // Bot instance variables
   private _calendar: CalendarFeed
   private _client: Discord.Client
   private _commands: Map<string, BotAction> = new Map()
-  private _calendarRoutine?: Routine<number>
+  private _calendarRoutine?: Routine<void>
 
   constructor() {
     this._client = new Discord.Client()
@@ -49,7 +52,7 @@ export class Bot {
    * @memberof Bot
    */
   start = (token: string): Promise<string> => {
-    this._calendarRoutine = new Routine<number>(x => this._notifyOfEvents(x), [2], hours(1))
+    this._calendarRoutine = new Routine<void>(() => this._notifyOfEvents(), [], hours(1))
     return this._client.login(token)
   }
 
@@ -79,14 +82,15 @@ export class Bot {
    * @private
    * @memberof Bot
    */
-  private _notifyOfEvents = (hoursBefore: number) => {
+  private _notifyOfEvents = () => {
     this._calendar.pull()
     const now = new Date()
 
     for (const e of this._calendar.getEvents()) {
-      // Get the difference in hours between the two dates
+      // Get the difference in hours between the two dates and check if
+      // the difference in hours is equal to any of the alert trigger times
       const hourDiff = Math.round(Math.abs(e.date.getTime() - now.getTime()) / hours(1))
-      if (hourDiff <= hoursBefore) {
+      if (timeChecks.some(t => t === hourDiff)) {
         // If hour difference is within the remind window, send message to
         // all active Discord users (@here) with the reminder in the main channel
         const channel = this._client.guilds

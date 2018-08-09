@@ -4,7 +4,8 @@ import fetch from 'node-fetch'
 import cheerio from 'cheerio'
 import { ServerInformation, serverMessage } from './messages'
 
-const PERMITTED_GROUPS: string[] = process.env.PERMITTED_GROUPS!.split(',')
+// Constant array of allow Discord server groups for people to join
+const allowedDiscordGroups: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
 
 /**
  * Returns the usage information for the list of commands
@@ -133,7 +134,7 @@ export async function joinGroup(msg: Message, args: string[]): Promise<string> {
     // If no role with the argued name exists end with that message
     output = `the group '${groupName}' does not exist`
     await msg.author.send(output)
-  } else if (!PERMITTED_GROUPS.includes(groupName)) {
+  } else if (!allowedDiscordGroups.includes(groupName)) {
     // If the argued group name is not included in the permitted groups
     output = `you don't have permission to join '${groupName}'`
     await msg.author.send(output)
