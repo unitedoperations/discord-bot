@@ -137,7 +137,18 @@ export class Bot implements Routinable {
    */
   private async _notifyOfNewMission(url: string) {
     try {
-      const info = await scrapeServerPage(url)
+      let info: ServerInformation | null = await scrapeServerPage(url)
+
+      // Set default information if error or none found
+      if (!info) {
+        info = {
+          mission: 'None',
+          description: 'Unknown',
+          players: '0/64',
+          island: 'Unknown',
+          author: 'Unknown'
+        }
+      }
 
       // If the new data is different from previous
       // replace the current data and send the notification

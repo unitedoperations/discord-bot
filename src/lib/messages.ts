@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import cheerio from 'cheerio'
+import signale from 'signale'
 import { CalendarEvent } from '../calendar'
 
 interface EmbedMessageImage {
@@ -112,15 +113,15 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
   fields: [
     {
       name: 'Players',
-      value: info.players
+      value: info.players || 'Unknown'
     },
     {
       name: 'Island',
-      value: info.island
+      value: info.island || 'Unknown'
     },
     {
       name: 'Author',
-      value: info.author
+      value: info.author || 'Unknown'
     }
   ]
 })
@@ -130,35 +131,40 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
  * @export
  * @async
  * @param {string} url
- * @returns {ServerInformation}
+ * @returns {ServerInformation?}
  */
-export async function scrapeServerPage(url: string): Promise<ServerInformation> {
-  // Get the text HTML body of the webpage
-  const res = await fetch(url)
-  const body = await res.text()
+export async function scrapeServerPage(url: string): Promise<ServerInformation | null> {
+  try {
+    // Get the text HTML body of the webpage
+    const res = await fetch(url)
+    const body = await res.text()
 
-  // Parse the HTML into a mock DOM with cheerio
-  // Get an array of keys and array of values from the table data
-  const $: CheerioStatic = cheerio.load(body)
+    // Parse the HTML into a mock DOM with cheerio
+    // Get an array of keys and array of values from the table data
+    const $: CheerioStatic = cheerio.load(body)
 
-  // Keys from the table of server data
-  const keys: string[] = $('.sip_title')
-    .map((_, el) => {
-      const tmp = $(el)
-        .text()
-        .replace(':', '')
-      if (tmp.includes(' ')) return tmp.split(' ')[1]
-      return tmp
-    })
-    .get()
+    // Keys from the table of server data
+    const keys: string[] = $('.sip_title')
+      .map((_, el) => {
+        const tmp = $(el)
+          .text()
+          .replace(':', '')
+        if (tmp.includes(' ')) return tmp.split(' ')[1]
+        return tmp
+      })
+      .get()
 
-  // Values from the table of server data
-  const values: string[] = $('.sip_value')
-    .map((_, el) => $(el).text())
-    .get()
+    // Values from the table of server data
+    const values: string[] = $('.sip_value')
+      .map((_, el) => $(el).text())
+      .get()
 
-  // Combine the keys and values into an object
-  const serverInfo: { [k: string]: string } = {}
-  for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
-  return serverInfo as ServerInformation
+    // Combine the keys and values into an object
+    const serverInfo: { [k: string]: string } = {}
+    for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
+    return serverInfo as ServerInformation
+  } catch (e) {
+    signale.error(`SERVER_SCRAPE: ${e.message}`)
+    return null
+  }
 }
