@@ -18,9 +18,11 @@ A `Dockerfile` is provided in the repository is you wish to use Docker, otherwis
   - `DISCORD_ARMA_CHANNEL`: _ID of the channel designated for ArmA 3_
   - `DISCORD_BMS_CHANNEL`: _ID of the channel designated for BMS_
   - `DISCORD_ALLOWED_GROUPS`: _comma deliminated list of groups/roles user's are allowed to join_
+  - `DISCORD_ARMA_PLAYER_ROLE`: _the role designated for Arma 3 players_
+  - `DISCORD_BMS_PLAYER_ROLE`: _the role designated for BMS players_
   - `ALERT_TIMES`: _comma deliminated list of "time untils" to post reminder notifications for calendar events. Hold the format of `<amt> <time_type>` (7 days, 12 hours)_
   - `HOURS_TO_REFRESH_CALENDAR`: _number of hours between updating the event list from the RSS feed for the calendar_
-  - `SHUTDOWN_PWD`: _password entered with the shutdown command to put the bot offline and stop the application from running_
+  - `SHUTDOWN_ROLES`: roles permitted to run the shutdown command to put the bot offline and stop the application from running\_
 
 Sample `.env` file without sensitive values:
 
@@ -38,6 +40,8 @@ DISCORD_MAIN_CHANNEL=
 DISCORD_ARMA_CHANNEL=
 DISCORD_BMS_CHANNEL=
 DISCORD_ALLOWED_GROUPS=UOA3,UOAF
+DISCORD_ARMA_PLAYER_ROLE=UOA3
+DISCORD_BMS_PLAYER_ROLE=UOAF
 
 # All times are in hours!
 # Format as: <amount> <type>
@@ -46,8 +50,8 @@ ALERT_TIMES=7 days,2 days,1 day,12 hours,2 hours,5 minutes
 # Number of hours between calendar event pulls to refresh
 HOURS_TO_REFRESH_CALENDAR=1
 
-# Application termination password for !shutdown command
-SHUTDOWN_PWD=
+# Role(s) permitted to shutdown the bot
+SHUTDOWN_ROLES=GSO,WSO
 ```
 
 ### Discord

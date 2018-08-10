@@ -24,6 +24,8 @@ type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
  * @property {string} MAIN_CHANNEL
  * @property {string} ARMA_CHANNEL
  * @property {string} BMS_CHANNEL
+ * @property {string} ARMA_PLAYER_ROLE
+ * @property {string} BMS_PLAYER_ROLE
  * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
  * @property {Discord.Client} _client
@@ -38,6 +40,8 @@ export class Bot implements Routinable {
   private static readonly MAIN_CHANNEL: string = process.env.DISCORD_MAIN_CHANNEL!
   private static readonly ARMA_CHANNEL: string = process.env.DISCORD_ARMA_CHANNEL!
   private static readonly BMS_CHANNEL: string = process.env.DISCORD_BMS_CHANNEL!
+  private static readonly ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
+  private static readonly BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
 
   // Bot instance variables
   private _guild?: Discord.Guild
@@ -136,7 +140,7 @@ export class Bot implements Routinable {
     ) {
       this._currentMission = info
       const msg = serverMessage(info) as Discord.RichEmbed
-      const role = this._guild!.roles.find('name', 'UOA3')
+      const role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
       const channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
       await channel.send(`${role.toString} _**NEW MISSION 🎉**_`, { embed: msg })
     }
@@ -172,12 +176,12 @@ export class Bot implements Routinable {
         switch (e.group) {
           // ArmA 3 event reminder
           case 'UOA3':
-            role = this._guild!.roles.find('name', e.group)
+            role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
             channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
             break
           // BMS event reminder
           case 'UOAF':
-            role = this._guild!.roles.find('name', e.group)
+            role = this._guild!.roles.find('name', Bot.BMS_PLAYER_ROLE)
             channel = this._guild!.channels.find('id', Bot.BMS_CHANNEL) as Discord.TextChannel
             break
           // UOTC course reminder

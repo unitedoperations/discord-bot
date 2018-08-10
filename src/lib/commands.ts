@@ -5,6 +5,9 @@ import { serverMessage, scrapeServerPage } from './messages'
 // Constant array of allow Discord server groups for people to join
 const allowedDiscordGroups: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
 
+// Array of roles allowed to run the shutdown command
+const shutdownGroups: string[] = process.env.SHUTDOWN_ROLES!.split(',')
+
 /**
  * Returns the usage information for the list of commands
  * @export
@@ -21,7 +24,7 @@ export async function help(msg: Message, _: string[]): Promise<string> {
   \`!leave_group <group>\`: _leave the argued group if it exists and you are in it_
   \`!primary\`: _get the information about the current missino on the A3 primary_
   \`!ratio <total> <a> <b>\`: _calculate the player ratio for teams with A:B_
-  \`!shutdown <pwd>\`: _turns off the Discord bot with the correct password_
+  \`!shutdown\`: _turns off the Discord bot with the correct permissions_
   `
   await msg.author.send(output)
   return 'HELP_OUTPUT'
@@ -85,23 +88,20 @@ export async function primary(msg: Message, _: string[]): Promise<string> {
  * @export
  * @async
  * @param {Discord.Message} msg
- * @param {string[]} args
+ * @param {string[]} _
  * @returns {Promise<string>}
  */
-export async function shutdown(msg: Message, args: string[]): Promise<string> {
-  // Check if password was given as an argument
-  if (args.length != 1) {
-    await msg.author.send('`!shutdown` expects 1 argument that is the password')
-    return 'shutdown failed'
+export async function shutdown(msg: Message, _: string[]): Promise<string> {
+  // Check if the calling user has permission to shutdown
+  for (const g of shutdownGroups) {
+    if (msg.member.roles.find('name', g) !== null) {
+      await msg.author.send(`You shutdown me down!`)
+      return 'shutdown successful'
+    }
   }
 
-  if (args[0] === process.env.SHUTDOWN_PWD) {
-    await msg.author.send(`You shutdown me down!`)
-    return 'shutdown successful'
-  }
-
-  await msg.author.send(`\`${args[0]}\` is not the correct password`)
-  return `invalid password ${args[0]}`
+  await msg.author.send(`you don't have permission to shut me down!`)
+  return `invalid permissions`
 }
 
 /**
