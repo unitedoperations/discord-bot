@@ -60,7 +60,7 @@ export class Bot implements Routinable {
     this._client = new Discord.Client()
     this._client.on('ready', () => {
       signale.fav(`Logged in as ${this._client.user.tag}`)
-      this._guild = this._client.guilds.find('id', Bot.GUILD_ID)
+      this._guild = this._client.guilds.find(g => g.id === Bot.GUILD_ID)
     })
     this._client.on('disconnect', () => signale.warn('Going offline...'))
     this._client.on('reconnecting', () => signale.warn('Attempting to reconnect...'))
@@ -147,8 +147,10 @@ export class Bot implements Routinable {
       ) {
         this._currentMission = info
         const msg = serverMessage(info) as Discord.RichEmbed
-        const role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
-        const channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+        const role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
+        const channel = this._guild!.channels.find(
+          c => c.id === Bot.ARMA_CHANNEL
+        ) as Discord.TextChannel
         await channel.send(`${role.toString()} _**NEW MISSION 🎉**_`, { embed: msg })
       }
     } catch (e) {
@@ -187,23 +189,31 @@ export class Bot implements Routinable {
           switch (e.group) {
             // ArmA 3 event reminder
             case 'UOA3':
-              role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
-              channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+              role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
+              channel = this._guild!.channels.find(
+                c => c.id === Bot.ARMA_CHANNEL
+              ) as Discord.TextChannel
               break
             // BMS event reminder
             case 'UOAF':
-              role = this._guild!.roles.find('name', Bot.BMS_PLAYER_ROLE)
-              channel = this._guild!.channels.find('id', Bot.BMS_CHANNEL) as Discord.TextChannel
+              role = this._guild!.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
+              channel = this._guild!.channels.find(
+                c => c.id === Bot.BMS_CHANNEL
+              ) as Discord.TextChannel
               break
             // UOTC course reminder
             case 'UOTC':
               role = null
-              channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+              channel = this._guild!.channels.find(
+                c => c.id === Bot.ARMA_CHANNEL
+              ) as Discord.TextChannel
               break
             // Unknown event type reminder
             default:
               role = null
-              channel = this._guild!.channels.find('id', Bot.MAIN_CHANNEL) as Discord.TextChannel
+              channel = this._guild!.channels.find(
+                c => c.id === Bot.MAIN_CHANNEL
+              ) as Discord.TextChannel
           }
 
           // Dispatch event reminder to correct group and channel
@@ -287,7 +297,9 @@ export class Bot implements Routinable {
    */
   private _log(tag: string, cmd: string, output: string): Promise<any> {
     const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
-    const logChannel = this._guild!.channels.find('id', Bot.LOG_CHANNEL) as Discord.TextChannel
+    const logChannel = this._guild!.channels.find(
+      c => c.name === Bot.LOG_CHANNEL
+    ) as Discord.TextChannel
     return logChannel.send(
       `${tag} ran "${cmd.replace('@&', '')}" at time ${timestamp}: "${output}"`
     )

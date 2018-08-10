@@ -94,7 +94,7 @@ export async function primary(msg: Message, _: string[]): Promise<string> {
 export async function shutdown(msg: Message, _: string[]): Promise<string> {
   // Check if the calling user has permission to shutdown
   for (const g of shutdownGroups) {
-    if (msg.member.roles.find('name', g) !== null) {
+    if (msg.member.roles.find(r => r.name === g) !== null) {
       await msg.author.send(`You shutdown me down!`)
       return 'shutdown successful'
     }
@@ -130,7 +130,7 @@ export async function joinGroup(msg: Message, args: string[]): Promise<string> {
   // Get group name from arguments and check if the role exists
   const group = args[0]
   const id = /<@&(\d+)>/g.exec(group)
-  const role = msg.guild.roles.find('id', id![1])
+  const role = msg.guild.roles.find(r => r.id === id![1])
 
   if (!role) {
     // If no role with the argued name exists end with that message
@@ -175,13 +175,13 @@ export async function leaveGroup(msg: Message, args: string[]): Promise<string> 
   // Get group name from arguments and check if the role exists
   const group = args[0]
   const id = /<@&(\d+)>/g.exec(group)
-  const role = msg.guild.roles.find('id', id![1])
+  const role = msg.guild.roles.find(r => r.id === id![1])
 
   if (!role) {
     // If no role with the argued name exists end with that message
     output = `the group '${group}' does not exist`
     await msg.author.send(output)
-  } else if (!msg.member.roles.find('id', role.id)) {
+  } else if (!msg.member.roles.find(r => r.id === role.id)) {
     // If the user doesn't below to the group argued
     output = `you are not in the '${role.name}' group`
     await msg.author.send(output)
