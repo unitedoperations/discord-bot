@@ -1,8 +1,6 @@
 import signale from 'signale'
 import { Message } from 'discord.js'
-import fetch from 'node-fetch'
-import cheerio from 'cheerio'
-import { ServerInformation, serverMessage } from './messages'
+import { serverMessage, scrapeServerPage } from './messages'
 
 // Constant array of allow Discord server groups for people to join
 const allowedDiscordGroups: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
@@ -71,35 +69,8 @@ export async function ratio(msg: Message, args: string[]): Promise<string> {
  */
 export async function primary(msg: Message, _: string[]): Promise<string> {
   try {
-    const url = 'http://www.unitedoperations.net/tools/uosim/'
-    // Get the HTML of the server information page
-    const res = await fetch(url)
-    const body = await res.text()
-
-    // Parse the HTML into a mock DOM with cheerio
-    // Get an array of keys and array of values from the table data
-    const $: CheerioStatic = cheerio.load(body)
-
-    // Keys from the table of server data
-    const keys: string[] = $('.sip_title')
-      .map((_, el) => {
-        const tmp = $(el)
-          .text()
-          .replace(':', '')
-        if (tmp.includes(' ')) return tmp.split(' ')[1]
-        return tmp
-      })
-      .get()
-
-    // Values from the table of server data
-    const values: string[] = $('.sip_value')
-      .map((_, el) => $(el).text())
-      .get()
-
-    // Combine the keys and values into an object
-    const serverInfo: { [k: string]: string } = {}
-    for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
-    await msg.author.send({ embed: serverMessage(serverInfo as ServerInformation) })
+    const serverInfo = await scrapeServerPage('http://www.unitedoperations.net/tools/uosim/')
+    await msg.author.send({ embed: serverMessage(serverInfo) })
     return 'SERVER_OUTPUT'
   } catch (e) {
     // If there was an error in any asynchronous operation

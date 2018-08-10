@@ -1,5 +1,6 @@
 .github/
 node_modules/
 build/
+.env
 README.md
 yarn.lock

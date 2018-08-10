@@ -1,3 +1,5 @@
+import fetch from 'node-fetch'
+import cheerio from 'cheerio'
 import { CalendarEvent } from '../calendar'
 
 interface EmbedMessageImage {
@@ -122,3 +124,41 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
     }
   ]
 })
+
+/**
+ * Scrapes the HTML of the A3 server page and returns the relevant data
+ * @export
+ * @async
+ * @param {string} url
+ * @returns {ServerInformation}
+ */
+export async function scrapeServerPage(url: string): Promise<ServerInformation> {
+  // Get the text HTML body of the webpage
+  const res = await fetch(url)
+  const body = await res.text()
+
+  // Parse the HTML into a mock DOM with cheerio
+  // Get an array of keys and array of values from the table data
+  const $: CheerioStatic = cheerio.load(body)
+
+  // Keys from the table of server data
+  const keys: string[] = $('.sip_title')
+    .map((_, el) => {
+      const tmp = $(el)
+        .text()
+        .replace(':', '')
+      if (tmp.includes(' ')) return tmp.split(' ')[1]
+      return tmp
+    })
+    .get()
+
+  // Values from the table of server data
+  const values: string[] = $('.sip_value')
+    .map((_, el) => $(el).text())
+    .get()
+
+  // Combine the keys and values into an object
+  const serverInfo: { [k: string]: string } = {}
+  for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
+  return serverInfo as ServerInformation
+}

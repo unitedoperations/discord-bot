@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.8",
-    "@types/date-fns": "^2.6.0",
     "@types/dateformat": "^1.0.1",
     "@types/dotenv": "^4.0.3",
     "@types/feedparser": "^2.2.1",

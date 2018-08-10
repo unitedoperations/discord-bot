@@ -3,7 +3,13 @@ import dateformat from 'dateformat'
 import signale from 'signale'
 import distanceInWords from 'date-fns/distance_in_words_strict'
 import { CalendarFeed, reminderIntervals } from './calendar'
-import { welcomeMessage, eventMessage } from './lib/messages'
+import {
+  welcomeMessage,
+  eventMessage,
+  serverMessage,
+  scrapeServerPage,
+  ServerInformation
+} from './lib/messages'
 import { Routine, Routinable } from './routine'
 
 type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
@@ -23,6 +29,7 @@ type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
  * @property {Discord.Client} _client
  * @property {Map<string, BotAction>} _commands
  * @property {Routine<void>?} _calendarRoutine
+ * @property {ServerInformation?} _currentMission
  */
 export class Bot implements Routinable {
   // Static and readonly variables for the Bot class
@@ -38,6 +45,8 @@ export class Bot implements Routinable {
   private _client: Discord.Client
   private _commands: Map<string, BotAction> = new Map()
   private _calendarRoutine?: Routine<void>
+  private _serverRoutine?: Routine<string>
+  private _currentMission?: ServerInformation
 
   /**
    * Creates an instance of Bot
@@ -76,6 +85,13 @@ export class Bot implements Routinable {
       1 * 60 * 1000 // Minutes to millisecond
     )
 
+    // Create a new routine to check for new missions being loaded on A3 server
+    this._serverRoutine = new Routine<string>(
+      async url => await this._notifyOfNewMission(url),
+      ['http://www.unitedoperations.net/tools/uosim/'],
+      5 * 60 * 1000
+    )
+
     // Login with the Discord client
     return this._client.login(token)
   }
@@ -86,6 +102,7 @@ export class Bot implements Routinable {
    */
   clear() {
     ;(this._calendarRoutine as Routine<any>).terminate()
+    ;(this._serverRoutine as Routine<any>).terminate()
   }
 
   /**
@@ -98,6 +115,31 @@ export class Bot implements Routinable {
    */
   addCommand(cmd: string, action: BotAction) {
     this._commands.set(cmd, action)
+  }
+
+  /**
+   * Performs a scrape of the A3 primary's server information URL argued
+   * and if there is an update since the last run, notify to A3 player group
+   * @private
+   * @async
+   * @param {string} url
+   * @memberof Bot
+   */
+  private async _notifyOfNewMission(url: string) {
+    const info = await scrapeServerPage(url)
+
+    // If the new data is different from previous
+    // replace the current data and send the notification
+    if (
+      (!this._currentMission || info.mission !== this._currentMission.mission) &&
+      info.mission !== 'None'
+    ) {
+      this._currentMission = info
+      const msg = serverMessage(info) as Discord.RichEmbed
+      const role = this._guild!.roles.find('name', 'UOA3')
+      const channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+      await channel.send(`${role.toString} _**NEW MISSION 🎉**_`, { embed: msg })
+    }
   }
 
   /**
