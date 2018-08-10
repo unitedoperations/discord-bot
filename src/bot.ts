@@ -149,7 +149,7 @@ export class Bot implements Routinable {
         const msg = serverMessage(info) as Discord.RichEmbed
         const role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
         const channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
-        await channel.send(`${role.toString} _**NEW MISSION 🎉**_`, { embed: msg })
+        await channel.send(`${role.toString()} _**NEW MISSION 🎉**_`, { embed: msg })
       }
     } catch (e) {
       signale.error(`NEW_MISSION: ${e.message}`)
@@ -268,6 +268,7 @@ export class Bot implements Routinable {
           signale.error(`COMMAND (${cmd}) : ${e}`)
         }
       } else {
+        await msg.delete()
         signale.error(`No command function found for '!${cmdKey}'`)
       }
     }
