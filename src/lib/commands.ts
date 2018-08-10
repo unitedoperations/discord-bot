@@ -72,7 +72,17 @@ export async function ratio(msg: Message, args: string[]): Promise<string> {
  */
 export async function primary(msg: Message, _: string[]): Promise<string> {
   try {
-    const serverInfo = await scrapeServerPage('http://www.unitedoperations.net/tools/uosim/')
+    let serverInfo = await scrapeServerPage('http://www.unitedoperations.net/tools/uosim/')
+    if (!serverInfo) {
+      serverInfo = {
+        mission: 'None',
+        description: 'Unknown',
+        players: '0/64',
+        island: 'Unknown',
+        author: 'Unknown'
+      }
+    }
+
     await msg.author.send({ embed: serverMessage(serverInfo) })
     return 'SERVER_OUTPUT'
   } catch (e) {
