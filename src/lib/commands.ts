@@ -120,23 +120,29 @@ export async function joinGroup(msg: Message, args: string[]): Promise<string> {
     output = "you didn't provide a group to join"
     await msg.author.send(output)
     return output
+  } else if (msg.mentions.roles.size === 0) {
+    // If they don't use an @ mention for the group
+    output = 'you must use an `@` mention for the group you wish to join'
+    await msg.author.send(output)
+    return output
   }
 
   // Get group name from arguments and check if the role exists
-  const groupName = args[0]
-  const role = msg.guild.roles.find('name', groupName)
+  const group = args[0]
+  const id = /<@&(\d+)>/g.exec(group)
+  const role = msg.guild.roles.find('id', id![1])
 
   if (!role) {
     // If no role with the argued name exists end with that message
-    output = `the group '${groupName}' does not exist`
+    output = `the group '${group}' does not exist`
     await msg.author.send(output)
-  } else if (!allowedDiscordGroups.includes(groupName)) {
+  } else if (!allowedDiscordGroups.includes(role.name)) {
     // If the argued group name is not included in the permitted groups
-    output = `you don't have permission to join '${groupName}'`
+    output = `you don't have permission to join '${role.name}'`
     await msg.author.send(output)
   } else {
     // If it exists and is permitted for joining, add the user
-    output = `successfully added to group '${groupName}'`
+    output = `successfully added to group '${role.name}'`
     await msg.member.addRole(role, 'Requested through bot command').catch(signale.error)
     await msg.author.send(output)
   }
@@ -159,23 +165,29 @@ export async function leaveGroup(msg: Message, args: string[]): Promise<string> 
     output = "you didn't provide a group to leave"
     await msg.author.send(output)
     return output
+  } else if (msg.mentions.roles.size === 0) {
+    // If they don't use an @ mention for the group
+    output = 'you must use an `@` mention for the group you wish to leave'
+    await msg.author.send(output)
+    return output
   }
 
-  // Get group name from arguments and check if the group exists
-  const groupName = args[0]
-  const role = msg.guild.roles.find('name', groupName)
+  // Get group name from arguments and check if the role exists
+  const group = args[0]
+  const id = /<@&(\d+)>/g.exec(group)
+  const role = msg.guild.roles.find('id', id![1])
 
   if (!role) {
     // If no role with the argued name exists end with that message
-    output = `the group '${groupName}' does not exist`
+    output = `the group '${group}' does not exist`
     await msg.author.send(output)
-  } else if (!msg.member.roles.find('name', groupName)) {
+  } else if (!msg.member.roles.find('id', role.id)) {
     // If the user doesn't below to the group argued
-    output = `you are not in the '${groupName}' group`
+    output = `you are not in the '${role.name}' group`
     await msg.author.send(output)
   } else {
     // If the role exists and the user has it, remove them
-    output = `successfully removed from group '${groupName}'`
+    output = `successfully removed from group '${role.name}'`
     await msg.member.removeRole(role, 'Requested through bot command').catch(signale.error)
     await msg.author.send(output)
   }

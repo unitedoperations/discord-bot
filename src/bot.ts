@@ -62,6 +62,8 @@ export class Bot implements Routinable {
       signale.fav(`Logged in as ${this._client.user.tag}`)
       this._guild = this._client.guilds.find('id', Bot.GUILD_ID)
     })
+    this._client.on('disconnect', () => signale.warn('Going offline...'))
+    this._client.on('reconnecting', () => signale.warn('Attempting to reconnect...'))
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
 
@@ -79,22 +81,26 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   async start(token: string): Promise<string> {
-    // Initial calendar feed pull, handled by routine in CalendarFeed instance after
-    await this._calendar.pull()
+    try {
+      // Initial calendar feed pull, handled by routine in CalendarFeed instance after
+      await this._calendar.pull()
 
-    // Create a new routine to check for notifications on events on an interval
-    this._calendarRoutine = new Routine<void>(
-      async () => await this._notifyOfEvents(),
-      [],
-      1 * 60 * 1000 // Minutes to millisecond
-    )
+      // Create a new routine to check for notifications on events on an interval
+      this._calendarRoutine = new Routine<void>(
+        async () => await this._notifyOfEvents(),
+        [],
+        1 * 60 * 1000 // Minutes to millisecond
+      )
 
-    // Create a new routine to check for new missions being loaded on A3 server
-    this._serverRoutine = new Routine<string>(
-      async url => await this._notifyOfNewMission(url),
-      ['http://www.unitedoperations.net/tools/uosim/'],
-      5 * 60 * 1000
-    )
+      // Create a new routine to check for new missions being loaded on A3 server
+      this._serverRoutine = new Routine<string>(
+        async url => await this._notifyOfNewMission(url),
+        ['http://www.unitedoperations.net/tools/uosim/'],
+        5 * 60 * 1000
+      )
+    } catch (e) {
+      signale.error(`START: ${e.message}`)
+    }
 
     // Login with the Discord client
     return this._client.login(token)
@@ -130,19 +136,23 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private async _notifyOfNewMission(url: string) {
-    const info = await scrapeServerPage(url)
+    try {
+      const info = await scrapeServerPage(url)
 
-    // If the new data is different from previous
-    // replace the current data and send the notification
-    if (
-      (!this._currentMission || info.mission !== this._currentMission.mission) &&
-      info.mission !== 'None'
-    ) {
-      this._currentMission = info
-      const msg = serverMessage(info) as Discord.RichEmbed
-      const role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
-      const channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
-      await channel.send(`${role.toString} _**NEW MISSION 🎉**_`, { embed: msg })
+      // If the new data is different from previous
+      // replace the current data and send the notification
+      if (
+        (!this._currentMission || info.mission !== this._currentMission.mission) &&
+        info.mission !== 'None'
+      ) {
+        this._currentMission = info
+        const msg = serverMessage(info) as Discord.RichEmbed
+        const role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
+        const channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+        await channel.send(`${role.toString} _**NEW MISSION 🎉**_`, { embed: msg })
+      }
+    } catch (e) {
+      signale.error(`NEW_MISSION: ${e.message}`)
     }
   }
 
@@ -170,33 +180,37 @@ export class Bot implements Routinable {
         // all users of the designated group with the reminder in the main channel
         const msg = eventMessage(e, diff) as Discord.RichEmbed
 
-        // Determine the channel that the message should be send to and who to tag
-        let channel: Discord.TextChannel
-        let role: Discord.Role | null
-        switch (e.group) {
-          // ArmA 3 event reminder
-          case 'UOA3':
-            role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
-            channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
-            break
-          // BMS event reminder
-          case 'UOAF':
-            role = this._guild!.roles.find('name', Bot.BMS_PLAYER_ROLE)
-            channel = this._guild!.channels.find('id', Bot.BMS_CHANNEL) as Discord.TextChannel
-            break
-          // UOTC course reminder
-          case 'UOTC':
-            role = null
-            channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
-            break
-          // Unknown event type reminder
-          default:
-            role = null
-            channel = this._guild!.channels.find('id', Bot.MAIN_CHANNEL) as Discord.TextChannel
-        }
+        try {
+          // Determine the channel that the message should be send to and who to tag
+          let channel: Discord.TextChannel
+          let role: Discord.Role | null
+          switch (e.group) {
+            // ArmA 3 event reminder
+            case 'UOA3':
+              role = this._guild!.roles.find('name', Bot.ARMA_PLAYER_ROLE)
+              channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+              break
+            // BMS event reminder
+            case 'UOAF':
+              role = this._guild!.roles.find('name', Bot.BMS_PLAYER_ROLE)
+              channel = this._guild!.channels.find('id', Bot.BMS_CHANNEL) as Discord.TextChannel
+              break
+            // UOTC course reminder
+            case 'UOTC':
+              role = null
+              channel = this._guild!.channels.find('id', Bot.ARMA_CHANNEL) as Discord.TextChannel
+              break
+            // Unknown event type reminder
+            default:
+              role = null
+              channel = this._guild!.channels.find('id', Bot.MAIN_CHANNEL) as Discord.TextChannel
+          }
 
-        // Dispatch event reminder to correct group and channel
-        await channel.send(role ? role.toString() : '', { embed: msg })
+          // Dispatch event reminder to correct group and channel
+          await channel.send(role ? role.toString() : '', { embed: msg })
+        } catch (e) {
+          signale.error(`EVENT ${e.name}: ${e.message}`)
+        }
       }
     })
   }
@@ -210,9 +224,13 @@ export class Bot implements Routinable {
    * @param {Discord.GuildMember} member
    * @memberof Bot
    */
-  private _onNewMember = (member: Discord.GuildMember) => {
+  private _onNewMember = async (member: Discord.GuildMember) => {
     const username: string = member.user.username
-    member.send({ embed: welcomeMessage(username) })
+    try {
+      await member.send({ embed: welcomeMessage(username) })
+    } catch (e) {
+      signale.error(`NEW_USER ${username}: ${e.message}`)
+    }
   }
 
   /**
@@ -227,7 +245,7 @@ export class Bot implements Routinable {
    */
   private _onMessage = async (msg: Discord.Message) => {
     // Skip message if came from bot
-    if (msg.author.bot) return
+    if (msg.author.bot || !msg.guild) return
 
     // Get the command and its arguments from received message
     const [cmd, ...args] = msg.content.split(' ')
@@ -238,13 +256,17 @@ export class Bot implements Routinable {
       // Look for a handler function is the map that matches the command
       const fn = this._commands.get(cmdKey)
       if (fn) {
-        // Delete the original command, run the handler and log the response
-        await msg.delete()
+        try {
+          // Delete the original command, run the handler and log the response
+          await msg.delete()
 
-        const output = await fn(msg, args)
-        await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
+          const output = await fn(msg, args)
+          await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
 
-        if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
+          if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
+        } catch (e) {
+          signale.error(`COMMAND (${cmd}) : ${e}`)
+        }
       } else {
         signale.error(`No command function found for '!${cmdKey}'`)
       }
@@ -265,6 +287,8 @@ export class Bot implements Routinable {
   private _log(tag: string, cmd: string, output: string): Promise<any> {
     const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
     const logChannel = this._guild!.channels.find('id', Bot.LOG_CHANNEL) as Discord.TextChannel
-    return logChannel.send(`${tag} ran "${cmd}" at time ${timestamp}: "${output}"`)
+    return logChannel.send(
+      `${tag} ran "${cmd.replace('@&', '')}" at time ${timestamp}: "${output}"`
+    )
   }
 }
