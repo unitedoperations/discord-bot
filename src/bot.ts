@@ -298,7 +298,7 @@ export class Bot implements Routinable {
   private _log(tag: string, cmd: string, output: string): Promise<any> {
     const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
     const logChannel = this._guild!.channels.find(
-      c => c.name === Bot.LOG_CHANNEL
+      c => c.id === Bot.LOG_CHANNEL
     ) as Discord.TextChannel
     return logChannel.send(
       `${tag} ran "${cmd.replace('@&', '')}" at time ${timestamp}: "${output}"`
