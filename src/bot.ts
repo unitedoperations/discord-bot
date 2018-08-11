@@ -158,11 +158,10 @@ export class Bot implements Routinable {
       ) {
         this._currentMission = info
         const msg = serverMessage(info) as Discord.RichEmbed
-        const role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
         const channel = this._guild!.channels.find(
           c => c.id === Bot.ARMA_CHANNEL
         ) as Discord.TextChannel
-        await channel.send(`${role.toString()} _**NEW MISSION 🎉**_`, { embed: msg })
+        await channel.send(`_**NEW MISSION 🎉**_`, { embed: msg })
       }
     } catch (e) {
       signale.error(`NEW_MISSION: ${e.message}`)
