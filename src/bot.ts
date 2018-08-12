@@ -152,9 +152,11 @@ export class Bot implements Routinable {
 
       // If the new data is different from previous
       // replace the current data and send the notification
+      const players: number = parseInt(info.players.split('/')[0])
       if (
         (!this._currentMission || info.mission !== this._currentMission.mission) &&
-        info.mission !== 'None'
+        info.mission !== 'None' &&
+        players >= 10
       ) {
         this._currentMission = info
         const msg = serverMessage(info) as Discord.RichEmbed
@@ -179,7 +181,7 @@ export class Bot implements Routinable {
     const now = new Date()
     this._calendar.events.forEach(async e => {
       // Get the time difference between now and the event date
-      const diff = distanceInWords(e.date, now)
+      const diff = distanceInWords(new Date(e.date.toISOString()), new Date(now.toISOString()))
 
       // Check if the time difference matches a configured time reminder
       if (reminderIntervals.some(r => r === diff) && !e.reminders.get(diff)) {
