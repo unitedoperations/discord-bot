@@ -21,6 +21,7 @@ A `Dockerfile` is provided in the repository is you wish to use Docker, otherwis
   - `DISCORD_ARMA_PLAYER_ROLE`: _the role designated for Arma 3 players_
   - `DISCORD_BMS_PLAYER_ROLE`: _the role designated for BMS players_
   - `ALERT_TIMES`: _comma deliminated list of "time untils" to post reminder notifications for calendar events. Hold the format of `<amt> <time_type>` (7 days, 12 hours)_
+  - `NUM_PLAYER_FOR_ALERT`: _the minimum player count on the server to initial an alert_
   - `HOURS_TO_REFRESH_CALENDAR`: _number of hours between updating the event list from the RSS feed for the calendar_
   - `SHUTDOWN_ROLES`: roles permitted to run the shutdown command to put the bot offline and stop the application from running\_
 
@@ -46,6 +47,7 @@ DISCORD_BMS_PLAYER_ROLE=UOAF
 # All times are in hours!
 # Format as: <amount> <type>
 ALERT_TIMES=7 days,2 days,1 day,12 hours,2 hours,5 minutes
+NUM_PLAYER_FOR_ALERT=10
 
 # Number of hours between calendar event pulls to refresh
 HOURS_TO_REFRESH_CALENDAR=1
