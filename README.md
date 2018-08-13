@@ -23,7 +23,7 @@ A `Dockerfile` is provided in the repository is you wish to use Docker, otherwis
   - `ALERT_TIMES`: _comma deliminated list of "time untils" to post reminder notifications for calendar events. Hold the format of `<amt> <time_type>` (7 days, 12 hours)_
   - `NUM_PLAYER_FOR_ALERT`: _the minimum player count on the server to initial an alert_
   - `HOURS_TO_REFRESH_CALENDAR`: _number of hours between updating the event list from the RSS feed for the calendar_
-  - `SHUTDOWN_ROLES`: roles permitted to run the shutdown command to put the bot offline and stop the application from running\_
+  - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
 
 Sample `.env` file without sensitive values:
 
@@ -52,8 +52,8 @@ NUM_PLAYER_FOR_ALERT=10
 # Number of hours between calendar event pulls to refresh
 HOURS_TO_REFRESH_CALENDAR=1
 
-# Role(s) permitted to shutdown the bot
-SHUTDOWN_ROLES=GSO,WSO
+# Role(s) permitted to perform admin commands on the bot
+ADMIN_ROLES=GSO,WSO
 ```
 
 ### Discord

@@ -1,22 +1,24 @@
 import signale from 'signale'
 import { Message } from 'discord.js'
+import { Bot } from '../bot'
 import { serverMessage, scrapeServerPage } from './messages'
 
 // Constant array of allow Discord server groups for people to join
 const allowedDiscordGroups: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
 
-// Array of roles allowed to run the shutdown command
-const shutdownGroups: string[] = process.env.SHUTDOWN_ROLES!.split(',')
+// Array of roles allowed to run the admin only commands
+const adminGroups: string[] = process.env.ADMIN_ROLES!.split(',')
 
 /**
  * Returns the usage information for the list of commands
  * @export
  * @async
+ * @param {Bot} _ctx
  * @param {Message} msg
- * @param {string[]} _
+ * @param {string[]} _args
  * @returns {Promise<string>}
  */
-export async function help(msg: Message, _: string[]): Promise<string> {
+export async function help(_ctx: Bot, msg: Message, _args: string[]): Promise<string> {
   const output = `
   **Commands**
   \`!?\`, \`!help\`: _help for usage on commands_
@@ -25,6 +27,9 @@ export async function help(msg: Message, _: string[]): Promise<string> {
   \`!primary\`: _get the information about the current missino on the A3 primary_
   \`!ratio <total> <a> <b>\`: _calculate the player ratio for teams with A:B_
   \`!shutdown\`: _turns off the Discord bot with the correct permissions_
+  ---------------------------------------------------------------------------------
+  _**All bug reports and feature requests should be submitted through the \`Issues\` system on the GitHub repository:**_
+  https://github.com/unitedoperations/uo-discordbot
   `
   await msg.author.send(output)
   return 'HELP_OUTPUT'
@@ -34,11 +39,12 @@ export async function help(msg: Message, _: string[]): Promise<string> {
  * Calculate the player ratio for teams with A:B
  * @export
  * @async
+ * @param {Bot} _ctx
  * @param {Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-export async function ratio(msg: Message, args: string[]): Promise<string> {
+export async function ratio(_ctx: Bot, msg: Message, args: string[]): Promise<string> {
   let output: string
   const reqArgs = 3
 
@@ -66,11 +72,12 @@ export async function ratio(msg: Message, args: string[]): Promise<string> {
  * Get the data about the current mission on the A3 primary server
  * @export
  * @async
+ * @param {Bot} _ctx
  * @param {Message} msg
- * @param {string[]} _
+ * @param {string[]} _args
  * @returns {Promise<string>}
  */
-export async function primary(msg: Message, _: string[]): Promise<string> {
+export async function primary(_ctx: Bot, msg: Message, _args: string[]): Promise<string> {
   try {
     let serverInfo = await scrapeServerPage('http://www.unitedoperations.net/tools/uosim/')
     if (!serverInfo) {
@@ -97,13 +104,14 @@ export async function primary(msg: Message, _: string[]): Promise<string> {
  * Shuts down the bot application until restarted manually
  * @export
  * @async
+ * @param {Bot} _ctx
  * @param {Discord.Message} msg
- * @param {string[]} _
+ * @param {string[]} _args
  * @returns {Promise<string>}
  */
-export async function shutdown(msg: Message, _: string[]): Promise<string> {
+export async function shutdown(_ctx: Bot, msg: Message, _args: string[]): Promise<string> {
   // Check if the calling user has permission to shutdown
-  for (const g of shutdownGroups) {
+  for (const g of adminGroups) {
     if (msg.member.roles.find(r => r.name === g) !== null) {
       await msg.author.send(`You shutdown me down!`)
       return 'shutdown successful'
@@ -118,11 +126,12 @@ export async function shutdown(msg: Message, _: string[]): Promise<string> {
  * Allows a user to join a group that is within their permissions
  * @export
  * @async
+ * @param {Bot} _ctx
  * @param {Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-export async function joinGroup(msg: Message, args: string[]): Promise<string> {
+export async function joinGroup(_ctx: Bot, msg: Message, args: string[]): Promise<string> {
   let output: string
 
   // Check if a group name was provided as an argument
@@ -163,11 +172,12 @@ export async function joinGroup(msg: Message, args: string[]): Promise<string> {
  * Allows a user to leave a group that they are currently in
  * @export
  * @async
+ * @param {Bot} _ctx
  * @param {Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-export async function leaveGroup(msg: Message, args: string[]): Promise<string> {
+export async function leaveGroup(_ctx: Bot, msg: Message, args: string[]): Promise<string> {
   let output: string
 
   // Check if a group name was provided as an argument

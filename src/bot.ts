@@ -2,6 +2,7 @@ import Discord from 'discord.js'
 import dateformat from 'dateformat'
 import signale from 'signale'
 import distanceInWords from 'date-fns/distance_in_words_strict'
+import isAfter from 'date-fns/is_after'
 import { CalendarFeed, reminderIntervals } from './calendar'
 import {
   welcomeMessage,
@@ -12,7 +13,7 @@ import {
 } from './lib/messages'
 import { Routine, Routinable } from './routine'
 
-type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
+type BotAction = (ctx: Bot, msg: Discord.Message, args: string[]) => Promise<string>
 
 /**
  * Wrapper class for the Discord SDK and handling custom commands
@@ -121,7 +122,7 @@ export class Bot implements Routinable {
    * that is the command string for application to the
    * _onMessage handler at start
    * @param {string} cmd
-   * @param {(Discord.Message) => void} action
+   * @param {(Bot, Discord.Message, string[]) => Promise<string>} action
    * @memberof Bot
    */
   addCommand(cmd: string, action: BotAction) {
@@ -182,10 +183,15 @@ export class Bot implements Routinable {
     const now = new Date()
     this._calendar.events.forEach(async e => {
       // Get the time difference between now and the event date
-      const diff = distanceInWords(new Date(e.date.toISOString()), new Date(now.toISOString()))
+      const [isoEvent, isoNow] = [new Date(e.date.toISOString()), new Date(now.toISOString())]
+      const diff = distanceInWords(isoEvent, isoNow)
 
       // Check if the time difference matches a configured time reminder
-      if (reminderIntervals.some(r => r === diff) && !e.reminders.get(diff)) {
+      if (
+        reminderIntervals.some(r => r === diff) &&
+        !e.reminders.get(diff) &&
+        isAfter(isoEvent, isoNow)
+      ) {
         signale.star(`Sending notification for event: ${e.title}`)
 
         // Ensure it won't send this same reminder type again
@@ -283,7 +289,7 @@ export class Bot implements Routinable {
           // Delete the original command, run the handler and log the response
           await msg.delete()
 
-          const output = await fn(msg, args)
+          const output = await fn(this, msg, args)
           await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
