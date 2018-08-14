@@ -6,6 +6,8 @@
 
 A `Dockerfile` is provided in the repository is you wish to use Docker, otherwise:
 
+_**`*`-prefixed variable names are available to changed via the `!config` admin command**_
+
 - Node.js 10.8.0 or higher
 - `.env` file at the root project level with the following variables set
   - `BOT_ID`: _client ID of the bot received in the developer portal_
@@ -15,13 +17,14 @@ A `Dockerfile` is provided in the repository is you wish to use Docker, otherwis
   - `DISCORD_SERVER_ID`: _ID of the server being deployed to_
   - `DISCORD_LOG_CHANNEL`: _ID of the channel designated for bot audit logs_
   - `DISCORD_MAIN_CHANNEL`: _ID of the main channel in the server_
+  - `DISCORD_REGULARS_CHANNEL`: _ID of the channel designated for Regulars discussion_
   - `DISCORD_ARMA_CHANNEL`: _ID of the channel designated for ArmA 3_
   - `DISCORD_BMS_CHANNEL`: _ID of the channel designated for BMS_
   - `DISCORD_ALLOWED_GROUPS`: _comma deliminated list of groups/roles user's are allowed to join_
-  - `DISCORD_ARMA_PLAYER_ROLE`: _the role designated for Arma 3 players_
-  - `DISCORD_BMS_PLAYER_ROLE`: _the role designated for BMS players_
+  - \*`DISCORD_ARMA_PLAYER_ROLE`: _the role designated for Arma 3 players_
+  - \*`DISCORD_BMS_PLAYER_ROLE`: _the role designated for BMS players_
   - `ALERT_TIMES`: _comma deliminated list of "time untils" to post reminder notifications for calendar events. Hold the format of `<amt> <time_type>` (7 days, 12 hours)_
-  - `NUM_PLAYER_FOR_ALERT`: _the minimum player count on the server to initial an alert_
+  - \*`NUM_PLAYERS_FOR_ALERT`: _the minimum player count on the server to initial an alert_
   - `HOURS_TO_REFRESH_CALENDAR`: _number of hours between updating the event list from the RSS feed for the calendar_
   - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
 
@@ -38,6 +41,7 @@ BOT_PERMISSIONS=
 DISCORD_SERVER_ID=
 DISCORD_LOG_CHANNEL=
 DISCORD_MAIN_CHANNEL=
+DISCORD_REGULARS_CHANNEL=
 DISCORD_ARMA_CHANNEL=
 DISCORD_BMS_CHANNEL=
 DISCORD_ALLOWED_GROUPS=UOA3,UOAF
@@ -47,7 +51,7 @@ DISCORD_BMS_PLAYER_ROLE=UOAF
 # All times are in hours!
 # Format as: <amount> <type>
 ALERT_TIMES=7 days,2 days,1 day,12 hours,2 hours,5 minutes
-NUM_PLAYER_FOR_ALERT=10
+NUM_PLAYERS_FOR_ALERT=10
 
 # Number of hours between calendar event pulls to refresh
 HOURS_TO_REFRESH_CALENDAR=1

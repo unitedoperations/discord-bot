@@ -4,13 +4,14 @@ import signale from 'signale'
 import distanceInWords from 'date-fns/distance_in_words_strict'
 import isAfter from 'date-fns/is_after'
 import { CalendarFeed, reminderIntervals } from './calendar'
+import { welcomeMessage, eventMessage, serverMessage, pollsMessage } from './lib/messages'
 import {
-  welcomeMessage,
-  eventMessage,
-  serverMessage,
+  diff,
   scrapeServerPage,
-  ServerInformation
-} from './lib/messages'
+  scrapeThreadsPage,
+  ServerInformation,
+  ThreadInformation
+} from './lib/helpers'
 import { Routine, Routinable } from './routine'
 
 type BotAction = (ctx: Bot, msg: Discord.Message, args: string[]) => Promise<string>
@@ -23,15 +24,19 @@ type BotAction = (ctx: Bot, msg: Discord.Message, args: string[]) => Promise<str
  * @property {string} GUILD_NAME
  * @property {string} LOG_CHANNEL
  * @property {string} MAIN_CHANNEL
+ * @property {string} REGULARS_CHANNEL
  * @property {string} ARMA_CHANNEL
  * @property {string} BMS_CHANNEL
  * @property {string} ARMA_PLAYER_ROLE
  * @property {string} BMS_PLAYER_ROLE
+ * @property {number} MIN_PLAYERS_ALERT
  * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
  * @property {Discord.Client} _client
  * @property {Map<string, BotAction>} _commands
  * @property {Routine<void>?} _calendarRoutine
+ * @property {Routine<string>?} _serverRoutine
+ * @property {Routine<string>?} _pollsRoutine
  * @property {ServerInformation?} _currentMission
  */
 export class Bot implements Routinable {
@@ -39,11 +44,14 @@ export class Bot implements Routinable {
   private static readonly GUILD_ID: string = process.env.DISCORD_SERVER_ID!
   private static readonly LOG_CHANNEL: string = process.env.DISCORD_LOG_CHANNEL!
   private static readonly MAIN_CHANNEL: string = process.env.DISCORD_MAIN_CHANNEL!
+  private static readonly REGULARS_CHANNEL: string = process.env.DISCORD_REGULARS_CHANNEL!
   private static readonly ARMA_CHANNEL: string = process.env.DISCORD_ARMA_CHANNEL!
   private static readonly BMS_CHANNEL: string = process.env.DISCORD_BMS_CHANNEL!
-  private static readonly ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
-  private static readonly BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
-  private static readonly MIN_PLAYER_ALERT: number = parseInt(process.env.NUM_PLAYER_FOR_ALERT!)
+
+  // Public static Bot class variables that are able to be changed via config command
+  public static ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
+  public static BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
+  public static NUM_PLAYERS_FOR_ALERT: number = parseInt(process.env.NUM_PLAYERS_FOR_ALERT!)
 
   // Bot instance variables
   private _guild?: Discord.Guild
@@ -52,7 +60,9 @@ export class Bot implements Routinable {
   private _commands: Map<string, BotAction> = new Map()
   private _calendarRoutine?: Routine<void>
   private _serverRoutine?: Routine<string>
+  private _pollsRoutine?: Routine<string>
   private _currentMission?: ServerInformation
+  private _activePolls: ThreadInformation[] = []
 
   /**
    * Creates an instance of Bot
@@ -64,8 +74,6 @@ export class Bot implements Routinable {
       signale.fav(`Logged in as ${this._client.user.tag}`)
       this._guild = this._client.guilds.find(g => g.id === Bot.GUILD_ID)
     })
-    this._client.on('disconnect', () => signale.warn('Going offline...'))
-    this._client.on('reconnecting', () => signale.warn('Attempting to reconnect...'))
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
 
@@ -100,6 +108,13 @@ export class Bot implements Routinable {
         ['http://www.unitedoperations.net/tools/uosim/'],
         5 * 60 * 1000
       )
+
+      // Creates a new routine to check the forums voting and polls section and alert on new posts
+      this._pollsRoutine = new Routine<string>(
+        async url => await this._notifyOfNewPoll(url),
+        ['http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'],
+        12 * 60 * 60 * 1000
+      )
     } catch (e) {
       signale.error(`START: ${e.message}`)
     }
@@ -115,6 +130,7 @@ export class Bot implements Routinable {
   clear() {
     ;(this._calendarRoutine as Routine<any>).terminate()
     ;(this._serverRoutine as Routine<any>).terminate()
+    ;(this._pollsRoutine as Routine<any>).terminate()
   }
 
   /**
@@ -158,7 +174,7 @@ export class Bot implements Routinable {
       if (
         (!this._currentMission || info.mission !== this._currentMission.mission) &&
         info.mission !== 'None' &&
-        players >= Bot.MIN_PLAYER_ALERT
+        players >= Bot.NUM_PLAYERS_FOR_ALERT
       ) {
         this._currentMission = info
         const msg = serverMessage(info) as Discord.RichEmbed
@@ -169,6 +185,52 @@ export class Bot implements Routinable {
       }
     } catch (e) {
       signale.error(`NEW_MISSION: ${e.message}`)
+    }
+  }
+
+  /**
+   * Scrapes the voting and discussion page of the forums and alert `@everyone`
+   * when there has been a new post or one is closed.
+   * @private
+   * @async
+   * @param {string} url
+   * @memberof Bot
+   */
+  private async _notifyOfNewPoll(url: string) {
+    try {
+      // Scrape the thread url and get information from the list of posts
+      const polls: ThreadInformation[] = await scrapeThreadsPage(url)
+
+      // Get removed (closed) and additions (opened) polls
+      const closed: ThreadInformation[] = diff<ThreadInformation>(this._activePolls, polls)
+      const opened: ThreadInformation[] = diff<ThreadInformation>(polls, this._activePolls)
+
+      // If there are no opened or closed polls since last check, exit
+      if (closed.length === 0 && opened.length === 0) return
+
+      // Set new values for active polls
+      this._activePolls = polls
+
+      // Send message for all closed polls and all opened polls
+      const channel = this._guild!.channels.find(
+        c => c.id === Bot.REGULARS_CHANNEL
+      ) as Discord.TextChannel
+
+      // Opened polls message
+      if (opened.length > 0) {
+        await channel.send(`@everyone`, {
+          embed: pollsMessage(opened, 'open') as Discord.RichEmbed
+        })
+      }
+
+      // Closed polls message
+      if (closed.length > 0) {
+        await channel.send(`@everyone`, {
+          embed: pollsMessage(closed, 'close') as Discord.RichEmbed
+        })
+      }
+    } catch (e) {
+      signale.error(`NEW_POLL: ${e.message}`)
     }
   }
 

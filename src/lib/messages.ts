@@ -1,7 +1,5 @@
-import fetch from 'node-fetch'
-import cheerio from 'cheerio'
-import signale from 'signale'
 import { CalendarEvent } from '../calendar'
+import { ServerInformation, ThreadInformation } from './helpers'
 
 interface EmbedMessageImage {
   url: string | null
@@ -20,20 +18,6 @@ interface EmbedMessage {
   thumbnail?: EmbedMessageImage
   image?: EmbedMessageImage
   fields?: EmbedMessageField[]
-}
-
-/**
- * Interface type for primary server data
- * @export
- * @interface ServerInformation
- */
-export interface ServerInformation {
-  [k: string]: string
-  players: string
-  island: string
-  mission: string
-  author: string
-  description: string
 }
 
 /**
@@ -100,7 +84,7 @@ export const eventMessage = (event: CalendarEvent, away: string): EmbedMessage =
 })
 
 /**
- * Creates the messaged structure for details requested for the
+ * Creates the message structure for details requested for the
  * primary A3 server
  * @export
  * @param {ServerInfo} info
@@ -127,44 +111,21 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
 })
 
 /**
- * Scrapes the HTML of the A3 server page and returns the relevant data
+ * Creates the message structure for displaying the active and open
+ * polls on the voting discussion and poll threads on the forums
  * @export
- * @async
- * @param {string} url
- * @returns {ServerInformation?}
+ * @param {ThreadInformation[]} threads
+ * @returns {EmbedMessage}
  */
-export async function scrapeServerPage(url: string): Promise<ServerInformation | null> {
-  try {
-    // Get the text HTML body of the webpage
-    const res = await fetch(url)
-    const body = await res.text()
-
-    // Parse the HTML into a mock DOM with cheerio
-    // Get an array of keys and array of values from the table data
-    const $: CheerioStatic = cheerio.load(body)
-
-    // Keys from the table of server data
-    const keys: string[] = $('.sip_title')
-      .map((_, el) => {
-        const tmp = $(el)
-          .text()
-          .replace(':', '')
-        if (tmp.includes(' ')) return tmp.split(' ')[1]
-        return tmp
-      })
-      .get()
-
-    // Values from the table of server data
-    const values: string[] = $('.sip_value')
-      .map((_, el) => $(el).text())
-      .get()
-
-    // Combine the keys and values into an object
-    const serverInfo: { [k: string]: string } = {}
-    for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
-    return serverInfo as ServerInformation
-  } catch (e) {
-    signale.error(`SERVER_SCRAPE: ${e.message}`)
-    return null
-  }
-}
+export const pollsMessage = (
+  threads: ThreadInformation[],
+  state: 'open' | 'close'
+): EmbedMessage => ({
+  color: 11640433,
+  title: state === 'open' ? 'Open Polls' : 'Closed Polls',
+  description:
+    state === 'open'
+      ? `_There are currently ${threads.length} active polls to vote on!_`
+      : `_There were ${threads.length} polls clsoed!_`,
+  fields: threads.map(t => ({ name: `${t.type || 'Other'}: ${t.title}`, value: t.link }))
+})
