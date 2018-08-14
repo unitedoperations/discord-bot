@@ -14,7 +14,7 @@ import {
 } from './lib/helpers'
 import { Routine, Routinable } from './routine'
 
-type BotAction = (ctx: Bot, msg: Discord.Message, args: string[]) => Promise<string>
+type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
 /**
  * Wrapper class for the Discord SDK and handling custom commands
@@ -351,7 +351,7 @@ export class Bot implements Routinable {
           // Delete the original command, run the handler and log the response
           await msg.delete()
 
-          const output = await fn(this, msg, args)
+          const output = await fn(msg, args)
           await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)

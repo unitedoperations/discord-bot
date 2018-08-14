@@ -2,6 +2,18 @@ import fetch from 'node-fetch'
 import signale from 'signale'
 
 /**
+ * Constant array of allow Discord server groups for people to join
+ * @export
+ */
+export const allowedDiscordGroups: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
+
+/**
+ * Array of roles allowed to run the admin only commands
+ * @export
+ */
+export const adminGroups: string[] = process.env.ADMIN_ROLES!.split(',')
+
+/**
  * Interface type for primary server data
  * @export
  * @interface ServerInformation
