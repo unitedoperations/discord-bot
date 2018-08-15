@@ -245,11 +245,23 @@ export class Bot implements Routinable {
     const now = new Date()
     this._calendar.events.forEach(async e => {
       // Get the time difference between now and the event date
+<<<<<<< HEAD
       const [isoEvent, isoNow] = [e.date.toISOString(), now.toISOString()]
       const diff = distanceInWords(isoEvent, isoNow)
 
       // Check if the time difference matches a configured time reminder
       if (reminderIntervals.some(r => r === diff) && !e.reminders.get(diff) && isFuture(isoEvent)) {
+=======
+      const [utcEvent, utcNow] = [e.date.toISOString(), now.toISOString()]
+      const diff = distanceInWords(utcEvent, utcNow)
+
+      // Check if the time difference matches a configured time reminder
+      if (
+        reminderIntervals.some(r => r === diff) &&
+        !e.reminders.get(diff) &&
+        isAfter(utcEvent, utcNow)
+      ) {
+>>>>>>> c7ef9fb3f0ef32059175756876af1ba57d8ef7d3
         signale.star(`Sending notification for event: ${e.title}`)
 
         // Ensure it won't send this same reminder type again
