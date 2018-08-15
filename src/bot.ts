@@ -2,7 +2,7 @@ import Discord from 'discord.js'
 import dateformat from 'dateformat'
 import signale from 'signale'
 import distanceInWords from 'date-fns/distance_in_words_strict'
-import isAfter from 'date-fns/is_after'
+import isFuture from 'date-fns/is_future'
 import { CalendarFeed, reminderIntervals } from './calendar'
 import { welcomeMessage, eventMessage, serverMessage, pollsMessage } from './lib/messages'
 import {
@@ -245,15 +245,11 @@ export class Bot implements Routinable {
     const now = new Date()
     this._calendar.events.forEach(async e => {
       // Get the time difference between now and the event date
-      const [isoEvent, isoNow] = [new Date(e.date.toISOString()), new Date(now.toISOString())]
+      const [isoEvent, isoNow] = [e.date.toISOString(), now.toISOString()]
       const diff = distanceInWords(isoEvent, isoNow)
 
       // Check if the time difference matches a configured time reminder
-      if (
-        reminderIntervals.some(r => r === diff) &&
-        !e.reminders.get(diff) &&
-        isAfter(isoEvent, isoNow)
-      ) {
+      if (reminderIntervals.some(r => r === diff) && !e.reminders.get(diff) && isFuture(isoEvent)) {
         signale.star(`Sending notification for event: ${e.title}`)
 
         // Ensure it won't send this same reminder type again

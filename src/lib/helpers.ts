@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import signale from 'signale'
+import cheerio from 'cheerio'
 
 /**
  * Constant array of allow Discord server groups for people to join
