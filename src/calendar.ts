@@ -116,10 +116,25 @@ export class CalendarFeed implements Routinable {
       if (!this._eventsCache.has(e.guid)) {
         const imgUrl: string = this._findImage(e.summary)
         const group: string = this._findGroup(e.title)
+
+        let date: Date = e.date as Date
+        const startTime: string | null =
+          e.title.trim().endsWith('z') || e.title.trim().endsWith('Z')
+            ? e.title.trim().substr(e.title.length - 5, 4)
+            : null
+
+        if (startTime) {
+          const month = date.getUTCMonth() + 1
+          const x = `${date.getUTCFullYear()}-${
+            month < 10 ? `0${month}` : month
+          }-${date.getUTCDate()}T${startTime.substr(0, 2)}:${startTime.substr(2, 2)}Z`
+          date = new Date(x)
+        }
+
         const newEvent: CalendarEvent = {
           guid: e.guid,
           title: e.title,
-          date: e.date as Date,
+          date,
           link: e.link,
           img: imgUrl,
           group,
