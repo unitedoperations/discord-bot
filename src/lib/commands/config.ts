@@ -1,6 +1,5 @@
 import { Message } from 'discord.js'
 import { Bot } from '../../bot'
-import { adminGroups } from '../helpers'
 
 /**
  * Allows admin role users to alter some configuration options for the bot
@@ -21,33 +20,25 @@ export async function config(msg: Message, args: string[]): Promise<string> {
     return output
   }
 
-  // Check if the user has the correct role permissions
-  for (const g of adminGroups) {
-    if (msg.member.roles.find(r => r.name === g) !== null) {
-      // Parse inputs and check for validity
-      const [key, value] = args
-      switch (key) {
-        case 'DISCORD_ARMA_PLAYER_ROLE':
-          Bot.ARMA_PLAYER_ROLE = value
-          break
-        case 'DISCORD_BMS_PLAYER_ROLE':
-          Bot.BMS_PLAYER_ROLE = value
-          break
-        case 'NUM_PLAYERS_FOR_ALERT':
-          Bot.NUM_PLAYERS_FOR_ALERT = parseInt(value)
-          break
-        default:
-          output = `${key} is an invalid configuration key`
-          await msg.author.send(output)
-          return output
-      }
-
-      output = `you successfully set ${key} to ${value}`
+  // Parse inputs and check for validity
+  const [key, value] = args
+  switch (key) {
+    case 'DISCORD_ARMA_PLAYER_ROLE':
+      Bot.ARMA_PLAYER_ROLE = value
+      break
+    case 'DISCORD_BMS_PLAYER_ROLE':
+      Bot.BMS_PLAYER_ROLE = value
+      break
+    case 'NUM_PLAYERS_FOR_ALERT':
+      Bot.NUM_PLAYERS_FOR_ALERT = parseInt(value)
+      break
+    default:
+      output = `${key} is an invalid configuration key`
       await msg.author.send(output)
       return output
-    }
   }
 
-  await msg.author.send(`you don't have permission to edit my configuration!`)
-  return `invalid permissions`
+  output = `you successfully set ${key} to ${value}`
+  await msg.author.send(output)
+  return output
 }

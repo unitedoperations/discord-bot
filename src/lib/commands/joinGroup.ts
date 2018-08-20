@@ -1,6 +1,6 @@
 import { Message } from 'discord.js'
 import signale from 'signale'
-import { allowedDiscordGroups } from '../helpers'
+import { allowedDiscordGroups } from '../access'
 
 /**
  * Allows a user to join a group that is within their permissions

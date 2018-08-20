@@ -3,18 +3,6 @@ import signale from 'signale'
 import cheerio from 'cheerio'
 
 /**
- * Constant array of allow Discord server groups for people to join
- * @export
- */
-export const allowedDiscordGroups: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
-
-/**
- * Array of roles allowed to run the admin only commands
- * @export
- */
-export const adminGroups: string[] = process.env.ADMIN_ROLES!.split(',')
-
-/**
  * Interface type for primary server data
  * @export
  * @interface ServerInformation
@@ -136,6 +124,17 @@ export async function scrapeThreadsPage(url: string): Promise<ThreadInformation[
  * @param {T[]} b
  * @returns {T[]}
  */
-export function diff<T>(a: T[], b: T[]): T[] {
+export function arrayDiff<T>(a: T[], b: T[]): T[] {
   return a.filter(x => !b.includes(x))
+}
+
+/**
+ * Return whether the time difference string is a close match to the reminder value
+ * @export
+ * @param {string} reminder
+ * @param {string} diff
+ * @returns {boolean}
+ */
+export function timeDistanceMatch(reminder: string, diff: string): boolean {
+  return reminder.split(' ').every(x => diff.split(' ').includes(x))
 }

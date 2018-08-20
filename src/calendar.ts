@@ -111,7 +111,7 @@ export class CalendarFeed implements Routinable {
     let e: FeedParser.Item
 
     while ((e = this._feed.read())) {
-      signale.warn(`Event: ${e.title} ${e.date}`)
+      signale.warn(`Event: ${e.title}`)
 
       if (!this._eventsCache.has(e.guid)) {
         const imgUrl: string = this._findImage(e.summary)

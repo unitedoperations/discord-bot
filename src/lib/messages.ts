@@ -76,7 +76,7 @@ export const welcomeMessage = (name: string): EmbedMessage => ({
 export const eventMessage = (event: CalendarEvent, away: string): EmbedMessage => ({
   color: 11640433,
   title: `**Reminder:** *${event.title}*`,
-  description: `_...taking place in about **${away}**_`,
+  description: `_...taking place in **${away}**_`,
   url: event.link,
   image: {
     url: event.img

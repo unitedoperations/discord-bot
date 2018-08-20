@@ -1,12 +1,12 @@
 import Discord from 'discord.js'
-import dateformat from 'dateformat'
 import signale from 'signale'
-import distanceInWords from 'date-fns/distance_in_words_strict'
 import isFuture from 'date-fns/is_future'
+import distanceInWordsToNow from 'date-fns/distance_in_words_to_now'
 import { CalendarFeed, reminderIntervals } from './calendar'
 import { welcomeMessage, eventMessage, serverMessage, pollsMessage } from './lib/messages'
 import {
-  diff,
+  arrayDiff,
+  timeDistanceMatch,
   scrapeServerPage,
   scrapeThreadsPage,
   ServerInformation,
@@ -14,7 +14,11 @@ import {
 } from './lib/helpers'
 import { Routine, Routinable } from './routine'
 
-type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
+/**
+ * Type definition for bot action functions
+ * @export
+ */
+export type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
 
 /**
  * Wrapper class for the Discord SDK and handling custom commands
@@ -202,8 +206,8 @@ export class Bot implements Routinable {
       const polls: ThreadInformation[] = await scrapeThreadsPage(url)
 
       // Get removed (closed) and additions (opened) polls
-      const closed: ThreadInformation[] = diff<ThreadInformation>(this._activePolls, polls)
-      const opened: ThreadInformation[] = diff<ThreadInformation>(polls, this._activePolls)
+      const closed: ThreadInformation[] = arrayDiff<ThreadInformation>(this._activePolls, polls)
+      const opened: ThreadInformation[] = arrayDiff<ThreadInformation>(polls, this._activePolls)
 
       // If there are no opened or closed polls since last check, exit
       if (closed.length === 0 && opened.length === 0) return
@@ -242,61 +246,63 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private async _notifyOfEvents() {
-    const now = new Date()
     this._calendar.events.forEach(async e => {
-      // Get the time difference between now and the event date
-      const [isoEvent, isoNow] = [e.date.toISOString(), now.toISOString()]
-      const diff = distanceInWords(isoEvent, isoNow)
+      // Make sure the event hasn't already happened
+      if (isFuture(e.date)) {
+        // Get the time difference between now and the event date
+        const timeDiff = distanceInWordsToNow(e.date)
 
-      // Check if the time difference matches a configured time reminder
-      if (reminderIntervals.some(r => r === diff) && !e.reminders.get(diff) && isFuture(isoEvent)) {
-        signale.star(`Sending notification for event: ${e.title}`)
+        // Check if the time difference matches a configured time reminder
+        const match: string = reminderIntervals.filter(r => timeDistanceMatch(r, timeDiff))[0] || ''
+        if (match !== '' && !e.reminders.get(match)) {
+          signale.star(`Sending notification for event: ${e.title}`)
 
-        // Ensure it won't send this same reminder type again
-        e.reminders.set(diff, true)
+          // Ensure it won't send this same reminder type again
+          e.reminders.set(match, true)
 
-        // If hour difference is within the remind window, send message to
-        // all users of the designated group with the reminder in the main channel
-        const msg = eventMessage(e, diff) as Discord.RichEmbed
+          // If hour difference is within the remind window, send message to
+          // all users of the designated group with the reminder in the main channel
+          const msg = eventMessage(e, timeDiff) as Discord.RichEmbed
 
-        try {
-          // Determine the channel that the message should be send to and who to tag
-          let channel: Discord.TextChannel
-          let role: Discord.Role | null
-          switch (e.group) {
-            // ArmA 3 event reminder
-            case 'UOA3':
-              role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
-              channel = this._guild!.channels.find(
-                c => c.id === Bot.ARMA_CHANNEL
-              ) as Discord.TextChannel
-              break
-            // BMS event reminder
-            case 'UOAF':
-              role = this._guild!.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
-              channel = this._guild!.channels.find(
-                c => c.id === Bot.BMS_CHANNEL
-              ) as Discord.TextChannel
-              break
-            // UOTC course reminder
-            case 'UOTC':
-              role = null
-              channel = this._guild!.channels.find(
-                c => c.id === Bot.ARMA_CHANNEL
-              ) as Discord.TextChannel
-              break
-            // Unknown event type reminder
-            default:
-              role = null
-              channel = this._guild!.channels.find(
-                c => c.id === Bot.MAIN_CHANNEL
-              ) as Discord.TextChannel
+          try {
+            // Determine the channel that the message should be send to and who to tag
+            let channel: Discord.TextChannel
+            let role: Discord.Role | null
+            switch (e.group) {
+              // ArmA 3 event reminder
+              case 'UOA3':
+                role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
+                channel = this._guild!.channels.find(
+                  c => c.id === Bot.ARMA_CHANNEL
+                ) as Discord.TextChannel
+                break
+              // BMS event reminder
+              case 'UOAF':
+                role = this._guild!.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
+                channel = this._guild!.channels.find(
+                  c => c.id === Bot.BMS_CHANNEL
+                ) as Discord.TextChannel
+                break
+              // UOTC course reminder
+              case 'UOTC':
+                role = null
+                channel = this._guild!.channels.find(
+                  c => c.id === Bot.ARMA_CHANNEL
+                ) as Discord.TextChannel
+                break
+              // Unknown event type reminder
+              default:
+                role = null
+                channel = this._guild!.channels.find(
+                  c => c.id === Bot.MAIN_CHANNEL
+                ) as Discord.TextChannel
+            }
+
+            // Dispatch event reminder to correct group and channel
+            await channel.send(role ? role.toString() : '', { embed: msg })
+          } catch (e) {
+            signale.error(`EVENT ${e.name}: ${e.message}`)
           }
-
-          // Dispatch event reminder to correct group and channel
-          await channel.send(role ? role.toString() : '', { embed: msg })
-        } catch (e) {
-          signale.error(`EVENT ${e.name}: ${e.message}`)
         }
       }
     })
@@ -373,12 +379,10 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private _log(tag: string, cmd: string, output: string): Promise<any> {
-    const timestamp = dateformat(new Date(), 'UTC:HH:MM:ss|yy-mm-dd')
+    const timestamp = new Date().toISOString()
     const logChannel = this._guild!.channels.find(
       c => c.id === Bot.LOG_CHANNEL
     ) as Discord.TextChannel
-    return logChannel.send(
-      `${tag} ran "${cmd.replace('@&', '')}" at time ${timestamp}: "${output}"`
-    )
+    return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
   }
 }
