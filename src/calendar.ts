@@ -110,19 +110,23 @@ export class CalendarFeed implements Routinable {
   private _onFeedReadable = () => {
     let e: FeedParser.Item
 
+    // Continue to read the feed until no more events
     while ((e = this._feed.read())) {
       signale.warn(`Event: ${e.title}`)
 
+      // Ensure the events cache doesn't already contain the event
       if (!this._eventsCache.has(e.guid)) {
         const imgUrl: string = this._findImage(e.summary)
         const group: string = this._findGroup(e.title)
 
+        // Check if the title of the event contains Zulu start time
         let date: Date = e.date as Date
         const startTime: string | null =
           e.title.trim().endsWith('z') || e.title.trim().endsWith('Z')
             ? e.title.trim().substr(e.title.length - 5, 4)
             : null
 
+        // Reconstruct event date with found Zulu start time if it exists
         if (startTime) {
           const month = date.getUTCMonth() + 1
           const x = `${date.getUTCFullYear()}-${
@@ -131,6 +135,7 @@ export class CalendarFeed implements Routinable {
           date = new Date(x)
         }
 
+        // Create event object instance and add to the cache
         const newEvent: CalendarEvent = {
           guid: e.guid,
           title: e.title,
