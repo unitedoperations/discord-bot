@@ -1,12 +1,10 @@
 import Discord from 'discord.js'
 import signale from 'signale'
 import isFuture from 'date-fns/is_future'
-import distanceInWordsToNow from 'date-fns/distance_in_words_to_now'
-import { CalendarFeed, reminderIntervals } from './calendar'
+import { CalendarFeed, CalendarEvent } from './calendar'
 import { welcomeMessage, eventMessage, serverMessage, pollsMessage } from './lib/messages'
 import {
   arrayDiff,
-  timeDistanceMatch,
   scrapeServerPage,
   scrapeThreadsPage,
   ServerInformation,
@@ -62,7 +60,7 @@ export class Bot implements Routinable {
   private _calendar: CalendarFeed
   private _client: Discord.Client
   private _commands: Map<string, BotAction> = new Map()
-  private _calendarRoutine?: Routine<void>
+  // private _calendarRoutine?: Routine<void>
   private _serverRoutine?: Routine<string>
   private _pollsRoutine?: Routine<string>
   private _currentMission?: ServerInformation
@@ -82,7 +80,8 @@ export class Bot implements Routinable {
     this._client.on('guildMemberAdd', this._onNewMember)
 
     this._calendar = new CalendarFeed(
-      'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/'
+      'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/',
+      this._sendEventReminder
     )
   }
 
@@ -100,11 +99,11 @@ export class Bot implements Routinable {
       await this._calendar.pull()
 
       // Create a new routine to check for notifications on events on an interval
-      this._calendarRoutine = new Routine<void>(
-        async () => await this._notifyOfEvents(),
-        [],
-        1 * 60 * 1000 // Minutes to millisecond
-      )
+      // this._calendarRoutine = new Routine<void>(
+      //   async () => await this._notifyOfEvents(),
+      //   [],
+      //   1 * 60 * 1000 // Minutes to millisecond
+      // )
 
       // Create a new routine to check for new missions being loaded on A3 server
       this._serverRoutine = new Routine<string>(
@@ -132,7 +131,7 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   clear() {
-    ;(this._calendarRoutine as Routine<any>).terminate()
+    // ;(this._calendarRoutine as Routine<any>).terminate()
     ;(this._serverRoutine as Routine<any>).terminate()
     ;(this._pollsRoutine as Routine<any>).terminate()
   }
@@ -245,67 +244,129 @@ export class Bot implements Routinable {
    * @async
    * @memberof Bot
    */
-  private async _notifyOfEvents() {
-    this._calendar.events.forEach(async e => {
-      // Make sure the event hasn't already happened
-      if (isFuture(e.date)) {
-        // Get the time difference between now and the event date
-        const timeDiff = distanceInWordsToNow(e.date)
+  // UNHIDE:WARNING:
+  // private async _notifyOfEvents() {
+  //   this._calendar.events.forEach(async e => {
+  //     // Make sure the event hasn't already happened
+  //     if (isFuture(e.date)) {
+  //       // Get the time difference between now and the event date
+  //       const timeDiff = distanceInWordsToNow(e.date)
 
-        // Check if the time difference matches a configured time reminder
-        const match: string = reminderIntervals.filter(r => timeDistanceMatch(r, timeDiff))[0] || ''
-        if (match !== '' && !e.reminders.get(match)) {
-          signale.star(`Sending notification for event: ${e.title}`)
+  //       // Check if the time difference matches a configured time reminder
+  //       const match: string = reminderIntervals.filter(r => timeDistanceMatch(r, timeDiff))[0] || ''
+  //       if (match !== '' && !e.reminders.get(match)) {
+  //         signale.star(`Sending notification for event: ${e.title}`)
 
-          // Ensure it won't send this same reminder type again
-          e.reminders.set(match, true)
+  //         // Ensure it won't send this same reminder type again
+  //         e.reminders.set(match, true)
 
-          // If hour difference is within the remind window, send message to
-          // all users of the designated group with the reminder in the main channel
-          const msg = eventMessage(e, timeDiff) as Discord.RichEmbed
+  //         // If hour difference is within the remind window, send message to
+  //         // all users of the designated group with the reminder in the main channel
+  //         const msg = eventMessage(e, timeDiff) as Discord.RichEmbed
 
-          try {
-            // Determine the channel that the message should be send to and who to tag
-            let channel: Discord.TextChannel
-            let role: Discord.Role | null
-            switch (e.group) {
-              // ArmA 3 event reminder
-              case 'UOA3':
-                role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
-                channel = this._guild!.channels.find(
-                  c => c.id === Bot.ARMA_CHANNEL
-                ) as Discord.TextChannel
-                break
-              // BMS event reminder
-              case 'UOAF':
-                role = this._guild!.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
-                channel = this._guild!.channels.find(
-                  c => c.id === Bot.BMS_CHANNEL
-                ) as Discord.TextChannel
-                break
-              // UOTC course reminder
-              case 'UOTC':
-                role = null
-                channel = this._guild!.channels.find(
-                  c => c.id === Bot.ARMA_CHANNEL
-                ) as Discord.TextChannel
-                break
-              // Unknown event type reminder
-              default:
-                role = null
-                channel = this._guild!.channels.find(
-                  c => c.id === Bot.MAIN_CHANNEL
-                ) as Discord.TextChannel
-            }
+  //         try {
+  //           // Determine the channel that the message should be send to and who to tag
+  //           let channel: Discord.TextChannel
+  //           let role: Discord.Role | null
+  //           switch (e.group) {
+  //             // ArmA 3 event reminder
+  //             case 'UOA3':
+  //               role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
+  //               channel = this._guild!.channels.find(
+  //                 c => c.id === Bot.ARMA_CHANNEL
+  //               ) as Discord.TextChannel
+  //               break
+  //             // BMS event reminder
+  //             case 'UOAF':
+  //               role = this._guild!.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
+  //               channel = this._guild!.channels.find(
+  //                 c => c.id === Bot.BMS_CHANNEL
+  //               ) as Discord.TextChannel
+  //               break
+  //             // UOTC course reminder
+  //             case 'UOTC':
+  //               role = null
+  //               channel = this._guild!.channels.find(
+  //                 c => c.id === Bot.ARMA_CHANNEL
+  //               ) as Discord.TextChannel
+  //               break
+  //             // Unknown event type reminder
+  //             default:
+  //               role = null
+  //               channel = this._guild!.channels.find(
+  //                 c => c.id === Bot.MAIN_CHANNEL
+  //               ) as Discord.TextChannel
+  //           }
 
-            // Dispatch event reminder to correct group and channel
-            await channel.send(role ? role.toString() : '', { embed: msg })
-          } catch (e) {
-            signale.error(`EVENT ${e.name}: ${e.message}`)
-          }
+  //           // Dispatch event reminder to correct group and channel
+  //           await channel.send(role ? role.toString() : '', { embed: msg })
+  //         } catch (e) {
+  //           signale.error(`EVENT ${e.name}: ${e.message}`)
+  //         }
+  //       }
+  //     }
+  //   })
+  // }
+
+  /**
+   * Pulls updates from the RSS event feed and send reminds if necessary
+   * after comparing the start time of the event and the current time
+   * @private
+   * @async
+   * @memberof Bot
+   */
+  private async _sendEventReminder(reminder: string, e: CalendarEvent) {
+    // Make sure the event hasn't already happened
+    if (isFuture(e.date) && !e.reminders.get(reminder)) {
+      signale.star(`Sending notification for event: ${e.title}`)
+
+      // Ensure it won't send this same reminder type again
+      e.reminders.set(reminder, true)
+
+      // If hour difference is within the remind window, send message to
+      // all users of the designated group with the reminder in the main channel
+      const msg = eventMessage(e, reminder) as Discord.RichEmbed
+
+      try {
+        // Determine the channel that the message should be send to and who to tag
+        let channel: Discord.TextChannel
+        let role: Discord.Role | null
+        switch (e.group) {
+          // ArmA 3 event reminder
+          case 'UOA3':
+            role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
+            channel = this._guild!.channels.find(
+              c => c.id === Bot.ARMA_CHANNEL
+            ) as Discord.TextChannel
+            break
+          // BMS event reminder
+          case 'UOAF':
+            role = this._guild!.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
+            channel = this._guild!.channels.find(
+              c => c.id === Bot.BMS_CHANNEL
+            ) as Discord.TextChannel
+            break
+          // UOTC course reminder
+          case 'UOTC':
+            role = null
+            channel = this._guild!.channels.find(
+              c => c.id === Bot.ARMA_CHANNEL
+            ) as Discord.TextChannel
+            break
+          // Unknown event type reminder
+          default:
+            role = null
+            channel = this._guild!.channels.find(
+              c => c.id === Bot.MAIN_CHANNEL
+            ) as Discord.TextChannel
         }
+
+        // Dispatch event reminder to correct group and channel
+        await channel.send(role ? role.toString() : '', { embed: msg })
+      } catch (e) {
+        signale.error(`EVENT ${e.name}: ${e.message}`)
       }
-    })
+    }
   }
 
   /**

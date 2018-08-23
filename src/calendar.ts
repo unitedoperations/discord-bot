@@ -1,5 +1,9 @@
 import FeedParser from 'feedparser'
 import fetch, { Response } from 'node-fetch'
+import schedule from 'node-schedule'
+import addMinute from 'date-fns/add_minutes'
+import addHour from 'date-fns/add_hours'
+import addDay from 'date-fns/add_days'
 import cheerio from 'cheerio'
 import signale from 'signale'
 import { Routine, Routinable } from './routine'
@@ -35,6 +39,7 @@ export interface CalendarEvent {
  * @property {Promise<Response>} _req
  * @property {Map<string, CalendarEvent>} _eventsCache
  * @property {Routine<void>} _feedRoutine
+ * @property {(string, CalendarEvent) => void} _sendReminder
  */
 export class CalendarFeed implements Routinable {
   // Static and readonly variables for the CalendarFeed class
@@ -47,13 +52,16 @@ export class CalendarFeed implements Routinable {
   private _req: Promise<Response>
   private _eventsCache: Map<string, CalendarEvent> = new Map()
   private _feedRoutine: Routine<void>
+  private _sendReminder: (r: string, e: CalendarEvent) => void
 
   /**
    * Creates an instance of CalendarFeed.
    * @param {string} url
    * @memberof CalendarFeed
    */
-  constructor(url: string) {
+  constructor(url: string, reminderFunc: (r: string, e: CalendarEvent) => void) {
+    this._sendReminder = reminderFunc
+
     // Create RSS feed parser
     this._feed = new FeedParser({ feedurl: url })
     this._feed.on('readable', this._onFeedReadable)
@@ -145,7 +153,30 @@ export class CalendarFeed implements Routinable {
           group,
           reminders: new Map()
         }
-        reminderIntervals.forEach(r => newEvent.reminders.set(r, false))
+
+        // For each interval set the default ran to false
+        // and schedule the cron job for the reminder
+        reminderIntervals.forEach(r => {
+          newEvent.reminders.set(r, false)
+
+          const [amt, type] = r.split(' ')
+          if (type.includes('minute')) {
+            // Schedule x minutes away
+            schedule.scheduleJob(`${e.title}${r}`, addMinute(newEvent.date, parseInt(amt)), () =>
+              this._sendReminder(r, newEvent)
+            )
+          } else if (type.includes('hour')) {
+            // Schedule x hours away
+            schedule.scheduleJob(`${e.title}${r}`, addHour(newEvent.date, parseInt(amt)), () =>
+              this._sendReminder(r, newEvent)
+            )
+          } else {
+            // Schedule x days away
+            schedule.scheduleJob(`${e.title}${r}`, addDay(newEvent.date, parseInt(amt)), () =>
+              this._sendReminder(r, newEvent)
+            )
+          }
+        })
         this._eventsCache.set(e.guid, newEvent)
       }
     }
@@ -175,12 +206,12 @@ export class CalendarFeed implements Routinable {
    */
   private _findGroup(title: string): string {
     const groupMap = {
-      'ArmA 3': 'UOA3',
-      UOAF: 'UOAF',
-      UOTC: 'UOTC'
+      'arma 3': 'UOA3',
+      uoaf: 'UOAF',
+      uotc: 'UOTC'
     }
     for (const [k, v] of Object.entries(groupMap)) {
-      if (title.startsWith(k)) return v
+      if (title.toLowerCase().startsWith(k)) return v
     }
     return ''
   }
