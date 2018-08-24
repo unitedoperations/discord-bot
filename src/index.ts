@@ -10,13 +10,13 @@ import {
   joinGroup,
   leaveGroup
 } from './lib/commands'
-import { admin } from './lib/access'
+import { admin, deprecate } from './lib/access'
 
 // Create new Bot instance and start
 const bot = new Bot()
 bot.addCommand('?', help)
 bot.addCommand('help', help)
-bot.addCommand('polls', polls)
+bot.addCommand('polls', deprecate(polls))
 bot.addCommand('ratio', ratio)
 bot.addCommand('config', admin(config))
 bot.addCommand('primary', primary)

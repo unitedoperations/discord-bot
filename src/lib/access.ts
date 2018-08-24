@@ -47,3 +47,20 @@ function permissioned(group: string[]): (fn: BotAction) => BotAction {
     }
   }
 }
+
+/**
+ * Function decorator to deprecate a command temporarily or mark
+ * as broken during production
+ * @export
+ * @param {BotAction} cmd
+ * @returns {BotAction}
+ */
+export function deprecate(cmd: BotAction): BotAction {
+  return async (msg: Message, _: string[]): Promise<string> => {
+    const output: string = `The \`${
+      cmd.name
+    }\` command is currently broken or deprecated. Please contact the developers or post a GitHub issue at the link found by running \`!?\` or \`!help\`.`
+    await msg.author.send(output)
+    return output
+  }
+}
