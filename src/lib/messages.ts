@@ -129,3 +129,16 @@ export const pollsMessage = (
       : `_There were ${threads.length} polls clsoed!_`,
   fields: threads.map(t => ({ name: `${t.type || 'Other'}: ${t.title}`, value: t.link }))
 })
+
+/**
+ * Creates the embed message for the pending scheduled alerts
+ * @export
+ * @param {{ [name: string]: string[] }} alerts
+ * @returns {EmbedMessage}
+ */
+export const alertsMessage = (alerts: { [name: string]: string[] }): EmbedMessage => ({
+  color: 11640433,
+  title: '⏰ Scheduled Reminders',
+  description: '_Pending timestamps for event reminders._',
+  fields: Object.keys(alerts).map(k => ({ name: k, value: alerts[k].join('\n') }))
+})

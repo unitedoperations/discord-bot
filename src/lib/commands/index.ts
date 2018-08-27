@@ -1,3 +1,4 @@
+export { alerts } from './alerts'
 export { config } from './config'
 export { help } from './help'
 export { joinGroup } from './joinGroup'

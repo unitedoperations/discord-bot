@@ -66,7 +66,7 @@ function permissioned(group: string[]): (fn: BotAction) => BotAction {
  * @param {BotAction} cmd
  * @returns {BotAction}
  */
-export function deprecate(cmd: BotAction): BotAction {
+export function deprecated(cmd: BotAction): BotAction {
   return async (msg: Message, _: string[]): Promise<string> => {
     const output: string = `The \`${
       cmd.name

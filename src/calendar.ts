@@ -1,9 +1,10 @@
 import FeedParser from 'feedparser'
 import fetch, { Response } from 'node-fetch'
 import schedule from 'node-schedule'
-import addMinute from 'date-fns/add_minutes'
-import addHour from 'date-fns/add_hours'
-import addDay from 'date-fns/add_days'
+import isFuture from 'date-fns/is_future'
+import subMinute from 'date-fns/sub_minutes'
+import subHour from 'date-fns/sub_hours'
+import subDay from 'date-fns/sub_days'
 import cheerio from 'cheerio'
 import signale from 'signale'
 import { Routine, Routinable } from './routine'
@@ -136,11 +137,12 @@ export class CalendarFeed implements Routinable {
 
         // Reconstruct event date with found Zulu start time if it exists
         if (startTime) {
-          const month = date.getUTCMonth() + 1
-          const x = `${date.getUTCFullYear()}-${
-            month < 10 ? `0${month}` : month
-          }-${date.getUTCDate()}T${startTime.substr(0, 2)}:${startTime.substr(2, 2)}Z`
-          date = new Date(x)
+          const month =
+            date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : date.getUTCMonth() + 1
+          const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate()
+          const d = `${date.getUTCFullYear()}-${month}-${day}`
+          const t = `${startTime.substr(0, 2)}:${startTime.substr(2, 2)}Z`
+          date = new Date(`${d}T${t}`)
         }
 
         // Create event object instance and add to the cache
@@ -158,24 +160,18 @@ export class CalendarFeed implements Routinable {
         // and schedule the cron job for the reminder
         reminderIntervals.forEach(r => {
           newEvent.reminders.set(r, false)
-
           const [amt, type] = r.split(' ')
-          if (type.includes('minute')) {
-            // Schedule x minutes away
-            schedule.scheduleJob(`${e.title}${r}`, addMinute(newEvent.date, parseInt(amt)), () =>
-              this._sendReminder(r, newEvent)
-            )
-          } else if (type.includes('hour')) {
-            // Schedule x hours away
-            schedule.scheduleJob(`${e.title}${r}`, addHour(newEvent.date, parseInt(amt)), () =>
-              this._sendReminder(r, newEvent)
-            )
-          } else {
-            // Schedule x days away
-            schedule.scheduleJob(`${e.title}${r}`, addDay(newEvent.date, parseInt(amt)), () =>
-              this._sendReminder(r, newEvent)
-            )
-          }
+
+          // Determine the time to schedule the reminder for
+          const time: Date = type.includes('minute')
+            ? subMinute(newEvent.date, parseInt(amt))
+            : type.includes('hour')
+              ? subHour(newEvent.date, parseInt(amt))
+              : subDay(newEvent.date, parseInt(amt))
+
+          // Schedule reminder job if its in the future
+          if (isFuture(time))
+            schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
         })
         this._eventsCache.set(e.guid, newEvent)
       }
