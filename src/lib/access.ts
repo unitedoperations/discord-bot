@@ -1,9 +1,13 @@
 import { Message } from 'discord.js'
 import { BotAction } from '../bot'
 
-type ActionPermissioner = (fn: BotAction) => BotAction
-
 const permissionsError: string = 'invalid user permissions'
+
+/**
+ * Custom type for casting a function to an access modifier for commands
+ * @export
+ */
+export type CommandProvision = (fn: BotAction) => BotAction
 
 /**
  * Constant array of allow Discord server groups for people to join
@@ -22,8 +26,8 @@ export const adminGroups: string[] = process.env.ADMIN_ROLES!.split(',')
  * the `permissioned` currying function
  * @exports
  */
-export const admin: ActionPermissioner = permissioned(adminGroups)
-export const regular: ActionPermissioner = permissioned(['Regulars'])
+export const admins: CommandProvision = permissioned(adminGroups)
+export const regulars: CommandProvision = permissioned(['Regulars'])
 
 /**
  * Currying function to assign groups into different permissioned
@@ -59,7 +63,7 @@ export function deprecate(cmd: BotAction): BotAction {
   return async (msg: Message, _: string[]): Promise<string> => {
     const output: string = `The \`${
       cmd.name
-    }\` command is currently broken or deprecated. Please contact the developers or post a GitHub issue at the link found by running \`!?\` or \`!help\`.`
+    }\` command is currently broken or deprecated. Please contact the developers or post a GitHub issue at the link found by running \`!?\`.`
     await msg.author.send(output)
     return output
   }

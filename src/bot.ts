@@ -3,6 +3,8 @@ import signale from 'signale'
 import isFuture from 'date-fns/is_future'
 import { CalendarFeed, CalendarEvent } from './calendar'
 import { welcomeMessage, eventMessage, serverMessage, pollsMessage } from './lib/messages'
+import { CommandProvision } from './lib/access'
+import { help } from './lib/commands'
 import {
   arrayDiff,
   scrapeServerPage,
@@ -35,6 +37,7 @@ export type BotAction = (msg: Discord.Message, args: string[]) => Promise<string
  * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
  * @property {Discord.Client} _client
+ * @property {Map<string, string>} _descriptions
  * @property {Map<string, BotAction>} _commands
  * @property {Routine<void>?} _calendarRoutine
  * @property {Routine<string>?} _serverRoutine
@@ -59,6 +62,7 @@ export class Bot implements Routinable {
   private _guild?: Discord.Guild
   private _calendar: CalendarFeed
   private _client: Discord.Client
+  private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
   // private _calendarRoutine?: Routine<void>
   private _serverRoutine?: Routine<string>
@@ -141,11 +145,37 @@ export class Bot implements Routinable {
    * that is the command string for application to the
    * _onMessage handler at start
    * @param {string} cmd
+   * @param {string} desc
    * @param {(Bot, Discord.Message, string[]) => Promise<string>} action
+   * @param {CommandProvision?} provision
+   * @returns {Bot}
    * @memberof Bot
    */
-  addCommand(cmd: string, action: BotAction) {
-    this._commands.set(cmd, action)
+  addCommand(cmd: string, desc: string, action: BotAction, provision?: CommandProvision): Bot {
+    this._commands.set(cmd, provision ? provision(action) : action)
+    if (provision) desc += ` _**(${provision.name})**_`
+    this._descriptions.set(cmd, desc)
+    return this
+  }
+
+  /**
+   * Takes the descriptions of all commands added and dynamically builds
+   * the help command output and completes the command adding process
+   * @returns {Bot}
+   * @memberof Bot
+   */
+  compileCommands(): Bot {
+    const helpOutput: string = [
+      '**Commands**',
+      '`!?`: _help for usage on commands_',
+      ...this._descriptions.values(),
+      '---------------------------------------------------------------------------------',
+      '_**All bug reports and feature requests should be submitted through the `Issues` system on the GitHub repository:**_',
+      'https://github.com/unitedoperations/uo-discordbot'
+    ].join('\n')
+
+    this._commands.set('?', help(helpOutput))
+    return this
   }
 
   /**
