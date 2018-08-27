@@ -27,7 +27,14 @@ export const adminGroups: string[] = process.env.ADMIN_ROLES!.split(',')
  * @exports
  */
 export const admins: CommandProvision = permissioned(adminGroups)
+Object.defineProperty(admins, 'name', {
+  value: 'admins'
+})
+
 export const regulars: CommandProvision = permissioned(['Regulars'])
+Object.defineProperty(regulars, 'name', {
+  value: 'regulars'
+})
 
 /**
  * Currying function to assign groups into different permissioned

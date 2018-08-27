@@ -153,7 +153,7 @@ export class Bot implements Routinable {
    */
   addCommand(cmd: string, desc: string, action: BotAction, provision?: CommandProvision): Bot {
     this._commands.set(cmd, provision ? provision(action) : action)
-    if (provision) desc += ` _**(${provision.name})**_`
+    if (provision) desc += ` _**(${provision.name})**_` // WARNING: TODO: fix for const declared functions
     this._descriptions.set(cmd, desc)
     return this
   }
