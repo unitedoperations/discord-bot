@@ -1,4 +1,4 @@
-import { CalendarEvent } from '../calendar'
+import { CalendarEvent, Group } from './state'
 import { ServerInformation, ThreadInformation } from './helpers'
 
 interface EmbedMessageImage {
@@ -141,4 +141,48 @@ export const alertsMessage = (alerts: { [name: string]: string[] }): EmbedMessag
   title: '⏰ Scheduled Reminders',
   description: '_Pending timestamps for event reminders._',
   fields: Object.keys(alerts).map(k => ({ name: k, value: alerts[k].join('\n') }))
+})
+
+/**
+ * Creates the embed message for the active list of LFG postings
+ * @export
+ * @param {Group[]} groups
+ * @returns {EmbedMessage}
+ */
+export const groupsMessage = (groups: Group[]): EmbedMessage => {
+  const items = groups.map(g => ({
+    name: g.name,
+    value: `${g.id} - ${g.found.length}/${g.needed} - started by ${g.owner.username}`
+  }))
+
+  return {
+    color: 11640433,
+    title: '👥 Active Groups Looking for Players',
+    description: '_enter `!lfg <id>` to join one of these active groups_',
+    fields:
+      items.length > 0
+        ? items
+        : [
+            {
+              name: 'No active groups looking for players...',
+              value: 'If you want to make a new group, use the command `!lfg create <#> <name>`.'
+            }
+          ]
+  }
+}
+
+/**
+ * Creates the embed message to send the group owner and joiners when it is full
+ * @export
+ * @param {Group} g
+ * @returns {EmbedMessage}
+ */
+export const groupFullMessage = (g: Group): EmbedMessage => ({
+  color: 11640433,
+  title: `🎉 LFG - ${g.name} is Full`,
+  description: `_All ${
+    g.needed
+  } players required for the group have been found! Get in contact with ${
+    g.owner.username
+  } to play._`
 })
