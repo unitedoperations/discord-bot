@@ -5,6 +5,7 @@ import {
   config,
   joinGroup,
   leaveGroup,
+  lfg,
   polls,
   primary,
   ratio,
@@ -36,6 +37,11 @@ bot
     'leave_group',
     '`!leave_group <group>`: _leave the argued group if it exists and you are in it_',
     leaveGroup
+  )
+  .addCommand(
+    'lfg',
+    '`!lfg list | create <# needed> <name> | join <id> | delete <id>`: _looking for group functionality to find people to play a game with_',
+    lfg
   )
   // TODO: undeprecate and resolve
   .addCommand(

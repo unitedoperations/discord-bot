@@ -1,7 +1,9 @@
 import Discord from 'discord.js'
 import signale from 'signale'
 import isFuture from 'date-fns/is_future'
-import { CalendarFeed, CalendarEvent } from './calendar'
+import { CalendarFeed } from './lib/calendar'
+import { Routine, Routinable } from './lib/routine'
+import { CalendarEvent, RoutineStore } from './lib/state'
 import { welcomeMessage, eventMessage, serverMessage, pollsMessage } from './lib/messages'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
@@ -12,7 +14,6 @@ import {
   ServerInformation,
   ThreadInformation
 } from './lib/helpers'
-import { Routine, Routinable } from './routine'
 
 /**
  * Type definition for bot action functions
@@ -39,9 +40,6 @@ export type BotAction = (msg: Discord.Message, args: string[]) => Promise<string
  * @property {Discord.Client} _client
  * @property {Map<string, string>} _descriptions
  * @property {Map<string, BotAction>} _commands
- * @property {Routine<void>?} _calendarRoutine
- * @property {Routine<string>?} _serverRoutine
- * @property {Routine<string>?} _pollsRoutine
  * @property {ServerInformation?} _currentMission
  */
 export class Bot implements Routinable {
@@ -64,9 +62,6 @@ export class Bot implements Routinable {
   private _client: Discord.Client
   private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
-  // private _calendarRoutine?: Routine<void>
-  private _serverRoutine?: Routine<string>
-  private _pollsRoutine?: Routine<string>
   private _currentMission?: ServerInformation
   private _activePolls: ThreadInformation[] = []
 
@@ -102,25 +97,25 @@ export class Bot implements Routinable {
       // Initial calendar feed pull, handled by routine in CalendarFeed instance after
       await this._calendar.pull()
 
-      // Create a new routine to check for notifications on events on an interval
-      // this._calendarRoutine = new Routine<void>(
-      //   async () => await this._notifyOfEvents(),
-      //   [],
-      //   1 * 60 * 1000 // Minutes to millisecond
-      // )
-
-      // Create a new routine to check for new missions being loaded on A3 server
-      this._serverRoutine = new Routine<string>(
-        async url => await this._notifyOfNewMission(url),
-        ['http://www.unitedoperations.net/tools/uosim/'],
-        5 * 60 * 1000
+      // TODO: Convert to CRON jobs with node-schedule
+      // Add a background routine for polling the primary server data for new mission alert
+      // and one for checking the voting threads on the forums for new poll alerts
+      RoutineStore.add(
+        'server',
+        new Routine<string>(
+          async url => await this._notifyOfNewMission(url),
+          ['http://www.unitedoperations.net/tools/uosim'],
+          5 * 50 * 1000
+        )
       )
 
-      // Creates a new routine to check the forums voting and polls section and alert on new posts
-      this._pollsRoutine = new Routine<string>(
-        async url => await this._notifyOfNewPoll(url),
-        ['http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'],
-        12 * 60 * 60 * 1000
+      RoutineStore.add(
+        'polls',
+        new Routine<string>(
+          async url => await this._notifyOfNewPoll(url),
+          ['http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'],
+          12 * 60 * 60 * 1000
+        )
       )
     } catch (e) {
       signale.error(`START: ${e.message}`)
@@ -135,9 +130,8 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   clear() {
-    // ;(this._calendarRoutine as Routine<any>).terminate()
-    ;(this._serverRoutine as Routine<any>).terminate()
-    ;(this._pollsRoutine as Routine<any>).terminate()
+    RoutineStore.terminate('server')
+    RoutineStore.terminate('polls')
   }
 
   /**
@@ -167,7 +161,7 @@ export class Bot implements Routinable {
   compileCommands(): Bot {
     const helpOutput: string = [
       '**Commands**',
-      '`!?`: _help for usage on commands_',
+      '`!?`, `!help`: _help for usage on commands_',
       ...this._descriptions.values(),
       '---------------------------------------------------------------------------------',
       '_**All bug reports and feature requests should be submitted through the `Issues` system on the GitHub repository:**_',
@@ -175,6 +169,7 @@ export class Bot implements Routinable {
     ].join('\n')
 
     this._commands.set('?', help(helpOutput))
+    this._commands.set('help', help(helpOutput))
     return this
   }
 
@@ -214,7 +209,7 @@ export class Bot implements Routinable {
         const channel = this._guild!.channels.find(
           c => c.id === Bot.ARMA_CHANNEL
         ) as Discord.TextChannel
-        await channel.send(`_**NEW MISSION 🎉**_`, { embed: msg })
+        await channel.send(`_**🎉 NEW MISSION**_`, { embed: msg })
       }
     } catch (e) {
       signale.error(`NEW_MISSION: ${e.message}`)
