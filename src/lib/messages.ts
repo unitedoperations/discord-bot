@@ -22,6 +22,25 @@ interface EmbedMessage {
 }
 
 /**
+ * Embed message structure for updates to the bot being announced to a Discord channel
+ * @export
+ * @param {string} newVersion
+ * @returns {EmbedMessage}
+ */
+export const updateMessage = (newVersion: string): EmbedMessage => ({
+  color: 11640433,
+  title: `🤖 Upgrade to v${newVersion}!`,
+  description: '_Run the `!?` or `!help` command to see if any new commands were added._',
+  fields: [
+    {
+      name: 'Changelog',
+      value:
+        '[Read the changelog for a full list of updates.](https://github.com/unitedoperations/uo-discordbot/blob/master/.github/CHANGELOG.md)'
+    }
+  ]
+})
+
+/**
  * Compiles the JSON object for the new users' welcome message
  * @export
  * @param {string} name

@@ -4,9 +4,15 @@ import isFuture from 'date-fns/is_future'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
 import { CalendarEvent, RoutineStore } from './lib/state'
-import { welcomeMessage, eventMessage, serverMessage, pollsMessage } from './lib/messages'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
+import {
+  updateMessage,
+  welcomeMessage,
+  eventMessage,
+  serverMessage,
+  pollsMessage
+} from './lib/messages'
 import {
   arrayDiff,
   scrapeServerPage,
@@ -82,6 +88,14 @@ export class Bot implements Routinable {
     this._client.on('ready', () => {
       signale.fav(`Logged in as ${this._client.user.tag} v${Bot.VERSION}`)
       this._guild = this._client.guilds.find(g => g.id === Bot.GUILD_ID)
+
+      // If the ANNOUNCE env is set by Docker then announce the major or minor update in Discord
+      if (process.env.ANNOUNCE === 'true') {
+        const chan = this._guild.channels.find(
+          c => c.id === Bot.MAIN_CHANNEL
+        ) as Discord.TextChannel
+        chan.send({ embed: updateMessage(Bot.VERSION) })
+      }
     })
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
@@ -378,6 +392,7 @@ export class Bot implements Routinable {
 
           const output = await fn(msg, args)
           await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
+          signale.info(`COMMAND (${msg.author.username} - ${cmd}) - ${output}`)
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
         } catch (e) {

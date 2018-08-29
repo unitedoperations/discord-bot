@@ -10,8 +10,11 @@ new_version() {
   # Upgrade the argued portion of the version
   if [ "$1" == "major" ]; then
     curr_major=$(($curr_major + 1))
+    curr_minor="0"
+    curr_revision="0"
   elif [ "$1" == "minor" ]; then
     curr_minor=$(($curr_minor + 1))
+    curr_revision="0"
   elif [ "$1" == "revision" ]; then
     curr_revision=$(($curr_revision + 1))
   else
@@ -35,7 +38,13 @@ docker_image() {
     docker rmi $imageid --force
   fi
 
-  docker build --rm -f Dockerfile -t mcallens/uo-discordbot:$1 .
+  if [ "$2" == "major" ] || [ "$2" == "minor" ]; then
+    build_args="--build-arg ANNOUNCE=true"
+  else
+    build_args="--build-arg ANNOUNCE=false"
+  fi
+
+  docker build $build_args --rm -f Dockerfile -t mcallens/uo-discordbot:$1 .
   docker tag mcallens/uo-discordbot:$1 mcallens/uo-discordbot:latest
   docker push mcallens/uo-discordbot:$1
   docker push mcallens/uo-discordbot:latest
@@ -49,6 +58,9 @@ git_tag() {
 next=$(new_version "$1")
 if [[ "$next" != *"Invalid"* ]]; then
   version_file $next
-  docker_image $next
-  git_tag $next
+  docker_image $next $1
+
+  if [ "$1" == "major" ] || [ "$1" == "minor" ]; then
+    git_tag $next
+  fi
 fi
