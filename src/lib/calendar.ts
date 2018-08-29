@@ -1,5 +1,5 @@
 import FeedParser from 'feedparser'
-import fetch, { Response } from 'node-fetch'
+import fetch from 'node-fetch'
 import schedule from 'node-schedule'
 import isFuture from 'date-fns/is_future'
 import subMinute from 'date-fns/sub_minutes'
@@ -22,8 +22,8 @@ export const reminderIntervals: string[] = process.env.ALERT_TIMES!.split(',').m
  * @class CalendarFeed
  * @implements Routinable
  * @property {number} HOURS_TO_REFRESH
- * @property {FeedParser} _feed
- * @property {Promise<Response>} _req
+ * @property {FeedParser?} _feed
+ * @property {string} _feedUrl
  * @property {(string, CalendarEvent) => void} _sendReminder
  */
 export class CalendarFeed implements Routinable {
@@ -33,8 +33,8 @@ export class CalendarFeed implements Routinable {
   )
 
   // CalendarFeed instance variables
-  private _feed: FeedParser
-  private _req: Promise<Response>
+  private _feed?: FeedParser
+  private _feedUrl: string
   private _sendReminder: (r: string, e: CalendarEvent) => void
 
   /**
@@ -45,18 +45,12 @@ export class CalendarFeed implements Routinable {
    */
   constructor(url: string, reminderFunc: (r: string, e: CalendarEvent) => void) {
     this._sendReminder = reminderFunc
-
-    // Create RSS feed parser
-    this._feed = new FeedParser({ feedurl: url })
-    this._feed.on('readable', this._onFeedReadable)
-
-    // Request the URL for the calendar feed
-    this._req = fetch(url)
+    this._feedUrl = url
 
     // Add routine to the store for refreshing the calendar event feed
     RoutineStore.add(
       'feed',
-      new Routine<void>(() => this.pull(), [], CalendarFeed.HOURS_TO_REFRESH * 60 * 60 * 1000)
+      new Routine<void>(() => this.pull(), [], CalendarFeed.HOURS_TO_REFRESH * 60 * 1000)
     )
   }
 
@@ -69,7 +63,9 @@ export class CalendarFeed implements Routinable {
    */
   async pull() {
     signale.note('Pulled updates from calendar RSS feed')
-    const res = await this._req
+    this._feed = new FeedParser({ feedurl: this._feedUrl })
+    this._feed.on('readable', this._onFeedReadable)
+    const res = await fetch(this._feedUrl)
     res.body.pipe(this._feed)
   }
 
@@ -93,11 +89,11 @@ export class CalendarFeed implements Routinable {
     let e: FeedParser.Item
 
     // Continue to read the feed until no more events
-    while ((e = this._feed.read())) {
-      signale.warn(`Event: ${e.title}`)
-
+    while ((e = this._feed!.read())) {
       // Ensure the events cache doesn't already contain the event
       if (!EventStore.has(e.guid)) {
+        signale.warn(`New Event: ${e.title}`)
+
         const imgUrl: string = this._findImage(e.summary)
         const group: string = this._findGroup(e.title)
 

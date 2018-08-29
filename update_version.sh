@@ -37,12 +37,18 @@ docker_image() {
 
   docker build --rm -f Dockerfile -t mcallens/uo-discordbot:$1 .
   docker tag mcallens/uo-discordbot:$1 mcallens/uo-discordbot:latest
-  docker push mcallens/uo-discordbot:latest
   docker push mcallens/uo-discordbot:$1
+  docker push mcallens/uo-discordbot:latest
+}
+
+git_tag() {
+  # Add a tag for the new version on the git repository
+  git tag -a "v$1"
 }
 
 next=$(new_version "$1")
 if [[ "$next" != *"Invalid"* ]]; then
   version_file $next
   docker_image $next
+  git_tag $next
 fi
