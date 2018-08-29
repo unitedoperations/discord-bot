@@ -26,21 +26,26 @@ export type BotAction = (msg: Discord.Message, args: string[]) => Promise<string
  * @export
  * @class Bot
  * @implements Routinable
- * @property {string} GUILD_NAME
- * @property {string} LOG_CHANNEL
- * @property {string} MAIN_CHANNEL
- * @property {string} REGULARS_CHANNEL
- * @property {string} ARMA_CHANNEL
- * @property {string} BMS_CHANNEL
- * @property {string} ARMA_PLAYER_ROLE
- * @property {string} BMS_PLAYER_ROLE
- * @property {number} MIN_PLAYERS_ALERT
+ *
+ * @static @readonly @property {string} GUILD_ID
+ * @static @readonly @property {string} LOG_CHANNEL
+ * @static @readonly @property {string} MAIN_CHANNEL
+ * @static @readonly @property {string} REGULARS_CHANNEL
+ * @static @readonly @property {string} ARMA_CHANNEL
+ * @static @readonly @property {string} BMS_CHANNEL
+ *
+ * @static @property {string} VERSION
+ * @static @property {string} ARMA_PLAYER_ROLE
+ * @static @property {string} BMS_PLAYER_ROLE
+ * @static @property {number} NUM_PLAYERS_FOR_ALERT
+ *
  * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
  * @property {Discord.Client} _client
  * @property {Map<string, string>} _descriptions
  * @property {Map<string, BotAction>} _commands
  * @property {ServerInformation?} _currentMission
+ * @property {ThreadInformation[]} _activePolls
  */
 export class Bot implements Routinable {
   // Static and readonly variables for the Bot class
@@ -52,6 +57,7 @@ export class Bot implements Routinable {
   private static readonly BMS_CHANNEL: string = process.env.DISCORD_BMS_CHANNEL!
 
   // Public static Bot class variables that are able to be changed via config command
+  public static VERSION: string
   public static ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
   public static BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
   public static NUM_PLAYERS_FOR_ALERT: number = parseInt(process.env.NUM_PLAYERS_FOR_ALERT!)
@@ -67,12 +73,14 @@ export class Bot implements Routinable {
 
   /**
    * Creates an instance of Bot
+   * @param {string} version
    * @memberof Bot
    */
-  constructor() {
+  constructor(version: string) {
+    Bot.VERSION = version
     this._client = new Discord.Client()
     this._client.on('ready', () => {
-      signale.fav(`Logged in as ${this._client.user.tag}`)
+      signale.fav(`Logged in as ${this._client.user.tag} v${Bot.VERSION}`)
       this._guild = this._client.guilds.find(g => g.id === Bot.GUILD_ID)
     })
     this._client.on('message', this._onMessage)

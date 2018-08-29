@@ -1,6 +1,9 @@
 require('dotenv').config()
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 import { Bot } from './bot'
 import {
+  about,
   alerts,
   config,
   joinGroup,
@@ -14,8 +17,10 @@ import {
 import { admins, deprecated } from './lib/access'
 
 // Create new Bot instance and start
-const bot = new Bot()
+const version: Buffer = readFileSync(resolve(__dirname, '..', 'VERSION'))
+const bot = new Bot(version.toString().trimRight())
 bot
+  .addCommand('about', '`!about`: _display information about the bot_', about)
   .addCommand(
     'alerts',
     '`!alerts`: _display the pending alerts that are scheduled in the bot_',

@@ -32,7 +32,7 @@ docker_image() {
   # Rebuild the Docker image with the next version and push them
   imageid=$(docker images -q mcallens/uo-discordbot:latest)
   if [ "$imageid" != "" ]; then
-    docker rmi $imageid
+    docker rmi $imageid --force
   fi
 
   docker build --rm -f Dockerfile -t mcallens/uo-discordbot:$1 .

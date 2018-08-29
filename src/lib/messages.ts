@@ -1,3 +1,4 @@
+import { Bot } from '../bot'
 import { CalendarEvent, Group } from './state'
 import { ServerInformation, ThreadInformation } from './helpers'
 
@@ -185,4 +186,37 @@ export const groupFullMessage = (g: Group): EmbedMessage => ({
   } players required for the group have been found! Get in contact with ${
     g.owner.username
   } to play._`
+})
+
+/**
+ * Embed message for the bot information request
+ * @export
+ * @returns {EmbedMessage}
+ */
+export const aboutMessage = (): EmbedMessage => ({
+  color: 11640433,
+  title: 'ℹ️ Bot Information',
+  description: '_Details about the bot_',
+  fields: [
+    {
+      name: 'Version',
+      value: Bot.VERSION
+    },
+    {
+      name: 'Developer',
+      value: 'Synxe'
+    },
+    {
+      name: 'Stack',
+      value: 'TypeScript, Shell, Docker, Terraform'
+    },
+    {
+      name: 'Repository',
+      value: 'https://github.com/unitedoperations/uo-discordbot'
+    },
+    {
+      name: 'Feature Requests & Bug Reports',
+      value: 'https://github.com/unitedoperations/uo-discordbot/issues'
+    }
+  ]
 })

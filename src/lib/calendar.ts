@@ -50,7 +50,7 @@ export class CalendarFeed implements Routinable {
     // Add routine to the store for refreshing the calendar event feed
     RoutineStore.add(
       'feed',
-      new Routine<void>(() => this.pull(), [], CalendarFeed.HOURS_TO_REFRESH * 60 * 1000)
+      new Routine<void>(() => this.pull(), [], CalendarFeed.HOURS_TO_REFRESH * 60 * 60 * 1000)
     )
   }
 
