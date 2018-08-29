@@ -1,5 +1,5 @@
 FROM node:latest
-LABEL version="1.0"
+
 LABEL author="Matthew Callens <callensm>"
 LABEL description="Discord chat bot for United Operations"
 LABEL repository="https://github.com/unitedoperations/uo-discordbot.git"

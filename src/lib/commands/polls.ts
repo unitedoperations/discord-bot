@@ -18,17 +18,15 @@ export async function polls(msg: Message, _args: string[]): Promise<string> {
 
     // Check if any open polls exist
     if (openThreads.length === 0) {
-      const output = 'There are currently no open polls'
-      await msg.author.send(output)
-      return output
+      await msg.author.send('There are currently no open polls.')
+      return 'NO_OPEN_POLLS'
     }
 
     await msg.author.send({ embed: pollsMessage(openThreads, 'open') })
     return 'VOTING_THREADS_OUTPUT'
   } catch (e) {
     // If there was an error in any asynchronous operation
-    const output = 'Could not retrieve voting thread data right now'
-    await msg.author.send(output)
-    return output
+    await msg.author.send('Could not retrieve voting thread data right now.')
+    return 'POLL_THREAD_ERROR'
   }
 }

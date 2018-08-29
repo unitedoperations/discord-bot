@@ -9,14 +9,12 @@ import { Message } from 'discord.js'
  * @returns {Promise<string>}
  */
 export async function ratio(msg: Message, args: string[]): Promise<string> {
-  let output: string
   const reqArgs = 3
 
   // Check for the arguments required
   if (args.length != reqArgs) {
-    output = `got ${args.length} inputs instead of ${reqArgs}`
-    await msg.author.send(output)
-    return output
+    await msg.author.send(`Got ${args.length} inputs instead of ${reqArgs}.`)
+    return 'INVALID_ARGS'
   }
 
   // Gather required values
@@ -27,7 +25,8 @@ export async function ratio(msg: Message, args: string[]): Promise<string> {
   const sideB = players - sideA
 
   // Send caluclation message
-  output = `Ratio for ${players} ${ratioA}:${ratioB}\nSide A: ${sideA}\nSide B: ${sideB}`
-  await msg.author.send(output)
-  return output.replace('\n', '')
+  await msg.author.send(
+    `Ratio for ${players} ${ratioA}:${ratioB}\nSide A: ${sideA}\nSide B: ${sideB}`
+  )
+  return 'RATIO_CALCULATION_RESULTS'
 }

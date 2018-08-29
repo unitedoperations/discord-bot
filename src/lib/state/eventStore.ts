@@ -17,7 +17,7 @@ export interface CalendarEvent {
  * State store for calendar events pulled from the forums
  * @export
  * @class EventStore
- * @property {Map<string, CalendarEvent>} cache
+ * @property {Map<string, CalendarEvent>} _events
  */
 class EventStore {
   private _events: Map<string, CalendarEvent> = new Map()

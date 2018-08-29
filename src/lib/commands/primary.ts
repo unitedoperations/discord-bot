@@ -27,8 +27,7 @@ export async function primary(msg: Message, _args: string[]): Promise<string> {
     return 'SERVER_OUTPUT'
   } catch (e) {
     // If there was an error in any asynchronous operation
-    const output = 'Could not retrieve primary server data right now'
-    await msg.author.send(output)
-    return output
+    await msg.author.send('Could not retrieve primary server data right now.')
+    return 'SERVER_INFO_ERROR'
   }
 }

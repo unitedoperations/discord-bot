@@ -10,14 +10,12 @@ import { Bot } from '../../bot'
  * @returns {Promise<string>}
  */
 export async function config(msg: Message, args: string[]): Promise<string> {
-  let output: string
   const reqArgs = 2
 
   // Check for correct amount of arguments passed
   if (args.length !== reqArgs) {
-    output = `got ${args.length} inputs instead of ${reqArgs}`
-    await msg.author.send(output)
-    return output
+    await msg.author.send(`Received ${args.length} inputs instead of ${reqArgs}`)
+    return 'INVALID_ARGS'
   }
 
   // Parse inputs and check for validity
@@ -33,12 +31,10 @@ export async function config(msg: Message, args: string[]): Promise<string> {
       Bot.NUM_PLAYERS_FOR_ALERT = parseInt(value)
       break
     default:
-      output = `${key} is an invalid configuration key`
-      await msg.author.send(output)
-      return output
+      await msg.author.send(`${key} is an invalid configuration key.`)
+      return `INVALID_KEY: ${key}`
   }
 
-  output = `you successfully set ${key} to ${value}`
-  await msg.author.send(output)
-  return output
+  await msg.author.send(`You successfully set ${key} to ${value}.`)
+  return `CONFIG_SET: ${key} - ${value}`
 }

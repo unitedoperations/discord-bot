@@ -4,7 +4,7 @@ import { Routine } from '../routine'
  * State store for subroutines used by the bot
  * @export
  * @class RoutineStore
- * @property {Map<string, Routine<any>>} cache
+ * @property {Map<string, Routine<any>>} _routines
  */
 class RoutineStore {
   private _routines: Map<string, Routine<any>> = new Map()

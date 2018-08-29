@@ -105,7 +105,7 @@ export class Bot implements Routinable {
         new Routine<string>(
           async url => await this._notifyOfNewMission(url),
           ['http://www.unitedoperations.net/tools/uosim'],
-          5 * 50 * 1000
+          5 * 60 * 1000
         )
       )
 
@@ -373,7 +373,7 @@ export class Bot implements Routinable {
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
         } catch (e) {
-          signale.error(`COMMAND (${cmd}) : ${e}`)
+          signale.error(`COMMAND (${msg.author.username} - ${cmd}) : ${e}`)
         }
       } else {
         await msg.delete()

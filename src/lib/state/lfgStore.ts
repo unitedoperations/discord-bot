@@ -3,6 +3,7 @@ import { User } from 'discord.js'
 /**
  * Type definition for a group entity for LFG
  * @export
+ * @interface Group
  */
 export interface Group {
   id: number
@@ -16,7 +17,7 @@ export interface Group {
  * State store for managing the groups posted for the LFG feature
  * @export
  * @class LFGStore
- * @property {Map<number, Group>}
+ * @property {Map<number, Group>} _groups
  */
 class LFGStore {
   private _groups: Map<number, Group> = new Map()
