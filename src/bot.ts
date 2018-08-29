@@ -375,7 +375,7 @@ export class Bot implements Routinable {
    */
   private _onMessage = async (msg: Discord.Message) => {
     // Skip message if came from bot
-    if (msg.author.bot || !msg.guild) return
+    if (msg.author.bot) return
 
     // Get the command and its arguments from received message
     const [cmd, ...args] = msg.content.split(' ')
@@ -386,17 +386,20 @@ export class Bot implements Routinable {
       // Look for a handler function is the map that matches the command
       const fn = this._commands.get(cmdKey)
       if (fn) {
+        // Get the origin of the message, DM or guild
+        const origin: string = msg.guild ? 'GLD' : 'PM'
+
         try {
           // Delete the original command, run the handler and log the response
-          await msg.delete()
+          if (origin === 'GLD') await msg.delete()
 
           const output = await fn(msg, args)
           await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
-          signale.info(`COMMAND (${msg.author.username} - ${cmd}) - ${output}`)
+          signale.info(`COMMAND (${origin})(${msg.author.username} - ${cmd}) - ${output}`)
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
         } catch (e) {
-          signale.error(`COMMAND (${msg.author.username} - ${cmd}) : ${e}`)
+          signale.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e}`)
         }
       } else {
         await msg.delete()

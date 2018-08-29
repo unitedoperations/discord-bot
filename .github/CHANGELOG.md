@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+
+- ADD allow commands through direct messages
+- UPDATE only rebuild on major and minor versions
+
 ## v2.1.0
 
 - ADD improved and partially automated deployment pipeline
