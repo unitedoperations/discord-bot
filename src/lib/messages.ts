@@ -35,7 +35,7 @@ export const updateMessage = (newVersion: string): EmbedMessage => ({
     {
       name: 'Changelog',
       value:
-        '[Read the changelog for a full list of updates.](https://github.com/unitedoperations/uo-discordbot/blob/master/.github/CHANGELOG.md)'
+        '[Read the changelog for a full list of updates.](https://github.com/unitedoperations/uo-discordbot/blob/master/CHANGELOG.md)'
     }
   ]
 })
