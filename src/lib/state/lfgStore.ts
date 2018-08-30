@@ -29,7 +29,7 @@ class LFGStore {
    * @memberof LFGStore
    */
   userAlreadyLooking(user: string): boolean {
-    for (const g of Object.values(this._groups)) {
+    for (const g of [...this._groups.values()]) {
       if (g.owner.username === user) return true
     }
     return false

@@ -1,6 +1,6 @@
-import { Message } from 'discord.js'
+import { Message, TextChannel } from 'discord.js'
 import { LFGStore, Group } from '../state'
-import { groupsMessage, groupFullMessage } from '../messages'
+import { groupsMessage, groupCreatedMessage, groupFullMessage } from '../messages'
 
 /**
  * Looking for group command handler for finding players for a game session
@@ -117,20 +117,40 @@ async function lfgDelete(msg: Message, args: string[]): Promise<string> {
  * @returns {Promise<string>}
  */
 async function lfgCreate(msg: Message, args: string[]): Promise<string> {
+  // First check if they already have an active LFG group, allow 1 active per user
+  if (LFGStore.userAlreadyLooking(msg.author.username)) {
+    await msg.author.send('You already have an active LFG group!')
+    return 'TOO_MANY_GROUPS'
+  }
+
   // Parse input arguments and add newly created group
-  LFGStore.add({
+  const g: Group = {
     id: LFGStore.getGroups().length + 1,
     owner: msg.author,
     name: args[2],
     needed: parseInt(args[1]),
     found: []
-  } as Group)
+  }
 
+  LFGStore.add(g)
   await msg.author.send(
     `You have created the new group **${
       args[2]
     }**! You will be alerted when new players join your group and when it is full.`
   )
+
+  // Send creation announcement to main Discord channel
+  let gen: TextChannel
+
+  if (msg.guild) {
+    gen = msg.guild.channels.find(c => c.id === process.env.DISCORD_MAIN_CHANNEL!) as TextChannel
+  } else {
+    gen = msg.client.guilds
+      .find(g => g.id === process.env.DISCORD_SERVER_ID!)
+      .channels.find(c => c.id === process.env.DISCORD_MAIN_CHANNEL!) as TextChannel
+  }
+
+  await gen.send({ embed: groupCreatedMessage(g) })
 
   return `GROUP_CREATED: ${args[2]}`
 }

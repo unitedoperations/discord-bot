@@ -185,11 +185,23 @@ export const groupsMessage = (groups: Group[]): EmbedMessage => {
         : [
             {
               name: 'No active groups looking for players...',
-              value: 'If you want to make a new group, use the command `!lfg create <#> <name>`.'
+              value: 'To make a new group, use the command `!lfg create <# needed> <name>`.'
             }
           ]
   }
 }
+
+/**
+ * Message for the general channel announcement of a new group for LFG created
+ * @export
+ * @param {Group} g
+ * @returns {EmbedMessage}
+ */
+export const groupCreatedMessage = (g: Group): EmbedMessage => ({
+  color: 11640433,
+  title: `👥 _**${g.owner.username}**_ Created Group **${g.name}**`,
+  description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${g.id}\`._`
+})
 
 /**
  * Creates the embed message to send the group owner and joiners when it is full

@@ -1,9 +1,11 @@
 # Changelog
 
-## 2.2.0
+## v2.2.0
 
 - ADD allow commands through direct messages
+- ADD post announcement to general channel when new LFG group is created
 - UPDATE only rebuild on major and minor versions
+- UPDATE LFG feature to only allow one active group per user at a time
 
 ## v2.1.0
 
