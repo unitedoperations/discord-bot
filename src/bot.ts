@@ -102,7 +102,7 @@ export class Bot implements Routinable {
 
     this._calendar = new CalendarFeed(
       'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/',
-      this._sendEventReminder
+      this._sendEventReminder.bind(this)
     )
   }
 
@@ -110,12 +110,14 @@ export class Bot implements Routinable {
    * Wrapper function for the Discord client's login function
    * to initialize and start the chat bot in the Discord server
    * @async
-   * @param token {string}
-   * @returns {Promise<string>}
+   * @param {string} token
    * @memberof Bot
    */
-  async start(token: string): Promise<string> {
+  async start(token: string) {
     try {
+      // Login with the Discord client
+      await this._client.login(token)
+
       // Initial calendar feed pull, handled by routine in CalendarFeed instance after
       await this._calendar.pull()
 
@@ -141,10 +143,8 @@ export class Bot implements Routinable {
       )
     } catch (e) {
       signale.error(`START: ${e.message}`)
+      process.exit(1)
     }
-
-    // Login with the Discord client
-    return this._client.login(token)
   }
 
   /**
