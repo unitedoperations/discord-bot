@@ -1,4 +1,4 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import schedule from 'node-schedule'
 import { alertsMessage } from '../messages'
 
@@ -6,11 +6,12 @@ import { alertsMessage } from '../messages'
  * Sends a description of the pending alerts that are scheduled
  * @export
  * @async
- * @param {Message} msg
- * @param {string[]} _
+ * @param {Discord.Guild} _guild
+ * @param {Discord.Message} msg
+ * @param {string[]} _args
  * @returns {Promise<string>}
  */
-export async function alerts(msg: Message, _: string[]): Promise<string> {
+export async function alerts(_guild: Guild, msg: Message, _args: string[]): Promise<string> {
   // Get the scheduled alerts
   const jobs: { [job: string]: schedule.Job } = schedule.scheduledJobs
   const alerts: { [name: string]: string[] } = {}

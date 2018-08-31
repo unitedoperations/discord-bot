@@ -1,4 +1,4 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import { BotAction } from '../bot'
 
 const permissionsError: string = 'invalid user permissions'
@@ -44,11 +44,11 @@ Object.defineProperty(regulars, 'name', {
  */
 function permissioned(group: string[]): (fn: BotAction) => BotAction {
   return (fn: BotAction): BotAction => {
-    return async (msg: Message, args: string[]): Promise<string> => {
+    return async (guild: Guild, msg: Message, args: string[]): Promise<string> => {
       // Check if the calling user has permission to call command
       for (const g of group) {
-        if (msg.member.roles.find(r => r.name === g) !== null) {
-          return await fn(msg, args)
+        if (guild.member(msg.author).roles.find(r => r.name === g) !== null) {
+          return await fn(guild, msg, args)
         }
       }
 
@@ -67,7 +67,7 @@ function permissioned(group: string[]): (fn: BotAction) => BotAction {
  * @returns {BotAction}
  */
 export function deprecated(cmd: BotAction): BotAction {
-  return async (msg: Message, _: string[]): Promise<string> => {
+  return async (_guild: Guild, msg: Message, _args: string[]): Promise<string> => {
     const output: string = `The \`${
       cmd.name
     }\` command is currently broken or deprecated. Please contact the developers or post a GitHub issue at the link found by running \`!?\`.`

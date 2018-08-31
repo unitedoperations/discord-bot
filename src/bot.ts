@@ -26,7 +26,11 @@ import {
  * Type definition for bot action functions
  * @export
  */
-export type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
+export type BotAction = (
+  guild: Discord.Guild,
+  msg: Discord.Message,
+  args: string[]
+) => Promise<string>
 
 /**
  * Wrapper class for the Discord SDK and handling custom commands
@@ -301,8 +305,13 @@ export class Bot implements Routinable {
   private async _notifyOfActiveGroups() {
     const groups: Group[] = LFGStore.getGroups()
     try {
-      const chan = this._guild!.channels.find(c => c.id === Bot.LFG_CHANNEL) as Discord.TextChannel
-      await chan.send({ embed: groupsMessage(groups) })
+      // Notify the LFG channel if there are any active groups
+      if (groups.length > 0) {
+        const chan = this._guild!.channels.find(
+          c => c.id === Bot.LFG_CHANNEL
+        ) as Discord.TextChannel
+        await chan.send({ embed: groupsMessage(groups) })
+      }
     } catch (e) {
       signale.error(`LFG_ALERT: ${e.message}`)
     }
@@ -417,7 +426,7 @@ export class Bot implements Routinable {
           // Delete the original command, run the handler and log the response
           if (origin === 'GLD') await msg.delete()
 
-          const output = await fn(msg, args)
+          const output = await fn(msg.guild || this._guild, msg, args)
           await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
           signale.info(`COMMAND (${origin})(${msg.author.username} - ${cmd}) - ${output}`)
 
