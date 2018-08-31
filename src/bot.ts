@@ -305,8 +305,13 @@ export class Bot implements Routinable {
   private async _notifyOfActiveGroups() {
     const groups: Group[] = LFGStore.getGroups()
     try {
-      const chan = this._guild!.channels.find(c => c.id === Bot.LFG_CHANNEL) as Discord.TextChannel
-      await chan.send({ embed: groupsMessage(groups) })
+      // Notify the LFG channel if there are any active groups
+      if (groups.length > 0) {
+        const chan = this._guild!.channels.find(
+          c => c.id === Bot.LFG_CHANNEL
+        ) as Discord.TextChannel
+        await chan.send({ embed: groupsMessage(groups) })
+      }
     } catch (e) {
       signale.error(`LFG_ALERT: ${e.message}`)
     }
