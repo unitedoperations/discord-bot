@@ -3,7 +3,7 @@ import signale from 'signale'
 import isFuture from 'date-fns/is_future'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, RoutineStore } from './lib/state'
+import { CalendarEvent, RoutineStore, Group, LFGStore } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
@@ -11,7 +11,8 @@ import {
   welcomeMessage,
   eventMessage,
   serverMessage,
-  pollsMessage
+  pollsMessage,
+  groupsMessage
 } from './lib/messages'
 import {
   arrayDiff,
@@ -36,6 +37,7 @@ export type BotAction = (msg: Discord.Message, args: string[]) => Promise<string
  * @static @readonly @property {string} GUILD_ID
  * @static @readonly @property {string} LOG_CHANNEL
  * @static @readonly @property {string} MAIN_CHANNEL
+ * @static @readonly @property {string} LFG_CHANNEL
  * @static @readonly @property {string} REGULARS_CHANNEL
  * @static @readonly @property {string} ARMA_CHANNEL
  * @static @readonly @property {string} BMS_CHANNEL
@@ -58,6 +60,7 @@ export class Bot implements Routinable {
   private static readonly GUILD_ID: string = process.env.DISCORD_SERVER_ID!
   private static readonly LOG_CHANNEL: string = process.env.DISCORD_LOG_CHANNEL!
   private static readonly MAIN_CHANNEL: string = process.env.DISCORD_MAIN_CHANNEL!
+  private static readonly LFG_CHANNEL: string = process.env.DISCORD_LFG_CHANNEL!
   private static readonly REGULARS_CHANNEL: string = process.env.DISCORD_REGULARS_CHANNEL!
   private static readonly ARMA_CHANNEL: string = process.env.DISCORD_ARMA_CHANNEL!
   private static readonly BMS_CHANNEL: string = process.env.DISCORD_BMS_CHANNEL!
@@ -102,7 +105,7 @@ export class Bot implements Routinable {
 
     this._calendar = new CalendarFeed(
       'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/',
-      this._sendEventReminder
+      this._sendEventReminder.bind(this)
     )
   }
 
@@ -110,18 +113,19 @@ export class Bot implements Routinable {
    * Wrapper function for the Discord client's login function
    * to initialize and start the chat bot in the Discord server
    * @async
-   * @param token {string}
-   * @returns {Promise<string>}
+   * @param {string} token
    * @memberof Bot
    */
-  async start(token: string): Promise<string> {
+  async start(token: string) {
     try {
+      // Login with the Discord client
+      await this._client.login(token)
+
       // Initial calendar feed pull, handled by routine in CalendarFeed instance after
       await this._calendar.pull()
 
       // TODO: Convert to CRON jobs with node-schedule
-      // Add a background routine for polling the primary server data for new mission alert
-      // and one for checking the voting threads on the forums for new poll alerts
+      // Add a background routines
       RoutineStore.add(
         'server',
         new Routine<string>(
@@ -139,12 +143,15 @@ export class Bot implements Routinable {
           12 * 60 * 60 * 1000
         )
       )
+
+      RoutineStore.add(
+        'groups',
+        new Routine<void>(async () => await this._notifyOfActiveGroups(), [], 2 * 60 * 60 * 1000)
+      )
     } catch (e) {
       signale.error(`START: ${e.message}`)
+      process.exit(1)
     }
-
-    // Login with the Discord client
-    return this._client.login(token)
   }
 
   /**
@@ -154,6 +161,7 @@ export class Bot implements Routinable {
   clear() {
     RoutineStore.terminate('server')
     RoutineStore.terminate('polls')
+    RoutineStore.terminate('groups')
   }
 
   /**
@@ -281,6 +289,22 @@ export class Bot implements Routinable {
       }
     } catch (e) {
       signale.error(`NEW_POLL: ${e.message}`)
+    }
+  }
+
+  /**
+   * Gets the active LFG groups and notifies the designated channel
+   * @private
+   * @async
+   * @memberof Bot
+   */
+  private async _notifyOfActiveGroups() {
+    const groups: Group[] = LFGStore.getGroups()
+    try {
+      const chan = this._guild!.channels.find(c => c.id === Bot.LFG_CHANNEL) as Discord.TextChannel
+      await chan.send({ embed: groupsMessage(groups) })
+    } catch (e) {
+      signale.error(`LFG_ALERT: ${e.message}`)
     }
   }
 

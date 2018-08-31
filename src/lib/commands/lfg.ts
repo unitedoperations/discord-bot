@@ -143,11 +143,11 @@ async function lfgCreate(msg: Message, args: string[]): Promise<string> {
   let gen: TextChannel
 
   if (msg.guild) {
-    gen = msg.guild.channels.find(c => c.id === process.env.DISCORD_MAIN_CHANNEL!) as TextChannel
+    gen = msg.guild.channels.find(c => c.id === process.env.DISCORD_LFG_CHANNEL!) as TextChannel
   } else {
     gen = msg.client.guilds
       .find(g => g.id === process.env.DISCORD_SERVER_ID!)
-      .channels.find(c => c.id === process.env.DISCORD_MAIN_CHANNEL!) as TextChannel
+      .channels.find(c => c.id === process.env.DISCORD_LFG_CHANNEL!) as TextChannel
   }
 
   await gen.send({ embed: groupCreatedMessage(g) })

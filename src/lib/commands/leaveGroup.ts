@@ -1,4 +1,4 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import signale from 'signale'
 
 /**
@@ -14,20 +14,23 @@ export async function leaveGroup(msg: Message, args: string[]): Promise<string> 
   if (args.length === 0) {
     await msg.author.send("You didn't provide a group to leave.")
     return 'INVALID_ARGS'
-  } else if (msg.mentions.roles.size === 0) {
-    // If they don't use an @ mention for the group
-    await msg.author.send('You must use an `@` mention for the group you wish to leave.')
-    return 'INVALID_ARGS'
   }
 
   // Get group name from arguments and check if the role exists
-  const group = args[0]
-  const id = /<@&(\d+)>/g.exec(group)
-  const role = msg.guild.roles.find(r => r.id === id![1])
+  const name = args[0]
+
+  let guild: Guild
+  if (msg.guild) {
+    guild = msg.guild
+  } else {
+    guild = msg.client.guilds.find(g => g.id === process.env.DISCORD_SERVER_ID!)
+  }
+
+  const role = guild.roles.find(r => r.name === name)
 
   if (!role) {
     // If no role with the argued name exists end with that message
-    await msg.author.send(`The group '${group}' does not exist.`)
+    await msg.author.send(`The group '${name}' does not exist.`)
     return 'GROUP_DOES_NOT_EXIST'
   } else if (!msg.member.roles.find(r => r.id === role.id)) {
     // If the user doesn't below to the group argued
