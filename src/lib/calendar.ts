@@ -6,7 +6,7 @@ import subMinute from 'date-fns/sub_minutes'
 import subHour from 'date-fns/sub_hours'
 import subDay from 'date-fns/sub_days'
 import cheerio from 'cheerio'
-import signale from 'signale'
+import * as log from './logger'
 import { Routine, Routinable } from './routine'
 import { RoutineStore, EventStore, CalendarEvent } from './state'
 
@@ -62,7 +62,7 @@ export class CalendarFeed implements Routinable {
    * @memberof CalendarFeed
    */
   async pull() {
-    signale.note('Pulled updates from calendar RSS feed')
+    log.info('Pulled updates from calendar RSS feed')
     this._feed = new FeedParser({ feedurl: this._feedUrl })
     this._feed.on('readable', this._onFeedReadable)
     const res = await fetch(this._feedUrl)
@@ -92,7 +92,7 @@ export class CalendarFeed implements Routinable {
     while ((e = this._feed!.read())) {
       // Ensure the events cache doesn't already contain the event
       if (!EventStore.has(e.guid)) {
-        signale.warn(`New Event: ${e.title}`)
+        log.event(`New Event: ${e.title}`)
 
         const imgUrl: string = this._findImage(e.summary)
         const group: string = this._findGroup(e.title)

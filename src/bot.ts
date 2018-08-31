@@ -1,6 +1,6 @@
 import Discord from 'discord.js'
-import signale from 'signale'
 import isFuture from 'date-fns/is_future'
+import * as log from './lib/logger'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
 import { CalendarEvent, RoutineStore, Group, LFGStore } from './lib/state'
@@ -93,7 +93,7 @@ export class Bot implements Routinable {
     Bot.VERSION = version
     this._client = new Discord.Client()
     this._client.on('ready', () => {
-      signale.fav(`Logged in as ${this._client.user.tag} v${Bot.VERSION}`)
+      log.fav(`Logged in as ${this._client.user.tag} v${Bot.VERSION}`)
       this._guild = this._client.guilds.find(g => g.id === Bot.GUILD_ID)
 
       // If the ANNOUNCE env is set by Docker then announce the major or minor update in Discord
@@ -153,7 +153,7 @@ export class Bot implements Routinable {
         new Routine<void>(async () => await this._notifyOfActiveGroups(), [], 2 * 60 * 60 * 1000)
       )
     } catch (e) {
-      signale.error(`START: ${e.message}`)
+      log.error(`START: ${e.message}`)
       process.exit(1)
     }
   }
@@ -246,7 +246,7 @@ export class Bot implements Routinable {
         await channel.send(`_**🎉 NEW MISSION**_`, { embed: msg })
       }
     } catch (e) {
-      signale.error(`NEW_MISSION: ${e.message}`)
+      log.error(`NEW_MISSION: ${e.message}`)
     }
   }
 
@@ -292,7 +292,7 @@ export class Bot implements Routinable {
         })
       }
     } catch (e) {
-      signale.error(`NEW_POLL: ${e.message}`)
+      log.error(`NEW_POLL: ${e.message}`)
     }
   }
 
@@ -313,7 +313,7 @@ export class Bot implements Routinable {
         await chan.send({ embed: groupsMessage(groups) })
       }
     } catch (e) {
-      signale.error(`LFG_ALERT: ${e.message}`)
+      log.error(`LFG_ALERT: ${e.message}`)
     }
   }
 
@@ -327,7 +327,7 @@ export class Bot implements Routinable {
   private async _sendEventReminder(reminder: string, e: CalendarEvent) {
     // Make sure the event hasn't already happened
     if (isFuture(e.date) && !e.reminders.get(reminder)) {
-      signale.star(`Sending notification for event: ${e.title}`)
+      log.alert(`Sending notification for event: ${e.title}`)
 
       // Ensure it won't send this same reminder type again
       e.reminders.set(reminder, true)
@@ -373,7 +373,7 @@ export class Bot implements Routinable {
         // Dispatch event reminder to correct group and channel
         await channel.send(role ? role.toString() : '', { embed: msg })
       } catch (e) {
-        signale.error(`EVENT ${e.name}: ${e.message}`)
+        log.error(`EVENT ${e.name}: ${e.message}`)
       }
     }
   }
@@ -392,7 +392,7 @@ export class Bot implements Routinable {
     try {
       await member.send({ embed: welcomeMessage(username) })
     } catch (e) {
-      signale.error(`NEW_USER ${username}: ${e.message}`)
+      log.error(`NEW_USER ${username}: ${e.message}`)
     }
   }
 
@@ -428,15 +428,15 @@ export class Bot implements Routinable {
 
           const output = await fn(msg.guild || this._guild, msg, args)
           await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
-          signale.info(`COMMAND (${origin})(${msg.author.username} - ${cmd}) - ${output}`)
+          log.cmd(`(${origin})(${msg.author.username} - ${cmd}) - ${output}`)
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
         } catch (e) {
-          signale.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e}`)
+          log.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e}`)
         }
       } else {
         await msg.delete()
-        signale.error(`No command function found for '!${cmdKey}'`)
+        log.error(`No command function found for '!${cmdKey}'`)
       }
     }
   }
