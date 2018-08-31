@@ -113,7 +113,8 @@ export const eventMessage = (event: CalendarEvent, away: string): EmbedMessage =
 export const serverMessage = (info: ServerInformation): EmbedMessage => ({
   color: 11640433,
   title: info.mission,
-  description: `_${info.description.split('\n')[0]}_`,
+  description:
+    info.description !== '' ? `_${info.description.split('\n')[0]}_` : `_No description_`,
   fields: [
     {
       name: 'Players',
@@ -178,7 +179,7 @@ export const groupsMessage = (groups: Group[]): EmbedMessage => {
   return {
     color: 11640433,
     title: '👥 Active Groups Looking for Players',
-    description: '_enter `!lfg join <id>` to join one of these active groups_',
+    description: 'Run `!lfg join <id>` to join one of these active groups_',
     fields:
       items.length > 0
         ? items

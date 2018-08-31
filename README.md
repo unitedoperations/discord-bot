@@ -17,6 +17,7 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - `DISCORD_SERVER_ID`: _ID of the server being deployed to_
   - `DISCORD_LOG_CHANNEL`: _ID of the channel designated for bot audit logs_
   - `DISCORD_MAIN_CHANNEL`: _ID of the main channel in the server_
+  - `DISCORD_LFG_CHANNEL`: _ID of the channel to post looking for group notifications to_
   - `DISCORD_REGULARS_CHANNEL`: _ID of the channel designated for Regulars discussion_
   - `DISCORD_ARMA_CHANNEL`: _ID of the channel designated for ArmA 3_
   - `DISCORD_BMS_CHANNEL`: _ID of the channel designated for BMS_
@@ -41,6 +42,7 @@ BOT_PERMISSIONS=
 DISCORD_SERVER_ID=
 DISCORD_LOG_CHANNEL=
 DISCORD_MAIN_CHANNEL=
+DISCORD_LFG_CHANNEL=
 DISCORD_REGULARS_CHANNEL=
 DISCORD_ARMA_CHANNEL=
 DISCORD_BMS_CHANNEL=
