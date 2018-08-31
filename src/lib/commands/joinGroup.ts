@@ -1,4 +1,4 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import signale from 'signale'
 import { allowedDiscordGroups } from '../access'
 
@@ -15,20 +15,23 @@ export async function joinGroup(msg: Message, args: string[]): Promise<string> {
   if (args.length === 0) {
     await msg.author.send("You didn't provide a group to join.")
     return 'INVALID_ARGS'
-  } else if (msg.mentions.roles.size === 0) {
-    // If they don't use an @ mention for the group
-    await msg.author.send('You must use an `@` mention for the group you wish to join.')
-    return 'INVALID_ARGS'
   }
 
-  // Get group name from arguments and check if the role exists
-  const group = args[0]
-  const id = /<@&(\d+)>/g.exec(group)
-  const role = msg.guild.roles.find(r => r.id === id![1])
+  // Get group name from arguments and check if the role exists in the guild
+  const name = args[0]
+
+  let guild: Guild
+  if (msg.guild) {
+    guild = msg.guild
+  } else {
+    guild = msg.client.guilds.find(g => g.id === process.env.DISCORD_SERVER_ID!)
+  }
+
+  const role = guild.roles.find(r => r.name === name)
 
   if (!role) {
     // If no role with the argued name exists end with that message
-    await msg.author.send(`The group '${group}' does not exist.`)
+    await msg.author.send(`The group '${name}' does not exist.`)
     return 'GROUP_DOES_NOT_EXIST'
   } else if (!allowedDiscordGroups.includes(role.name)) {
     // If the argued group name is not included in the permitted groups
