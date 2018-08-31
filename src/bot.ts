@@ -26,7 +26,11 @@ import {
  * Type definition for bot action functions
  * @export
  */
-export type BotAction = (msg: Discord.Message, args: string[]) => Promise<string>
+export type BotAction = (
+  guild: Discord.Guild,
+  msg: Discord.Message,
+  args: string[]
+) => Promise<string>
 
 /**
  * Wrapper class for the Discord SDK and handling custom commands
@@ -417,7 +421,7 @@ export class Bot implements Routinable {
           // Delete the original command, run the handler and log the response
           if (origin === 'GLD') await msg.delete()
 
-          const output = await fn(msg, args)
+          const output = await fn(msg.guild || this._guild, msg, args)
           await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
           signale.info(`COMMAND (${origin})(${msg.author.username} - ${cmd}) - ${output}`)
 

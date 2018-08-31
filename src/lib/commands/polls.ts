@@ -1,4 +1,4 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import { scrapeThreadsPage } from '../helpers'
 import { pollsMessage } from '../messages'
 
@@ -6,11 +6,12 @@ import { pollsMessage } from '../messages'
  * Pulls and returns a list of open voting threads from the forums
  * @export
  * @async
- * @param {Message} msg
+ * @param {Discord.Guild} _guild
+ * @param {Discord.Message} msg
  * @param {string[]} _args
  * @returns {Promise<string>}
  */
-export async function polls(msg: Message, _args: string[]): Promise<string> {
+export async function polls(_guild: Guild, msg: Message, _args: string[]): Promise<string> {
   try {
     let openThreads = await scrapeThreadsPage(
       'http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'

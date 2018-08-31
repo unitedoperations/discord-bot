@@ -1,4 +1,4 @@
-import { Message, TextChannel } from 'discord.js'
+import { Message, Guild, TextChannel } from 'discord.js'
 import { LFGStore, Group } from '../state'
 import { groupsMessage, groupCreatedMessage, groupFullMessage } from '../messages'
 
@@ -6,11 +6,12 @@ import { groupsMessage, groupCreatedMessage, groupFullMessage } from '../message
  * Looking for group command handler for finding players for a game session
  * @export
  * @async
- * @param {Message} msg
+ * @param {Discord.Guild} guild
+ * @param {Discord.Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-export async function lfg(msg: Message, args: string[]): Promise<string> {
+export async function lfg(guild: Guild, msg: Message, args: string[]): Promise<string> {
   // List current groups if no argument given or 'list' argument
   if (args.length === 0 || (args.length === 1 && args[0] === 'list')) {
     return await lfgList(msg)
@@ -22,7 +23,7 @@ export async function lfg(msg: Message, args: string[]): Promise<string> {
     return await lfgDelete(msg, args)
   } else if (args.length === 3 && args[0] === 'create' && !isNaN(parseInt(args[1]))) {
     // Create a new group with the appropriately argued values
-    return await lfgCreate(msg, args)
+    return await lfgCreate(guild, msg, args)
   } else {
     // Invalid inputs
     await msg.author.send('Invalid arguments for the `!lfg` command given.')
@@ -33,7 +34,7 @@ export async function lfg(msg: Message, args: string[]): Promise<string> {
 /**
  * Handler for listing subcommand
  * @async
- * @param {Message} msg
+ * @param {Discord.Message} msg
  * @returns {Promise<string>}
  */
 async function lfgList(msg: Message): Promise<string> {
@@ -45,7 +46,7 @@ async function lfgList(msg: Message): Promise<string> {
 /**
  * Handler for the group join subcommand
  * @async
- * @param {Message} msg
+ * @param {Discord.Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
@@ -86,7 +87,7 @@ async function lfgJoin(msg: Message, args: string[]): Promise<string> {
 /**
  * Handler for the group delete subcommand
  * @async
- * @param {Message} msg
+ * @param {Discord.Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
@@ -112,11 +113,12 @@ async function lfgDelete(msg: Message, args: string[]): Promise<string> {
 /**
  * Handler for the group create subcommand
  * @async
- * @param {Message} msg
+ * @param {Discord.Guild} guild
+ * @param {Discord.Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-async function lfgCreate(msg: Message, args: string[]): Promise<string> {
+async function lfgCreate(guild: Guild, msg: Message, args: string[]): Promise<string> {
   // First check if they already have an active LFG group, allow 1 active per user
   if (LFGStore.userAlreadyLooking(msg.author.username)) {
     await msg.author.send('You already have an active LFG group!')
@@ -140,16 +142,9 @@ async function lfgCreate(msg: Message, args: string[]): Promise<string> {
   )
 
   // Send creation announcement to main Discord channel
-  let gen: TextChannel
-
-  if (msg.guild) {
-    gen = msg.guild.channels.find(c => c.id === process.env.DISCORD_LFG_CHANNEL!) as TextChannel
-  } else {
-    gen = msg.client.guilds
-      .find(g => g.id === process.env.DISCORD_SERVER_ID!)
-      .channels.find(c => c.id === process.env.DISCORD_LFG_CHANNEL!) as TextChannel
-  }
-
+  const gen: TextChannel = guild.channels.find(
+    c => c.id === process.env.DISCORD_LFG_CHANNEL!
+  ) as TextChannel
   await gen.send({ embed: groupCreatedMessage(g) })
 
   return `GROUP_CREATED: ${args[2]}`

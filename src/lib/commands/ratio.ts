@@ -1,14 +1,15 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 
 /**
  * Calculate the player ratio for teams with A:B
  * @export
  * @async
- * @param {Message} msg
+ * @param {Discord.Guild} _guild
+ * @param {Discord.Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-export async function ratio(msg: Message, args: string[]): Promise<string> {
+export async function ratio(_guild: Guild, msg: Message, args: string[]): Promise<string> {
   const reqArgs = 3
 
   // Check for the arguments required

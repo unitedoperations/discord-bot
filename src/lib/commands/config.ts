@@ -1,15 +1,16 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import { Bot } from '../../bot'
 
 /**
  * Allows admin role users to alter some configuration options for the bot
  * @export
  * @async
+ * @param {Discord.Guild} _guild
  * @param {Discord.Message} msg
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-export async function config(msg: Message, args: string[]): Promise<string> {
+export async function config(_guild: Guild, msg: Message, args: string[]): Promise<string> {
   const reqArgs = 2
 
   // Check for correct amount of arguments passed

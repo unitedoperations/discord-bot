@@ -1,4 +1,4 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import { BotAction } from '../../bot'
 
 /**
@@ -9,7 +9,7 @@ import { BotAction } from '../../bot'
  * @returns {BotAction}
  */
 export function help(output: string): BotAction {
-  return async (msg: Message, _args: string[]): Promise<string> => {
+  return async (_guild: Guild, msg: Message, _args: string[]): Promise<string> => {
     await msg.author.send(output)
     return 'HELP_OUTPUT'
   }

@@ -1,4 +1,4 @@
-import { Message } from 'discord.js'
+import { Message, Guild } from 'discord.js'
 import { scrapeServerPage } from '../helpers'
 import { serverMessage } from '../messages'
 
@@ -6,11 +6,12 @@ import { serverMessage } from '../messages'
  * Get the data about the current mission on the A3 primary server
  * @export
  * @async
- * @param {Message} msg
+ * @param {Discord.Guild} _guild
+ * @param {Discord.Message} msg
  * @param {string[]} _args
  * @returns {Promise<string>}
  */
-export async function primary(msg: Message, _args: string[]): Promise<string> {
+export async function primary(_guild: Guild, msg: Message, _args: string[]): Promise<string> {
   try {
     let serverInfo = await scrapeServerPage('http://www.unitedoperations.net/tools/uosim/')
     if (!serverInfo) {
