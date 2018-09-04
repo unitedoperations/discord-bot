@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Parse the VERSION file and generate the next version based on input
 new_version() {
   # Split the current version file into major, minor and revisions
   version=$(cat VERSION)
@@ -25,12 +26,22 @@ new_version() {
   echo "$curr_major.$curr_minor.$curr_revision"
 }
 
+# Update the VERSION file with next version
 version_file() {
   # Log the new version update and edit VERSION file
   echo "Upgraded from $(cat VERSION) -> $1"
   echo $1 > VERSION
 }
 
+# Update package.json with next version
+package_version() {
+  jq -r ".version |= \"$1\"" package.json > tmp.json
+  rm package.json
+  mv tmp.json package.json
+  echo "Updated package.json to version -> $1"
+}
+
+# Delete old Docker images and rebuild the new deployment image and push to DockerHub
 docker_image() {
   # Rebuild the Docker image with the next version and push them
   imageid=$(docker images -q mcallens/uo-discordbot:latest)
@@ -44,14 +55,17 @@ docker_image() {
   docker push mcallens/uo-discordbot:latest
 }
 
+# Create a new Git tag for the new version for the next push
 git_tag() {
   # Add a tag for the new version on the git repository
   git tag -a "v$1"
 }
 
+# Main operations to strand
 next=$(new_version "$1")
 if [[ "$next" != *"Invalid"* ]]; then
   version_file $next
+  package_version $next
 
   if [ "$1" == "major" ] || [ "$1" == "minor" ]; then
     docker_image $next

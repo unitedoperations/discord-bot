@@ -1,5 +1,5 @@
 import { Message, Guild } from 'discord.js'
-import signale from 'signale'
+import * as log from '../logger'
 
 /**
  * Allows a user to leave a group that they are currently in
@@ -34,7 +34,7 @@ export async function leaveGroup(guild: Guild, msg: Message, args: string[]): Pr
     await guild
       .member(msg.author)
       .removeRole(role, 'Requested through bot command')
-      .catch(signale.error)
+      .catch(log.error)
     await msg.author.send(`Successfully removed from group '${role.name}'.`)
     return `REMOVED_FROM_GROUP: ${role.name}`
   }

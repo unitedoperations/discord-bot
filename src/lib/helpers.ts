@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
-import signale from 'signale'
 import cheerio from 'cheerio'
+import * as log from './logger'
 
 /**
  * Interface type for primary server data
@@ -65,7 +65,7 @@ export async function scrapeServerPage(url: string): Promise<ServerInformation |
     for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
     return serverInfo as ServerInformation
   } catch (e) {
-    signale.error(`SERVER_SCRAPE: ${e.message}`)
+    log.error(`SERVER_SCRAPE: ${e.message}`)
     return null
   }
 }
@@ -111,7 +111,7 @@ export async function scrapeThreadsPage(url: string): Promise<ThreadInformation[
     // Weird work around for type casting bug
     return JSON.parse(JSON.stringify(openThreads)) as ThreadInformation[]
   } catch (e) {
-    signale.error(`THREAD_SCRAPE: ${e.message}`)
+    log.error(`THREAD_SCRAPE: ${e.message}`)
     return []
   }
 }

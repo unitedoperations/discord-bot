@@ -1,5 +1,5 @@
 import { Message, Guild } from 'discord.js'
-import signale from 'signale'
+import * as log from '../logger'
 import { allowedDiscordGroups } from '../access'
 
 /**
@@ -35,7 +35,7 @@ export async function joinGroup(guild: Guild, msg: Message, args: string[]): Pro
     await guild
       .member(msg.author)
       .addRole(role, 'Requested through bot command')
-      .catch(signale.error)
+      .catch(log.error)
     await msg.author.send(`Successfully added to group '${role.name}'.`)
     return `ADDED_TO_GROUP: ${role.name}`
   }

@@ -1,6 +1,7 @@
 export { about } from './about'
 export { alerts } from './alerts'
 export { config } from './config'
+export { events } from './events'
 export { help } from './help'
 export { joinGroup } from './joinGroup'
 export { leaveGroup } from './leaveGroup'

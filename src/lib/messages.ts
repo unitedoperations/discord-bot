@@ -29,7 +29,7 @@ interface EmbedMessage {
  */
 export const updateMessage = (newVersion: string): EmbedMessage => ({
   color: 11640433,
-  title: `🤖 Upgrade to v${newVersion}!`,
+  title: `🤖 **Upgrade to v${newVersion}!**`,
   description: '_Run the `!?` or `!help` command to see if any new commands were added._',
   fields: [
     {
@@ -48,7 +48,7 @@ export const updateMessage = (newVersion: string): EmbedMessage => ({
  */
 export const welcomeMessage = (name: string): EmbedMessage => ({
   color: 11640433, // Integer representation of UO color #B19E71
-  title: `**Welcome to United Operations Discord, ${name}!**`,
+  title: `👋🏼 **Welcome to United Operations Discord, ${name}!**`,
   url: 'http://forums.unitedoperations.net',
   description: '*Tactical Gaming Community*',
   thumbnail: {
@@ -93,14 +93,27 @@ export const welcomeMessage = (name: string): EmbedMessage => ({
  * @param {CalendarEvent} event
  * @returns {EmbedMessage}
  */
-export const eventMessage = (event: CalendarEvent, away: string): EmbedMessage => ({
+export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessage => ({
   color: 11640433,
-  title: `**Reminder:** *${event.title}*`,
+  title: `🔔 **Reminder:** *${event.title}*`,
   description: `_...taking place in about **${away}**_`,
   url: event.link,
   image: {
     url: event.img
   }
+})
+
+/**
+ * Embed message creater for displaying all pending community events
+ * @export
+ * @param {CalendarEvents[]} events
+ * @returns {EmbedMessage}
+ */
+export const eventsMessage = (events: CalendarEvent[]): EmbedMessage => ({
+  color: 11640433,
+  title: '⏳ **Community Events**',
+  description: `_There are a total of ${events.length} upcoming community events!_`,
+  fields: events.map(e => ({ name: e.title, value: e.link }))
 })
 
 /**
@@ -112,7 +125,7 @@ export const eventMessage = (event: CalendarEvent, away: string): EmbedMessage =
  */
 export const serverMessage = (info: ServerInformation): EmbedMessage => ({
   color: 11640433,
-  title: info.mission,
+  title: `**${info.mission}**`,
   description:
     info.description !== '' ? `_${info.description.split('\n')[0]}_` : `_No description_`,
   fields: [
@@ -143,7 +156,7 @@ export const pollsMessage = (
   state: 'open' | 'close'
 ): EmbedMessage => ({
   color: 11640433,
-  title: state === 'open' ? 'Open Polls' : 'Closed Polls',
+  title: state === 'open' ? '📊 **Open Polls**' : '🔒 **Closed Polls**',
   description:
     state === 'open'
       ? `_There are currently ${threads.length} active polls to vote on!_`
@@ -159,7 +172,7 @@ export const pollsMessage = (
  */
 export const alertsMessage = (alerts: { [name: string]: string[] }): EmbedMessage => ({
   color: 11640433,
-  title: '⏰ Scheduled Reminders',
+  title: '**⏰ Scheduled Reminders**',
   description: '_Pending timestamps for event reminders._',
   fields: Object.keys(alerts).map(k => ({ name: k, value: alerts[k].join('\n') }))
 })
@@ -178,7 +191,7 @@ export const groupsMessage = (groups: Group[]): EmbedMessage => {
 
   return {
     color: 11640433,
-    title: '👥 Active Groups Looking for Players',
+    title: '**👥 Active Groups Looking for Players**',
     description: 'Run `!lfg join <id>` to join one of these active groups_',
     fields:
       items.length > 0
@@ -212,7 +225,7 @@ export const groupCreatedMessage = (g: Group): EmbedMessage => ({
  */
 export const groupFullMessage = (g: Group): EmbedMessage => ({
   color: 11640433,
-  title: `🎉 LFG - ${g.name} is Full`,
+  title: `**🎉 LFG - ${g.name} is Full**`,
   description: `_All ${
     g.needed
   } players required for the group have been found! Get in contact with ${
@@ -227,7 +240,7 @@ export const groupFullMessage = (g: Group): EmbedMessage => ({
  */
 export const aboutMessage = (): EmbedMessage => ({
   color: 11640433,
-  title: 'ℹ️ Bot Information',
+  title: '**ℹ️ Bot Information**',
   description: '_Details about the bot_',
   fields: [
     {
