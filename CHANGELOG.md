@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.3.0
+
+- UPDATE change the minimum player count on the primary server to trigger an alert from `5` to `10`
+- UPDATE version control flow to edit `package.json` on updates
+- REMOVE unnecessary dependencies
+- REMOVE unneeded logs
+
 ## v2.2.0
 
 - ADD allow commands through direct messages

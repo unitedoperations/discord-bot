@@ -3,7 +3,7 @@ import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, RoutineStore, Group, LFGStore } from './lib/state'
+import { CalendarEvent, Group, LFGStore, RoutineStore } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
@@ -128,7 +128,6 @@ export class Bot implements Routinable {
       // Initial calendar feed pull, handled by routine in CalendarFeed instance after
       await this._calendar.pull()
 
-      // TODO: Convert to CRON jobs with node-schedule
       // Add a background routines
       RoutineStore.add(
         'server',

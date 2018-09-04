@@ -62,7 +62,6 @@ export class CalendarFeed implements Routinable {
    * @memberof CalendarFeed
    */
   async pull() {
-    log.info('Pulled updates from calendar RSS feed')
     this._feed = new FeedParser({ feedurl: this._feedUrl })
     this._feed.on('readable', this._onFeedReadable)
     const res = await fetch(this._feedUrl)
