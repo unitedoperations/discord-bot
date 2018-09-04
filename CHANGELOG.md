@@ -2,6 +2,8 @@
 
 ## v2.3.0
 
+- ADD `!events` command to see all pending community events and links
+- UPDATE improve message structure for bot responses
 - UPDATE change the minimum player count on the primary server to trigger an alert from `5` to `10`
 - UPDATE version control flow to edit `package.json` on updates
 - REMOVE unnecessary dependencies

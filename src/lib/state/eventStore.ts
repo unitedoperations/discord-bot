@@ -41,6 +41,15 @@ class EventStore {
   add(id: string, e: CalendarEvent) {
     if (!this._events.has(id)) this._events.set(id, e)
   }
+
+  /**
+   * Returns an array of all stored CalendarEvent objects
+   * @returns {CalendarEvent[]}
+   * @memberof EventStore
+   */
+  getEvents(): CalendarEvent[] {
+    return [...this._events.values()]
+  }
 }
 
 export default new EventStore()

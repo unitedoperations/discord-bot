@@ -9,7 +9,7 @@ import { help } from './lib/commands'
 import {
   updateMessage,
   welcomeMessage,
-  eventMessage,
+  reminderMessage,
   serverMessage,
   pollsMessage,
   groupsMessage
@@ -333,7 +333,7 @@ export class Bot implements Routinable {
 
       // If hour difference is within the remind window, send message to
       // all users of the designated group with the reminder in the main channel
-      const msg = eventMessage(e, reminder) as Discord.RichEmbed
+      const msg = reminderMessage(e, reminder) as Discord.RichEmbed
 
       try {
         // Determine the channel that the message should be send to and who to tag
@@ -435,6 +435,7 @@ export class Bot implements Routinable {
         }
       } else {
         await msg.delete()
+        await msg.author.send(`Sorry, I wasn't taught how to handle \`${cmd}\`. 🙁`)
         log.error(`No command function found for '!${cmdKey}'`)
       }
     }

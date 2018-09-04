@@ -6,6 +6,7 @@ import {
   about,
   alerts,
   config,
+  events,
   joinGroup,
   leaveGroup,
   lfg,
@@ -33,6 +34,7 @@ bot
     config,
     admins
   )
+  .addCommand('events', '`!events`: _displays all pending community events_', events)
   .addCommand(
     'join_group',
     '`!join_group <group>`: _join the argued group if it exists and have permission_',
