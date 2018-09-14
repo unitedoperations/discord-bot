@@ -50,7 +50,7 @@ bot
     '`!lfg list | create <# needed> <name> | join <id> | delete <id>`: _looking for group functionality to find people to play a game with_',
     lfg
   )
-  // TODO: undeprecate and resolve
+  // DEPRECATED:
   .addCommand(
     'polls',
     '`!polls`: _get a list of the active polls/voting threads on the forums_',

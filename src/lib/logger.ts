@@ -9,26 +9,30 @@ const tags = {
   alert: '[ALERT]'
 }
 
+function withTimestamp(header: string, str: string) {
+  log(`${new Date()} ${header.padEnd(10)} ${str}`)
+}
+
 export function info(str: string) {
-  log(`${tags.info.padEnd(10)} ${str}`)
+  withTimestamp(tags.info, str)
 }
 
 export function error(str: string) {
-  log(`${tags.error.padEnd(10)} ${str}`)
+  withTimestamp(tags.error, str)
 }
 
 export function fav(str: string) {
-  log(`${tags.fav.padEnd(10)} ${str}`)
+  withTimestamp(tags.fav, str)
 }
 
 export function cmd(str: string) {
-  log(`${tags.cmd.padEnd(10)} ${str}`)
+  withTimestamp(tags.cmd, str)
 }
 
 export function event(str: string) {
-  log(`${tags.event.padEnd(10)} ${str}`)
+  withTimestamp(tags.event, str)
 }
 
-export function alert(str: string) {
-  log(`${tags.alert.padEnd(10)} ${str}`)
+export function alert(str: string, iteration: string) {
+  withTimestamp(tags.alert, `${str} (${iteration})`)
 }

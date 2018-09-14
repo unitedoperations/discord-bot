@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.4.0
+
+- ADD additional error handling
+- UPDATE better operation logging with timestamps
+- DEPRECATE new poll routine until issue resolved
+
 ## v2.3.0
 
 - ADD `!events` command to see all pending community events and links
