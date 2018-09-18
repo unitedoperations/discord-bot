@@ -1,5 +1,5 @@
 import { Message, Guild } from 'discord.js'
-import { scrapeThreadsPage } from '../helpers'
+import { scrapeThreadsPage } from '../api'
 import { pollsMessage } from '../messages'
 
 /**
@@ -11,6 +11,7 @@ import { pollsMessage } from '../messages'
  * @param {string[]} _args
  * @returns {Promise<string>}
  */
+// DEPRECATED:
 export async function polls(_guild: Guild, msg: Message, _args: string[]): Promise<string> {
   try {
     let openThreads = await scrapeThreadsPage(

@@ -128,6 +128,9 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
   title: `**${info.mission}**`,
   description:
     info.description !== '' ? `_${info.description.split('\n')[0]}_` : `_No description_`,
+  thumbnail: {
+    url: 'https://units.arma3.com/groups/img/1222/vSClUszph6.png'
+  },
   fields: [
     {
       name: 'Players',
