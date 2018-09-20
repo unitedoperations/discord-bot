@@ -146,6 +146,8 @@ export class CalendarFeed implements Routinable {
             schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
         })
         EventStore.add(e.guid, newEvent)
+      } else {
+        EventStore.removeIfOld(e.guid)
       }
     }
   }

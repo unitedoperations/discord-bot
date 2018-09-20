@@ -4,6 +4,7 @@
 
 - ADD additional error handling
 - UPDATE better operation logging with timestamps
+- UPDATE remove old events from cache
 - DEPRECATE new poll routine until issue resolved
 
 ## v2.3.0
