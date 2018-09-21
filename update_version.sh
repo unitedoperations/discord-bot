@@ -61,9 +61,22 @@ git_tag() {
   git tag -a "v$1"
 }
 
+# Run Jests tests for the TypeScript Code, exit on fail
+unit_tests() {
+  yarn test
+  if [ $? -ne 0 ]; then
+    echo "Unit tests failed."
+    exit 1
+  fi
+}
+
 # Main operations to strand
 next=$(new_version "$1")
 if [[ "$next" != *"Invalid"* ]]; then
+  if [ "$1" != "revision" ]; then
+    unit_tests
+  fi
+
   version_file $next
   package_version $next
 

@@ -1,6 +1,14 @@
 .github/
-node_modules/
-build/
 .env
+
+__tests__/
+build/
+coverage/
+node_modules/
+
+nodemon.json
+*.sh
+jest.config.js
+CHANGELOG.md
 README.md
 yarn.lock
