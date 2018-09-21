@@ -22,13 +22,13 @@ export async function missions(_guild: Guild, msg: Message, args: string[]): Pro
   const { FTP_HOST, FTP_USER, FTP_PASS } = process.env
   const ftp = new FTP()
   await ftp.connect({ host: FTP_HOST, user: FTP_USER, password: FTP_PASS })
-  const files: FTP.ListingElement[] = await ftp.list('/')
+  const files: FTP.ListingElement[] = await ftp.list('/SRV1')
   await ftp.end()
 
   // Filter all the missions that match or are similar to the argued values
   const matches: string[] = files.map(f => f.name).filter(n => isMatch(args, n.split('_')))
 
-  await msg.author.send({ embed: missionsMessage(matches) })
+  await msg.author.send({ embed: missionsMessage(args, matches) })
   return 'MISSION_SEARCH_OUTPUT'
 }
 

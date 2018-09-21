@@ -242,10 +242,10 @@ export const groupFullMessage = (g: Group): EmbedMessage => ({
  * @param {string[]} names
  * @returns {EmbedMessage}
  */
-export const missionsMessage = (names: string[]): EmbedMessage => ({
+export const missionsMessage = (search: string[], names: string[]): EmbedMessage => ({
   color: 11640433,
-  title: `**🗺 Mission Search Results: _${names.join(' ')}_**`,
-  fields: names.map(n => ({ name: n, value: '' }))
+  title: `**🗺 Mission Search Results: _${search.join(' ')}_**`,
+  description: names.length > 0 ? `${names.join('\n').replace(/_/g, '-')}` : 'No results found.'
 })
 
 /**
