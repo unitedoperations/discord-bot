@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.4.0
+
+- ADD additional error handling
+- ADD `!sqf` command to provide wiki links for searched SQF commands
+- ADD `!missions` to search for missions in the FTP server
+- ADD beginning unit testing
+- UPDATE better operation logging with timestamps
+- UPDATE remove old events from cache
+- DEPRECATE new poll routine until issue resolved
+
 ## v2.3.0
 
 - ADD `!events` command to see all pending community events and links

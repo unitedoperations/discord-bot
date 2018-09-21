@@ -33,6 +33,22 @@ class EventStore {
   }
 
   /**
+   * Removes the argued event by ID if all reminders have occurred or
+   * scheduled date is passed
+   * @param {string} id
+   * @returns {boolean}
+   * @memberof EventStore
+   */
+  removeIfOld(id: string): boolean {
+    const e: CalendarEvent | undefined = this._events.get(id)
+    if (e !== undefined && [...e.reminders.values()].every(v => v)) {
+      this._events.delete(id)
+      return true
+    }
+    return false
+  }
+
+  /**
    * Sets the ID in the events cache to the argued CalendarEvent
    * @param {string} id
    * @param {CalendarEvent} e

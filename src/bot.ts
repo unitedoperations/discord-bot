@@ -138,14 +138,15 @@ export class Bot implements Routinable {
         )
       )
 
-      RoutineStore.add(
-        'polls',
-        new Routine<string>(
-          async url => await this._notifyOfNewPoll(url),
-          ['http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'],
-          12 * 60 * 60 * 1000
-        )
-      )
+      // DEPRECATED:
+      // RoutineStore.add(
+      //   'polls',
+      //   new Routine<string>(
+      //     async url => await this._notifyOfNewPoll(url),
+      //     ['http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'],
+      //     12 * 60 * 60 * 1000
+      //   )
+      // )
 
       RoutineStore.add(
         'groups',
@@ -163,7 +164,7 @@ export class Bot implements Routinable {
    */
   clear() {
     RoutineStore.terminate('server')
-    RoutineStore.terminate('polls')
+    // DEPRECATED: RoutineStore.terminate('polls')
     RoutineStore.terminate('groups')
   }
 
@@ -257,6 +258,8 @@ export class Bot implements Routinable {
    * @param {string} url
    * @memberof Bot
    */
+  // DEPRECATED:
+  // @ts-ignore
   private async _notifyOfNewPoll(url: string) {
     try {
       // Scrape the thread url and get information from the list of posts
@@ -326,7 +329,7 @@ export class Bot implements Routinable {
   private async _sendEventReminder(reminder: string, e: CalendarEvent) {
     // Make sure the event hasn't already happened
     if (isFuture(e.date) && !e.reminders.get(reminder)) {
-      log.alert(`Sending notification for event: ${e.title}`)
+      log.alert(`Sending notification for event: ${e.title}`, reminder)
 
       // Ensure it won't send this same reminder type again
       e.reminders.set(reminder, true)

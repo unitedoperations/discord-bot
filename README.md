@@ -28,6 +28,9 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - \*`NUM_PLAYERS_FOR_ALERT`: _the minimum player count on the server to initial an alert_
   - `HOURS_TO_REFRESH_CALENDAR`: _number of hours between updating the event list from the RSS feed for the calendar_
   - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
+  - `FTP_HOST`: _address of the primary mission file FTP server_
+  - `FTP_USER`: _user account name to log into the FTP server_
+  - `FTP_PASS`: _password for the FTP server user account_
 
 Sample `.env` file without sensitive values:
 
@@ -60,6 +63,11 @@ HOURS_TO_REFRESH_CALENDAR=1
 
 # Role(s) permitted to perform admin commands on the bot
 ADMIN_ROLES=GSO,WSO
+
+# FTP server variables
+FTP_HOST=
+FTP_USER=
+FTP_PASS=
 ```
 
 ### Discord

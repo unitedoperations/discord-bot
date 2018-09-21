@@ -62,10 +62,14 @@ export class CalendarFeed implements Routinable {
    * @memberof CalendarFeed
    */
   async pull() {
-    this._feed = new FeedParser({ feedurl: this._feedUrl })
-    this._feed.on('readable', this._onFeedReadable)
-    const res = await fetch(this._feedUrl)
-    res.body.pipe(this._feed)
+    try {
+      this._feed = new FeedParser({ feedurl: this._feedUrl })
+      this._feed.on('readable', this._onFeedReadable)
+      const res = await fetch(this._feedUrl)
+      res.body.pipe(this._feed)
+    } catch (e) {
+      log.error(`PULL ${e.message}`)
+    }
   }
 
   /**
@@ -142,6 +146,8 @@ export class CalendarFeed implements Routinable {
             schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
         })
         EventStore.add(e.guid, newEvent)
+      } else {
+        EventStore.removeIfOld(e.guid) ? log.info(`Deleted Event: ${e.title}`) : null
       }
     }
   }

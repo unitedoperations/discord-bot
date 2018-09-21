@@ -15,7 +15,7 @@ interface EmbedMessage {
   color: number
   title: string
   url?: string
-  description: string
+  description?: string
   thumbnail?: EmbedMessageImage
   image?: EmbedMessageImage
   fields?: EmbedMessageField[]
@@ -128,6 +128,9 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
   title: `**${info.mission}**`,
   description:
     info.description !== '' ? `_${info.description.split('\n')[0]}_` : `_No description_`,
+  thumbnail: {
+    url: 'https://units.arma3.com/groups/img/1222/vSClUszph6.png'
+  },
   fields: [
     {
       name: 'Players',
@@ -231,6 +234,18 @@ export const groupFullMessage = (g: Group): EmbedMessage => ({
   } players required for the group have been found! Get in contact with ${
     g.owner.username
   } to play._`
+})
+
+/**
+ * Creates an embed message for display mission name search results
+ * @export
+ * @param {string[]} names
+ * @returns {EmbedMessage}
+ */
+export const missionsMessage = (search: string[], names: string[]): EmbedMessage => ({
+  color: 11640433,
+  title: `**🗺 Mission Search Results: _${search.join(' ')}_**`,
+  description: names.length > 0 ? `${names.join('\n').replace(/_/g, '-')}` : 'No results found.'
 })
 
 /**
