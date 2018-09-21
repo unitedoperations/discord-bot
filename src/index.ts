@@ -38,6 +38,11 @@ bot
     '`!lfg list | create <# needed> <name> | join <id> | delete <id>`: _looking for group functionality to find people to play a game with_',
     cmd.lfg
   )
+  .addCommand(
+    'missions',
+    '`!missions <name>`: _search for mission on the FTP server with names that fully or partially match the argued name_',
+    cmd.missions
+  )
   // DEPRECATED:
   .addCommand(
     'polls',

@@ -15,7 +15,7 @@ interface EmbedMessage {
   color: number
   title: string
   url?: string
-  description: string
+  description?: string
   thumbnail?: EmbedMessageImage
   image?: EmbedMessageImage
   fields?: EmbedMessageField[]
@@ -234,6 +234,18 @@ export const groupFullMessage = (g: Group): EmbedMessage => ({
   } players required for the group have been found! Get in contact with ${
     g.owner.username
   } to play._`
+})
+
+/**
+ * Creates an embed message for display mission name search results
+ * @export
+ * @param {string[]} names
+ * @returns {EmbedMessage}
+ */
+export const missionsMessage = (names: string[]): EmbedMessage => ({
+  color: 11640433,
+  title: `**🗺 Mission Search Results: _${names.join(' ')}_**`,
+  fields: names.map(n => ({ name: n, value: '' }))
 })
 
 /**

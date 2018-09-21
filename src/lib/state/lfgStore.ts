@@ -66,7 +66,7 @@ class LFGStore {
     if (!group) return { full: false }
 
     group.found.push(user)
-    if (group.found.length == group.needed) {
+    if (group.found.length === group.needed) {
       return { full: true, group }
     }
     return { full: false, group }
