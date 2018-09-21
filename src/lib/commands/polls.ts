@@ -1,5 +1,5 @@
 import { Message, Guild } from 'discord.js'
-import { scrapeThreadsPage } from '../api'
+import { scrapeThreadsPage } from '../helpers'
 import { pollsMessage } from '../messages'
 
 /**

@@ -3,6 +3,7 @@
 ## v2.4.0
 
 - ADD additional error handling
+- ADD `!sqf` command to provide wiki links for searched SQF commands
 - UPDATE better operation logging with timestamps
 - UPDATE remove old events from cache
 - DEPRECATE new poll routine until issue resolved

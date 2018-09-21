@@ -147,7 +147,7 @@ export class CalendarFeed implements Routinable {
         })
         EventStore.add(e.guid, newEvent)
       } else {
-        EventStore.removeIfOld(e.guid)
+        EventStore.removeIfOld(e.guid) ? log.info(`Deleted Event: ${e.title}`) : null
       }
     }
   }
