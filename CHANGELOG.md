@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.5.0
+
+- ADD `!ready` command to register for player count alerts
+
 ## v2.4.0
 
 - ADD additional error handling

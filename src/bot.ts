@@ -3,7 +3,7 @@ import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, Group, LFGStore, RoutineStore } from './lib/state'
+import { CalendarEvent, Group, LFGStore, RoutineStore, AlarmStore } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
@@ -12,7 +12,8 @@ import {
   reminderMessage,
   serverMessage,
   pollsMessage,
-  groupsMessage
+  groupsMessage,
+  alarmMessage
 } from './lib/messages'
 import {
   arrayDiff,
@@ -239,11 +240,18 @@ export class Bot implements Routinable {
         players >= Bot.NUM_PLAYERS_FOR_ALERT
       ) {
         this._currentMission = info
-        const msg = serverMessage(info) as Discord.RichEmbed
         const channel = this._guild!.channels.find(
           c => c.id === Bot.ARMA_CHANNEL
         ) as Discord.TextChannel
-        await channel.send(`_**🎉 NEW MISSION**_`, { embed: msg })
+        await channel.send(`_**🎉 NEW MISSION**_`, {
+          embed: serverMessage(info) as Discord.RichEmbed
+        })
+      }
+
+      // Send alarms to users who are registered for the player count or lower
+      const userAlarms: Discord.User[] = AlarmStore.filter(players)
+      for (const u of userAlarms) {
+        await u.send({ embed: alarmMessage(players) })
       }
     } catch (e) {
       log.error(`NEW_MISSION: ${e.message}`)

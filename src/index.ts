@@ -61,6 +61,11 @@ bot
     cmd.ratio
   )
   .addCommand(
+    'ready',
+    '`!ready <#>`: _receive an alert from the bot when the primary server reaches a certain player count_',
+    cmd.ready
+  )
+  .addCommand(
     'shutdown',
     '`!shutdown`: _turns off the Discord bot with the correct permissions_',
     cmd.shutdown,

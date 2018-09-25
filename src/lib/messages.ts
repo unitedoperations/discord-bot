@@ -87,6 +87,39 @@ export const welcomeMessage = (name: string): EmbedMessage => ({
 })
 
 /**
+ * Embed message for the bot information request
+ * @export
+ * @returns {EmbedMessage}
+ */
+export const aboutMessage = (): EmbedMessage => ({
+  color: 11640433,
+  title: '**ℹ️ Bot Information**',
+  description: '_Details about the bot_',
+  fields: [
+    {
+      name: 'Version',
+      value: Bot.VERSION
+    },
+    {
+      name: 'Developer',
+      value: 'Synxe'
+    },
+    {
+      name: 'Stack',
+      value: 'TypeScript, Shell, Docker, Terraform'
+    },
+    {
+      name: 'Repository',
+      value: 'https://github.com/unitedoperations/uo-discordbot'
+    },
+    {
+      name: 'Feature Requests & Bug Reports',
+      value: 'https://github.com/unitedoperations/uo-discordbot/issues'
+    }
+  ]
+})
+
+/**
  * Compiles the JSON object for an embed calendar event message
  * to remind everyone is the Discord server of the upcoming event
  * @export
@@ -249,34 +282,13 @@ export const missionsMessage = (search: string[], names: string[]): EmbedMessage
 })
 
 /**
- * Embed message for the bot information request
+ * Create an embed message for alarming users of the player count
  * @export
+ * @param {number} x
  * @returns {EmbedMessage}
  */
-export const aboutMessage = (): EmbedMessage => ({
+export const alarmMessage = (x: number): EmbedMessage => ({
   color: 11640433,
-  title: '**ℹ️ Bot Information**',
-  description: '_Details about the bot_',
-  fields: [
-    {
-      name: 'Version',
-      value: Bot.VERSION
-    },
-    {
-      name: 'Developer',
-      value: 'Synxe'
-    },
-    {
-      name: 'Stack',
-      value: 'TypeScript, Shell, Docker, Terraform'
-    },
-    {
-      name: 'Repository',
-      value: 'https://github.com/unitedoperations/uo-discordbot'
-    },
-    {
-      name: 'Feature Requests & Bug Reports',
-      value: 'https://github.com/unitedoperations/uo-discordbot/issues'
-    }
-  ]
+  title: '**🚨 Player Count Alert**',
+  description: `_The primary server has reached or exceeded **${x}** players!_`
 })
