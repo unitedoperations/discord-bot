@@ -1,6 +1,10 @@
 {
   "name": "uo-discordbot",
+<<<<<<< HEAD
   "version": "2.5.0",
+=======
+  "version": "2.4.1",
+>>>>>>> add: !ready
   "homepage": "http://forums.unitedoperations.net",
   "description": "Discord bot for the United Operations server",
   "repository": "https://github.com/unitedoperations/uo-discordbot.git",
