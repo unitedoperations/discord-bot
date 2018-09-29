@@ -29,6 +29,16 @@ class AlarmStore {
   register(count: number, user: User) {
     if (!this._alarms.has(user)) this._alarms.set(user, count)
   }
+
+  /**
+   * Deregistered the user in the store for mission count alarms
+   * @param {User} user
+   * @returns {boolean}
+   * @memberof AlarmStore
+   */
+  remove(user: User): boolean {
+    return this._alarms.delete(user)
+  }
 }
 
 export default new AlarmStore()

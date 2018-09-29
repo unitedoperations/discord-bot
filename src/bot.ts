@@ -252,6 +252,7 @@ export class Bot implements Routinable {
       const userAlarms: Discord.User[] = AlarmStore.filter(players)
       for (const u of userAlarms) {
         await u.send({ embed: alarmMessage(players) })
+        AlarmStore.remove(u)
       }
     } catch (e) {
       log.error(`NEW_MISSION: ${e.message}`)
