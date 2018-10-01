@@ -176,6 +176,10 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
     {
       name: 'Author',
       value: info.author || 'Unknown'
+    },
+    {
+      name: 'Leave Feedback',
+      value: info.feedbackURL
     }
   ]
 })

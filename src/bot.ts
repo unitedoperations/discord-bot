@@ -227,7 +227,8 @@ export class Bot implements Routinable {
           description: 'Unknown',
           players: '0/64',
           island: 'Unknown',
-          author: 'Unknown'
+          author: 'Unknown',
+          feedbackURL: ''
         }
       }
 
