@@ -14,6 +14,7 @@ export interface ServerInformation {
   mission: string
   author: string
   description: string
+  feedbackURL: string
 }
 
 /**
@@ -63,6 +64,8 @@ export async function scrapeServerPage(url: string): Promise<ServerInformation |
     // Combine the keys and values into an object
     const serverInfo: { [k: string]: string } = {}
     for (let i = 0; i < keys.length; i++) serverInfo[keys[i].toLowerCase()] = values[i]
+    serverInfo.feedbackURL = await getFeedbackURL(serverInfo.mission)
+
     return serverInfo as ServerInformation
   } catch (e) {
     log.error(`SERVER_SCRAPE: ${e.message}`)
@@ -77,6 +80,7 @@ export async function scrapeServerPage(url: string): Promise<ServerInformation |
  * @param {string} url
  * @returns {Promise<ThreadInformation[]>}
  */
+// DEPRECATED:
 export async function scrapeThreadsPage(url: string): Promise<ThreadInformation[]> {
   try {
     // Get the HTML from the web page
@@ -137,4 +141,32 @@ export function arrayDiff<T>(a: T[], b: T[]): T[] {
  */
 export function timeDistanceMatch(reminder: string, diff: string): boolean {
   return reminder.split(' ').every(x => diff.split(' ').includes(x))
+}
+
+/**
+ * Get the forums URL for feedback submission for the mission
+ * @export
+ * @async
+ * @throws
+ * @param {string} name
+ * @returns {Promise<string>}
+ */
+export async function getFeedbackURL(name: string): Promise<string> {
+  try {
+    // Parse mission name for searching
+    const searchName: string = name.replace(/[\s\-]/g, '_')
+    const forumPage: string = `http://forums.unitedoperations.net/index.php/page/ArmA3/missionlist/_/livemissions/?search_value=${searchName}`
+
+    // Get contents of the page with the URL
+    const res = await fetch(forumPage)
+    const body = await res.text()
+
+    // Parse the HTML with Cheerio to retrieve the URL
+    const $: CheerioStatic = cheerio.load(body)
+    const url: string = $('table a').attr('href')
+    return `${url}#fast_reply`
+  } catch (e) {
+    log.error(`FEEDBACK_URL_PULL: ${e.message}`)
+    throw new Error(`failed to retrieve the feedback URL for ${name}`)
+  }
 }

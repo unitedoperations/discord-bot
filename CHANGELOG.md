@@ -3,6 +3,7 @@
 ## v2.5.0
 
 - ADD `!ready` command to register for player count alerts
+- ADD mission feedback link on new mission alerts to Discord
 - FIX calendar naming conventions to include `Event: ...` prefix
 
 ## v2.4.0

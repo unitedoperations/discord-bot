@@ -20,7 +20,8 @@ export async function primary(_guild: Guild, msg: Message, _args: string[]): Pro
         description: 'Unknown',
         players: '0/64',
         island: 'Unknown',
-        author: 'Unknown'
+        author: 'Unknown',
+        feedbackURL: ''
       }
     }
 
