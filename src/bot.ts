@@ -193,18 +193,9 @@ export class Bot implements Routinable {
    * @returns {Bot}
    * @memberof Bot
    */
-  compileCommands(): Bot {
-    const helpOutput: string = [
-      '**Commands**',
-      '`!?`, `!help`: _help for usage on commands_',
-      ...this._descriptions.values(),
-      '---------------------------------------------------------------------------------',
-      '_**All bug reports and feature requests should be submitted through the `Issues` system on the GitHub repository:**_',
-      'https://github.com/unitedoperations/uo-discordbot'
-    ].join('\n')
-
-    this._commands.set('?', help(helpOutput))
-    this._commands.set('help', help(helpOutput))
+  endCommandList(): Bot {
+    this._commands.set('?', help(this._descriptions))
+    this._commands.set('help', help(this._descriptions))
     return this
   }
 

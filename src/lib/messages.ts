@@ -22,6 +22,20 @@ interface EmbedMessage {
 }
 
 /**
+ * Create the help message embed for the !? and !help commands
+ * @export
+ * @param {Map<string, string>} descriptions
+ * @returns {EmbedMessage}
+ */
+export const helpMessage = (descriptions: Map<string, string>): EmbedMessage => ({
+  color: 11640433,
+  title: '**Commands**',
+  description:
+    '_All bug reports and feature requests are submitted as issues at https://github.com/unitedoperations/uo-discordbot_',
+  fields: [...descriptions.entries()].map(e => ({ name: e[0], value: e[1] }))
+})
+
+/**
  * Embed message structure for updates to the bot being announced to a Discord channel
  * @export
  * @param {string} newVersion

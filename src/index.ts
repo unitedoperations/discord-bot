@@ -81,5 +81,5 @@ bot
     '`!sqfp <command>`: _search BIS wiki for information about an SQF command and post the result publicly_',
     cmd.sqfp
   )
-  .compileCommands()
+  .endCommandList()
   .start(process.env.BOT_TOKEN!)
