@@ -61,6 +61,11 @@ bot
     cmd.ratio
   )
   .addCommand(
+    'ready',
+    '`!ready <#>`: _receive an alert from the bot when the primary server reaches a certain player count_',
+    cmd.ready
+  )
+  .addCommand(
     'shutdown',
     '`!shutdown`: _turns off the Discord bot with the correct permissions_',
     cmd.shutdown,
@@ -71,5 +76,9 @@ bot
     '`!sqf <command>`: _search the BIS wiki for information about an SQF command_',
     cmd.sqf
   )
-  .compileCommands()
+  .addCommand(
+    'sqfp',
+    '`!sqfp <command>`: _search BIS wiki for information about an SQF command and post the result publicly_',
+    cmd.sqfp
+  )
   .start(process.env.BOT_TOKEN!)
