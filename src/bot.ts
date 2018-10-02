@@ -122,6 +122,10 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   async start(token: string) {
+    // Add final help commands to list
+    this._commands.set('?', help(this._descriptions))
+    this._commands.set('help', help(this._descriptions))
+
     try {
       // Login with the Discord client
       await this._client.login(token)
@@ -184,18 +188,6 @@ export class Bot implements Routinable {
     this._commands.set(cmd, provision ? provision(action) : action)
     if (provision) desc += ` _**(${provision.name})**_`
     this._descriptions.set(cmd, desc)
-    return this
-  }
-
-  /**
-   * Takes the descriptions of all commands added and dynamically builds
-   * the help command output and completes the command adding process
-   * @returns {Bot}
-   * @memberof Bot
-   */
-  endCommandList(): Bot {
-    this._commands.set('?', help(this._descriptions))
-    this._commands.set('help', help(this._descriptions))
     return this
   }
 
