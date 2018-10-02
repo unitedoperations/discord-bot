@@ -3,7 +3,7 @@ import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, Group, LFGStore, RoutineStore } from './lib/state'
+import { CalendarEvent, Group, LFGStore, RoutineStore, AlarmStore } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
@@ -12,7 +12,8 @@ import {
   reminderMessage,
   serverMessage,
   pollsMessage,
-  groupsMessage
+  groupsMessage,
+  alarmMessage
 } from './lib/messages'
 import {
   arrayDiff,
@@ -121,6 +122,10 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   async start(token: string) {
+    // Add final help commands to list
+    this._commands.set('?', help(this._descriptions))
+    this._commands.set('help', help(this._descriptions))
+
     try {
       // Login with the Discord client
       await this._client.login(token)
@@ -187,27 +192,6 @@ export class Bot implements Routinable {
   }
 
   /**
-   * Takes the descriptions of all commands added and dynamically builds
-   * the help command output and completes the command adding process
-   * @returns {Bot}
-   * @memberof Bot
-   */
-  compileCommands(): Bot {
-    const helpOutput: string = [
-      '**Commands**',
-      '`!?`, `!help`: _help for usage on commands_',
-      ...this._descriptions.values(),
-      '---------------------------------------------------------------------------------',
-      '_**All bug reports and feature requests should be submitted through the `Issues` system on the GitHub repository:**_',
-      'https://github.com/unitedoperations/uo-discordbot'
-    ].join('\n')
-
-    this._commands.set('?', help(helpOutput))
-    this._commands.set('help', help(helpOutput))
-    return this
-  }
-
-  /**
    * Performs a scrape of the A3 primary's server information URL argued
    * and if there is an update since the last run, notify to A3 player group
    * @private
@@ -226,7 +210,8 @@ export class Bot implements Routinable {
           description: 'Unknown',
           players: '0/64',
           island: 'Unknown',
-          author: 'Unknown'
+          author: 'Unknown',
+          feedbackURL: ''
         }
       }
 
@@ -239,11 +224,19 @@ export class Bot implements Routinable {
         players >= Bot.NUM_PLAYERS_FOR_ALERT
       ) {
         this._currentMission = info
-        const msg = serverMessage(info) as Discord.RichEmbed
         const channel = this._guild!.channels.find(
           c => c.id === Bot.ARMA_CHANNEL
         ) as Discord.TextChannel
-        await channel.send(`_**🎉 NEW MISSION**_`, { embed: msg })
+        await channel.send(`_**🎉 NEW MISSION**_`, {
+          embed: serverMessage(info) as Discord.RichEmbed
+        })
+      }
+
+      // Send alarms to users who are registered for the player count or lower
+      const userAlarms: Discord.User[] = AlarmStore.filter(players)
+      for (const u of userAlarms) {
+        await u.send({ embed: alarmMessage(players) })
+        AlarmStore.remove(u)
       }
     } catch (e) {
       log.error(`NEW_MISSION: ${e.message}`)
@@ -439,7 +432,7 @@ export class Bot implements Routinable {
       } else {
         await msg.delete()
         await msg.author.send(`Sorry, I wasn't taught how to handle \`${cmd}\`. 🙁`)
-        log.error(`No command function found for '!${cmdKey}'`)
+        log.error(`NO_COMMAND (${msg.author.username}) - ${cmd}`)
       }
     }
   }

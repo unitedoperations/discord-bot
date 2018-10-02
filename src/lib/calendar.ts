@@ -177,7 +177,9 @@ export class CalendarFeed implements Routinable {
   private _findGroup(title: string): string {
     const groupMap = {
       'arma 3': 'UOA3',
+      'event: arma 3': 'UOA3',
       uoaf: 'UOAF',
+      'event: uoaf': 'UOAF',
       uotc: 'UOTC'
     }
     for (const [k, v] of Object.entries(groupMap)) {
