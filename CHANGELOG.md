@@ -6,6 +6,7 @@
 - ADD mission feedback link on new mission alerts to Discord
 - ADD `!sqfp` command to post results publicly as reference
 - UPDATE help output to be embed message type
+- UPDATE code refactoring for performance and cleaning
 - FIX calendar naming conventions to include `Event: ...` prefix
 
 ## v2.4.0
