@@ -4,6 +4,7 @@
 
 - ADD `!ready` command to register for player count alerts
 - ADD mission feedback link on new mission alerts to Discord
+- ADD `!sqfp` command to post results publicly as reference
 - FIX calendar naming conventions to include `Event: ...` prefix
 
 ## v2.4.0

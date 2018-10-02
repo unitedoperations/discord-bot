@@ -449,7 +449,7 @@ export class Bot implements Routinable {
       } else {
         await msg.delete()
         await msg.author.send(`Sorry, I wasn't taught how to handle \`${cmd}\`. 🙁`)
-        log.error(`No command function found for '!${cmdKey}'`)
+        log.error(`NO_COMMAND (${msg.author.username}) - ${cmd}`)
       }
     }
   }
