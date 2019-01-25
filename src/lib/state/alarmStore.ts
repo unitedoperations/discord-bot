@@ -21,13 +21,18 @@ class AlarmStore {
   }
 
   /**
-   * Register a new user for a player count alarm
+   * Register a new user for a player count alarm.
+   * Returns false if there was no alarm already registered for the user
+   * and true if there was an alarm and it was overridden.
    * @param {number} count
    * @param {User} user
+   * @returns {boolean}
    * @memberof AlarmStore
    */
-  register(count: number, user: User) {
-    if (!this._alarms.has(user)) this._alarms.set(user, count)
+  register(count: number, user: User): boolean {
+    const existed = this._alarms.has(user)
+    this._alarms.set(user, count)
+    return existed
   }
 
   /**
