@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.6.0
+
+- ADD Terraform scripts for infrastructural automation
+
 ## v2.5.0
 
 - ADD `!ready` command to register for player count alerts
