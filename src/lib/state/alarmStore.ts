@@ -44,6 +44,15 @@ class AlarmStore {
   remove(user: User): boolean {
     return this._alarms.delete(user)
   }
+
+  /**
+   * Returns the number of alarms registered with the store
+   * @returns {number}
+   * @memberof AlarmStore
+   */
+  numberOfAlarms(): number {
+    return this._alarms.size
+  }
 }
 
 export default new AlarmStore()

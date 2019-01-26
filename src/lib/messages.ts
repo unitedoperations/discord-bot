@@ -8,7 +8,7 @@ interface EmbedMessageImage {
 
 interface EmbedMessageField {
   name: string
-  value: string
+  value: string | number
 }
 
 interface EmbedMessage {
@@ -309,4 +309,38 @@ export const alarmMessage = (x: number): EmbedMessage => ({
   color: 11640433,
   title: '**🚨 Player Count Alert**',
   description: `_The primary server has reached or exceeded **${x}** players!_`
+})
+
+export const statsMessage = (
+  uptime: string,
+  reqs: number,
+  events: number,
+  alarms: number,
+  groups: number
+): EmbedMessage => ({
+  color: 11640433,
+  title: '**🔢 Runtime Statistics**',
+  description: '_Statistics about the chatbot and its runtime process._',
+  fields: [
+    {
+      name: 'Uptime',
+      value: uptime
+    },
+    {
+      name: 'Total Requests',
+      value: reqs
+    },
+    {
+      name: 'Upcoming Events',
+      value: events
+    },
+    {
+      name: 'Pending Alarms',
+      value: alarms
+    },
+    {
+      name: 'Groups Waiting',
+      value: groups
+    }
+  ]
 })

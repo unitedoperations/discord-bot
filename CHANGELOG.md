@@ -3,6 +3,7 @@
 ## v2.6.0
 
 - ADD Terraform scripts for infrastructural automation
+- ADD statistics capturing and `!stats` command for admins to view
 - UPDATE `!ready` to inform when an alarm was overridden
 
 ## v2.5.0

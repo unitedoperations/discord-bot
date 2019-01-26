@@ -51,6 +51,7 @@ export type BotAction = (
  * @static @property {string} ARMA_PLAYER_ROLE
  * @static @property {string} BMS_PLAYER_ROLE
  * @static @property {number} NUM_PLAYERS_FOR_ALERT
+ * @static @property {number} REQUEST_COUNT
  *
  * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
@@ -75,6 +76,7 @@ export class Bot implements Routinable {
   public static ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
   public static BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
   public static NUM_PLAYERS_FOR_ALERT: number = parseInt(process.env.NUM_PLAYERS_FOR_ALERT!)
+  public static REQUEST_COUNT: number = 0
 
   // Bot instance variables
   private _guild?: Discord.Guild
@@ -411,6 +413,8 @@ export class Bot implements Routinable {
 
     // Check if the message actually is a command (starts with '!')
     if (cmd.startsWith('!')) {
+      Bot.REQUEST_COUNT++
+
       // Look for a handler function is the map that matches the command
       const fn = this._commands.get(cmdKey)
       if (fn) {
