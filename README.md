@@ -4,6 +4,7 @@
 
 | Command        |   Arguments    |                                          Description                                          |    Permissions    |
 | :------------- | :------------: | :-------------------------------------------------------------------------------------------: | :---------------: |
+| `!?`, `!help`  |       -        |                     Displays the help output for the bot commands and use                     |        All        |
 | `!about`       |       -        |                               Display information about the bot                               |        All        |
 | `!alerts`      |       -        |                   Display the pending alerts that are scheduled in the bot                    |      Admins       |
 | `!config`      |   key, value   |              Reconfigure available bot options; check README for list of options              |      Admins       |
