@@ -22,7 +22,7 @@ The majority of the code has been written in such a way that the inner processes
 
 1. Create a file named after your new command in the [commands folder](./src/lib/commands).
    - (e.g. the `!ready` command is defined in [the `ready.ts` file](./src/lib/commands/ready.ts))
-2. Define your new command function(s) as a module export in [the `command/index.ts` file](./src/commands/index.ts) in alphabetic order as the others are defined
+2. Define your new command function(s) as a module export in [the `commands/index.ts` file](./src/lib/commands/index.ts) in alphabetic order as the others are defined
 3. Register your new function(s) in the [main `index.ts` file](./src/index.ts) using the `addCommand` function as seen with other for it to be added to the bot's command registry, along with the usage description which takes a markdown styled string
    - If the command requires provisioning (i.e. only runnable by regulars, admins, etc.) specify that as the last argument of the `addCommand` function as seen with the [`alerts` registration](./src/index.ts)
 
@@ -74,4 +74,4 @@ export { echo } from './echo'
 
 Most commands respond back in the form of an embed message. This is a styled response as you see in the response of the majority of the commands and channel notifications.
 
-If a new formatted embed message is required for your new function, create and export it in the [`message.ts`](./src/lib/message.ts) file. The required type definition for it and the properties is should contain are defined as the top of the same file.
+If a new formatted embed message is required for your new function, create and export it in the [`messages.ts`](./src/lib/messages.ts) file. The required type definition for it and the properties is should contain are defined as the top of the same file.
