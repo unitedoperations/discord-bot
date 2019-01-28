@@ -21,6 +21,11 @@ bot
   )
   .addCommand('events', '`!events`: _displays all pending community events_', cmd.events)
   .addCommand(
+    'flight',
+    '`!flight list | create <SIM> <HHMM> <MM/DD> <details> | join <id> | delete <id>`: _manage pickup flights for UOAF_',
+    cmd.flight
+  )
+  .addCommand(
     'join_group',
     '`!join_group <group>`: _join the argued group if it exists and have permission_',
     cmd.joinGroup

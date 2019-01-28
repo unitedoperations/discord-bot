@@ -1,7 +1,7 @@
 import { Message, Guild } from 'discord.js'
 import { Bot } from '../../bot'
 import { statsMessage } from '../messages'
-import { EventStore, AlarmStore, LFGStore } from '../state'
+import { EventStore, AlarmStore, GroupStore } from '../state'
 
 /**
  * View runtime statistics collected and stored by the chatbot
@@ -19,7 +19,7 @@ export async function stats(_guild: Guild, msg: Message, _args: string[]): Promi
       Bot.REQUEST_COUNT,
       EventStore.getEvents().length,
       AlarmStore.numberOfAlarms(),
-      LFGStore.getGroups().length
+      GroupStore.getGroups().length
     )
   })
   return 'RUNTIME_STATS'

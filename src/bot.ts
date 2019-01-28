@@ -3,7 +3,7 @@ import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, Group, LFGStore, RoutineStore, AlarmStore } from './lib/state'
+import { CalendarEvent, Group, GroupStore, RoutineStore, AlarmStore } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
@@ -300,7 +300,7 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private async _notifyOfActiveGroups() {
-    const groups: Group[] = LFGStore.getGroups()
+    const groups: Group[] = GroupStore.getGroups()
     try {
       // Notify the LFG channel if there are any active groups
       if (groups.length > 0) {

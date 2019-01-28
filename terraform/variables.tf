@@ -1,14 +1,14 @@
-variable "docker_cfg" {
+variable "credentials_file" {
   type        = "string"
-  description = "Path to your Docker config.json file"
+  description = "Relative path to the service account credentials file"
 }
 
-variable "hub_namespace" {
+variable "project_id" {
   type        = "string"
-  description = "Namespace containing the Docker image on the registry hub"
+  description = "ID of the Google Cloud Platform project being targeted"
 }
 
-variable "image_name" {
+variable "region" {
   type        = "string"
-  description = "The name of the Docker image in the registry hub"
+  description = "GCP project region"
 }
