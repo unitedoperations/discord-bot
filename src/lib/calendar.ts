@@ -89,66 +89,70 @@ export class CalendarFeed implements Routinable {
    * @memberof CalendarFeed
    */
   private _onFeedReadable = () => {
-    let e: FeedParser.Item
+    try {
+      let e: FeedParser.Item
 
-    // Continue to read the feed until no more events
-    while ((e = this._feed!.read())) {
-      // Ensure the events cache doesn't already contain the event
-      if (!EventStore.has(e.guid)) {
-        log.event(`New Event: ${e.title}`)
+      // Continue to read the feed until no more events
+      while ((e = this._feed!.read())) {
+        // Ensure the events cache doesn't already contain the event
+        if (!EventStore.has(e.guid)) {
+          log.event(`New Event: ${e.title}`)
 
-        const imgUrl: string = this._findImage(e.summary)
-        const group: string = this._findGroup(e.title)
+          const imgUrl: string = this._findImage(e.summary)
+          const group: string = this._findGroup(e.title)
 
-        // Check if the title of the event contains Zulu start time
-        let date: Date = e.date as Date
-        const startTime: string | null =
-          e.title.trim().endsWith('z') || e.title.trim().endsWith('Z')
-            ? e.title.trim().substr(e.title.length - 5, 4)
-            : null
+          // Check if the title of the event contains Zulu start time
+          let date: Date = e.date as Date
+          const startTime: string | null =
+            e.title.trim().endsWith('z') || e.title.trim().endsWith('Z')
+              ? e.title.trim().substr(e.title.length - 5, 4)
+              : null
 
-        // Reconstruct event date with found Zulu start time if it exists
-        if (startTime) {
-          const month =
-            date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : date.getUTCMonth() + 1
-          const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate()
-          const d = `${date.getUTCFullYear()}-${month}-${day}`
-          const t = `${startTime.substr(0, 2)}:${startTime.substr(2, 2)}Z`
-          date = new Date(`${d}T${t}`)
-        }
+          // Reconstruct event date with found Zulu start time if it exists
+          if (startTime) {
+            const month =
+              date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : date.getUTCMonth() + 1
+            const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate()
+            const d = `${date.getUTCFullYear()}-${month}-${day}`
+            const t = `${startTime.substr(0, 2)}:${startTime.substr(2, 2)}Z`
+            date = new Date(`${d}T${t}`)
+          }
 
-        // Create event object instance and add to the cache
-        const newEvent: CalendarEvent = {
-          guid: e.guid,
-          title: e.title,
-          date,
-          link: e.link,
-          img: imgUrl,
-          group,
-          reminders: new Map()
-        }
+          // Create event object instance and add to the cache
+          const newEvent: CalendarEvent = {
+            guid: e.guid,
+            title: e.title,
+            date,
+            link: e.link,
+            img: imgUrl,
+            group,
+            reminders: new Map()
+          }
 
-        // For each interval set the default ran to false
-        // and schedule the cron job for the reminder
-        reminderIntervals.forEach(r => {
-          newEvent.reminders.set(r, false)
-          const [amt, type] = r.split(' ')
+          // For each interval set the default ran to false
+          // and schedule the cron job for the reminder
+          reminderIntervals.forEach(r => {
+            newEvent.reminders.set(r, false)
+            const [amt, type] = r.split(' ')
 
-          // Determine the time to schedule the reminder for
-          const time: Date = type.includes('minute')
-            ? subMinute(newEvent.date, parseInt(amt))
-            : type.includes('hour')
+            // Determine the time to schedule the reminder for
+            const time: Date = type.includes('minute')
+              ? subMinute(newEvent.date, parseInt(amt))
+              : type.includes('hour')
               ? subHour(newEvent.date, parseInt(amt))
               : subDay(newEvent.date, parseInt(amt))
 
-          // Schedule reminder job if its in the future
-          if (isFuture(time))
-            schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
-        })
-        EventStore.add(e.guid, newEvent)
-      } else {
-        EventStore.removeIfOld(e.guid) ? log.info(`Deleted Event: ${e.title}`) : null
+            // Schedule reminder job if its in the future
+            if (isFuture(time))
+              schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
+          })
+          EventStore.add(e.guid, newEvent)
+        } else {
+          EventStore.removeIfOld(e.guid) ? log.info(`Deleted Event: ${e.title}`) : null
+        }
       }
+    } catch (e) {
+      log.error(`READABLE_FEED: ${e}`)
     }
   }
 
@@ -176,6 +180,7 @@ export class CalendarFeed implements Routinable {
    */
   private _findGroup(title: string): string {
     const groupMap = {
+      uoa3: 'UOA3',
       'arma 3': 'UOA3',
       'event: arma 3': 'UOA3',
       uoaf: 'UOAF',

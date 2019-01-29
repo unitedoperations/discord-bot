@@ -1,5 +1,5 @@
 import { Bot } from '../bot'
-import { CalendarEvent, Group } from './state'
+import { CalendarEvent, Group, Flight } from './state'
 import { ServerInformation, ThreadInformation } from './helpers'
 
 interface EmbedMessageImage {
@@ -8,7 +8,7 @@ interface EmbedMessageImage {
 
 interface EmbedMessageField {
   name: string
-  value: string
+  value: string | number
 }
 
 interface EmbedMessage {
@@ -260,6 +260,35 @@ export const groupsMessage = (groups: Group[]): EmbedMessage => {
 }
 
 /**
+ * Message structure for listing all existing pickup flights
+ * @export
+ * @param {Flight[]} flight
+ * @returns {EmbedMessage}
+ */
+export const flightsMessage = (flights: Flight[]): EmbedMessage => {
+  const items = flights.map(f => ({
+    name: `${f.game}`,
+    value: `${f.id} - started by ${f.owner.username}`
+  }))
+
+  return {
+    color: 11640433,
+    title: '**🛩 Active Pickup Flights**',
+    description: 'Run `!flight join <id>` to join of these flights_',
+    fields:
+      items.length > 0
+        ? items
+        : [
+            {
+              name: 'No active pickup flights waiting for players...',
+              value:
+                'To create a flight, use the command `!flight create <BMS|DCS> <HHMM> <MM/DD> <details>`.'
+            }
+          ]
+  }
+}
+
+/**
  * Message for the general channel announcement of a new group for LFG created
  * @export
  * @param {Group} g
@@ -269,6 +298,18 @@ export const groupCreatedMessage = (g: Group): EmbedMessage => ({
   color: 11640433,
   title: `👥 _**${g.owner.username}**_ Created Group **${g.name}**`,
   description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${g.id}\`._`
+})
+
+/**
+ * Message for the UOAF flights channel to alert of a newly created flight
+ * @export
+ * @param {Flight} f
+ * @returns {EmbedMessage}
+ */
+export const flightCreatedMessage = (f: Flight): EmbedMessage => ({
+  color: 11640433,
+  title: `🛩 _**${f.owner.username}**_ Created Flight **${f.game}-${f.id}**`,
+  description: `You can join this pickup flight by running \`!flight join ${f.id}\``
 })
 
 /**
@@ -309,4 +350,38 @@ export const alarmMessage = (x: number): EmbedMessage => ({
   color: 11640433,
   title: '**🚨 Player Count Alert**',
   description: `_The primary server has reached or exceeded **${x}** players!_`
+})
+
+export const statsMessage = (
+  uptime: string,
+  reqs: number,
+  events: number,
+  alarms: number,
+  groups: number
+): EmbedMessage => ({
+  color: 11640433,
+  title: '**🔢 Runtime Statistics**',
+  description: '_Statistics about the chatbot and its runtime process._',
+  fields: [
+    {
+      name: 'Uptime',
+      value: uptime
+    },
+    {
+      name: 'Total Requests',
+      value: reqs
+    },
+    {
+      name: 'Upcoming Events',
+      value: events
+    },
+    {
+      name: 'Pending Alarms',
+      value: alarms
+    },
+    {
+      name: 'Groups Waiting',
+      value: groups
+    }
+  ]
 })
