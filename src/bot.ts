@@ -434,9 +434,13 @@ export class Bot implements Routinable {
           log.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e}`)
         }
       } else {
-        await msg.delete()
-        await msg.author.send(`Sorry, I wasn't taught how to handle \`${cmd}\`. 🙁`)
-        log.error(`NO_COMMAND (${msg.author.username}) - ${cmd}`)
+        try {
+          await msg.delete()
+          await msg.author.send(`Sorry, I wasn't taught how to handle \`${cmd}\`. 🙁`)
+          log.error(`NO_COMMAND (${msg.author.username}) - ${cmd}`)
+        } catch (e) {
+          log.error('MESSAGE_DELETE')
+        }
       }
     }
   }
@@ -452,11 +456,16 @@ export class Bot implements Routinable {
    * @returns {Promise<any>}
    * @memberof Bot
    */
-  private _log(tag: string, cmd: string, output: string): Promise<any> {
-    const timestamp = new Date().toISOString()
-    const logChannel = this._guild!.channels.find(
-      c => c.id === Bot.LOG_CHANNEL
-    ) as Discord.TextChannel
-    return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
+  private _log(tag: string, cmd: string, output: string): Promise<any> | void {
+    try {
+      const timestamp = new Date().toISOString()
+      const logChannel = this._guild!.channels.find(
+        c => c.id === Bot.LOG_CHANNEL
+      ) as Discord.TextChannel
+      return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
+    } catch (e) {
+      log.error('FAILED_LOG')
+      return
+    }
   }
 }

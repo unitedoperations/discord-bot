@@ -2,6 +2,7 @@ require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
 import { admins, deprecated } from './lib/access'
+import { error } from './lib/logger'
 
 const { version } = require('../package.json')
 const bot = new Bot(version)
@@ -84,3 +85,4 @@ bot
   )
   .addCommand('stats', '`!stats`: _view runtime statistics about the bot_', cmd.stats, admins)
   .start(process.env.BOT_TOKEN!)
+  .catch(err => error(`START: ${err}`))
