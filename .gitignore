@@ -1,3 +1,4 @@
+.terraform/
 build/
 coverage/
 node_modules/
