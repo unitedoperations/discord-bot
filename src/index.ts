@@ -23,7 +23,7 @@ bot
   .addCommand('events', '`!events`: _displays all pending community events_', cmd.events)
   .addCommand(
     'flight',
-    '`!flight list | create <SIM> <HHMM> <MM/DD> <details> | join <id> | delete <id>`: _manage pickup flights for UOAF_',
+    '`!flight list | create <SIM> <HH:MM> <MM/DD> <details> | join <id> | delete <id>`: _manage pickup flights for UOAF_',
     cmd.flight
   )
   .addCommand(

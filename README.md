@@ -2,31 +2,31 @@
 
 ## Commands
 
-| Command          |                   Arguments                    |                                                     Description                                                     |    Permissions     |
-| :--------------- | :--------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :----------------: |
-| `!?`, `!help`    |                       -                        |                                Displays the help output for the bot commands and use                                |        All         |
-| `!about`         |                       -                        |                                          Display information about the bot                                          |        All         |
-| `!alerts`        |                       -                        |                              Display the pending alerts that are scheduled in the bot                               |       Admins       |
-| `!config`        |                   key, value                   |                         Reconfigure available bot options; check README for list of options                         |       Admins       |
-| `!events`        |                       -                        |                                        displays all pending community events                                        |        All         |
-| `!flight list`   |                       -                        |                                         Display all pickup flights pending                                          |        All         |
-| `!flight create` | sim (BMS or DCS), HHMM zulu, MM/DD, ...details | Create a new pickup flight for the argued SIM to take place on the argued zulu time and date with any extra details |        All         |
-| `!flight join`   |                   flight_id                    |                                   Join an existing pickup flight by the argued ID                                   |        All         |
-| `!flight delete` |                   flight_id                    |                               Delete a pickup flight that you have created by its ID                                | All (flight owner) |
-| `!join_group`    |                   group_name                   |                               Join the argued group if it exists and have permission                                |        All         |
-| `!leave_group`   |                   group_name                   |                                Leave the argued group if it exists and you are in it                                |        All         |
-| `!lfg list`      |                       -                        |                                   Display all group entities looking for players                                    |        All         |
-| `!lfg create`    |                 #_needed, name                 |                     Create a new group with a designated name and amount of players looking for                     |        All         |
-| `!lfg join`      |                    group_id                    |                                 Join a group by it's ID that is looking for players                                 |        All         |
-| `!lfg delete`    |                    group_id                    |                                    Delete a group that you have create by its ID                                    | All (group owner)  |
-| `!missions`      |                      name                      |            Search for mission on the FTP server with names that fully or partially match the argued name            |        All         |
-| `!polls`         |                       -                        |                               Get a list of active polls/voting threads on the forums                               |     Deprecated     |
-| `!ratio`         |                  total, a, b                   |                                Calculate the player ratio for teams with A:B players                                |        All         |
-| `!ready`         |                     count                      |            Receive a one-time alert from the bot when the primary server reaches a certain player count             |        All         |
-| `!shutdown`      |                       -                        |                                              Turns off the Discord bot                                              |       Admins       |
-| `!sqf`           |                      cmd                       |                              Search the BIS wiki for information about an SQF command                               |        All         |
-| `!sqfp`          |                      cmd                       |                  Search BIS wiki for information about an SQF command and post the result publicly                  |        All         |
-| `!stats`         |                       -                        |                                        View runtime statistics about the bot                                        |       Admins       |
+| Command          |                    Arguments                    |                                                     Description                                                     |    Permissions     |
+| :--------------- | :---------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :----------------: |
+| `!?`, `!help`    |                        -                        |                                Displays the help output for the bot commands and use                                |        All         |
+| `!about`         |                        -                        |                                          Display information about the bot                                          |        All         |
+| `!alerts`        |                        -                        |                              Display the pending alerts that are scheduled in the bot                               |       Admins       |
+| `!config`        |                   key, value                    |                         Reconfigure available bot options; check README for list of options                         |       Admins       |
+| `!events`        |                        -                        |                                        displays all pending community events                                        |        All         |
+| `!flight list`   |                        -                        |                                         Display all pickup flights pending                                          |        All         |
+| `!flight create` | sim (BMS or DCS), HH:MM zulu, MM/DD, ...details | Create a new pickup flight for the argued SIM to take place on the argued zulu time and date with any extra details |        All         |
+| `!flight join`   |                    flight_id                    |                                   Join an existing pickup flight by the argued ID                                   |        All         |
+| `!flight delete` |                    flight_id                    |                               Delete a pickup flight that you have created by its ID                                | All (flight owner) |
+| `!join_group`    |                   group_name                    |                               Join the argued group if it exists and have permission                                |        All         |
+| `!leave_group`   |                   group_name                    |                                Leave the argued group if it exists and you are in it                                |        All         |
+| `!lfg list`      |                        -                        |                                   Display all group entities looking for players                                    |        All         |
+| `!lfg create`    |                 #_needed, name                  |                     Create a new group with a designated name and amount of players looking for                     |        All         |
+| `!lfg join`      |                    group_id                     |                                 Join a group by it's ID that is looking for players                                 |        All         |
+| `!lfg delete`    |                    group_id                     |                                    Delete a group that you have create by its ID                                    | All (group owner)  |
+| `!missions`      |                      name                       |            Search for mission on the FTP server with names that fully or partially match the argued name            |        All         |
+| `!polls`         |                        -                        |                               Get a list of active polls/voting threads on the forums                               |     Deprecated     |
+| `!ratio`         |                   total, a, b                   |                                Calculate the player ratio for teams with A:B players                                |        All         |
+| `!ready`         |                      count                      |            Receive a one-time alert from the bot when the primary server reaches a certain player count             |        All         |
+| `!shutdown`      |                        -                        |                                              Turns off the Discord bot                                              |       Admins       |
+| `!sqf`           |                       cmd                       |                              Search the BIS wiki for information about an SQF command                               |        All         |
+| `!sqfp`          |                       cmd                       |                  Search BIS wiki for information about an SQF command and post the result publicly                  |        All         |
+| `!stats`         |                        -                        |                                        View runtime statistics about the bot                                        |       Admins       |
 
 ## Requirements and Setup
 

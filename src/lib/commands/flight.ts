@@ -121,13 +121,18 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
     return 'INVALID_ARGS'
   }
 
+  // Get arguments to parse into flight date/time
+  const year = new Date().getFullYear()
+  const time = args[2]
+  const date = args[3].replace('/', '-')
+
   // Parse input arguments into new Flight object to store
   const f: Flight = {
     id: flights.length + 1,
     owner: msg.author,
     game: args[0].toUpperCase() as 'BMS' | 'DCS',
     details: args.slice(4).join(' '),
-    time: new Date(), // TODO: time and date for pick up flight
+    time: new Date(`${year}-${date}T${time}:00Z`),
     found: []
   }
 
