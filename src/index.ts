@@ -1,13 +1,11 @@
 require('dotenv').config()
-import { readFileSync } from 'fs'
-import { resolve } from 'path'
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
 import { admins, deprecated } from './lib/access'
+import { error } from './lib/logger'
 
-// Create new Bot instance and start
-const version: Buffer = readFileSync(resolve(__dirname, '..', 'VERSION'))
-const bot = new Bot(version.toString().trimRight())
+const { version } = require('../package.json')
+const bot = new Bot(version)
 bot
   .addCommand('about', '`!about`: _display information about the bot_', cmd.about)
   .addCommand(
@@ -23,6 +21,11 @@ bot
     admins
   )
   .addCommand('events', '`!events`: _displays all pending community events_', cmd.events)
+  .addCommand(
+    'flight',
+    '`!flight list | create <SIM> <HH:MM> <MM/DD> <details> | join <id> | delete <id>`: _manage pickup flights for UOAF_',
+    cmd.flight
+  )
   .addCommand(
     'join_group',
     '`!join_group <group>`: _join the argued group if it exists and have permission_',
@@ -43,7 +46,6 @@ bot
     '`!missions <name>`: _search for mission on the FTP server with names that fully or partially match the argued name_',
     cmd.missions
   )
-  // DEPRECATED:
   .addCommand(
     'polls',
     '`!polls`: _get a list of the active polls/voting threads on the forums_',
@@ -81,4 +83,6 @@ bot
     '`!sqfp <command>`: _search BIS wiki for information about an SQF command and post the result publicly_',
     cmd.sqfp
   )
+  .addCommand('stats', '`!stats`: _view runtime statistics about the bot_', cmd.stats, admins)
   .start(process.env.BOT_TOKEN!)
+  .catch(err => error(`START: ${err}`))

@@ -20,10 +20,18 @@ export async function ready(_guild: Guild, msg: Message, args: string[]): Promis
 
   try {
     const num: number = parseInt(args[0])
-    AlarmStore.register(num, msg.author)
-    await msg.author.send(
-      `You will be alerted when the primary server reaches or exceeds **${num}** players.`
-    )
+    const alreadyRegistered: boolean = AlarmStore.register(num, msg.author)
+
+    if (alreadyRegistered) {
+      await msg.author.send(
+        `Your previous alarm has been overridden and you will be alerted when the primary server reaches or exceeds **${num}** players.`
+      )
+    } else {
+      await msg.author.send(
+        `You will be alerted when the primary server reaches or exceeds **${num}** players.`
+      )
+    }
+
     return 'READY_ALARM_OUTPUT'
   } catch (e) {
     await msg.author.send('The parameter for this command must be a number.')

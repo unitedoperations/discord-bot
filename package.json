@@ -1,6 +1,6 @@
 {
   "name": "uo-discordbot",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "homepage": "http://forums.unitedoperations.net",
   "description": "Discord bot for the United Operations server",
   "repository": "https://github.com/unitedoperations/uo-discordbot.git",
@@ -14,23 +14,23 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
-    "date-fns": "^1.29.0",
+    "date-fns": "^1.30.1",
     "discord.js": "^11.4.2",
-    "dotenv": "^6.0.0",
+    "dotenv": "^6.2.0",
     "feedparser": "^2.2.9",
     "node-fetch": "^2.2.0",
-    "node-schedule": "^1.3.0",
+    "node-schedule": "^1.3.1",
     "promise-ftp": "^1.3.5"
   },
   "devDependencies": {
-    "@types/cheerio": "^0.22.9",
+    "@types/cheerio": "^0.22.10",
     "@types/dotenv": "^4.0.3",
     "@types/feedparser": "^2.2.1",
     "@types/node-fetch": "^2.1.2",
     "@types/node-schedule": "^1.2.2",
     "@types/promise-ftp": "^1.3.1",
-    "nodemon": "^1.18.4",
+    "nodemon": "^1.18.9",
     "ts-node": "^7.0.1",
-    "typescript": "^3.0.3"
+    "typescript": "^3.2.4"
   }
 }

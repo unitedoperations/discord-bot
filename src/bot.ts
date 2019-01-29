@@ -3,7 +3,7 @@ import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, Group, LFGStore, RoutineStore, AlarmStore } from './lib/state'
+import { CalendarEvent, Group, GroupStore, RoutineStore, AlarmStore } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
@@ -51,6 +51,7 @@ export type BotAction = (
  * @static @property {string} ARMA_PLAYER_ROLE
  * @static @property {string} BMS_PLAYER_ROLE
  * @static @property {number} NUM_PLAYERS_FOR_ALERT
+ * @static @property {number} REQUEST_COUNT
  *
  * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
@@ -75,6 +76,7 @@ export class Bot implements Routinable {
   public static ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
   public static BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
   public static NUM_PLAYERS_FOR_ALERT: number = parseInt(process.env.NUM_PLAYERS_FOR_ALERT!)
+  public static REQUEST_COUNT: number = 0
 
   // Bot instance variables
   private _guild?: Discord.Guild
@@ -298,7 +300,7 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private async _notifyOfActiveGroups() {
-    const groups: Group[] = LFGStore.getGroups()
+    const groups: Group[] = GroupStore.getGroups()
     try {
       // Notify the LFG channel if there are any active groups
       if (groups.length > 0) {
@@ -411,6 +413,8 @@ export class Bot implements Routinable {
 
     // Check if the message actually is a command (starts with '!')
     if (cmd.startsWith('!')) {
+      Bot.REQUEST_COUNT++
+
       // Look for a handler function is the map that matches the command
       const fn = this._commands.get(cmdKey)
       if (fn) {
@@ -430,9 +434,13 @@ export class Bot implements Routinable {
           log.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e}`)
         }
       } else {
-        await msg.delete()
-        await msg.author.send(`Sorry, I wasn't taught how to handle \`${cmd}\`. 🙁`)
-        log.error(`NO_COMMAND (${msg.author.username}) - ${cmd}`)
+        try {
+          await msg.delete()
+          await msg.author.send(`Sorry, I wasn't taught how to handle \`${cmd}\`. 🙁`)
+          log.error(`NO_COMMAND (${msg.author.username}) - ${cmd}`)
+        } catch (e) {
+          log.error('MESSAGE_DELETE')
+        }
       }
     }
   }
@@ -448,11 +456,16 @@ export class Bot implements Routinable {
    * @returns {Promise<any>}
    * @memberof Bot
    */
-  private _log(tag: string, cmd: string, output: string): Promise<any> {
-    const timestamp = new Date().toISOString()
-    const logChannel = this._guild!.channels.find(
-      c => c.id === Bot.LOG_CHANNEL
-    ) as Discord.TextChannel
-    return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
+  private _log(tag: string, cmd: string, output: string): Promise<any> | void {
+    try {
+      const timestamp = new Date().toISOString()
+      const logChannel = this._guild!.channels.find(
+        c => c.id === Bot.LOG_CHANNEL
+      ) as Discord.TextChannel
+      return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
+    } catch (e) {
+      log.error('FAILED_LOG')
+      return
+    }
   }
 }

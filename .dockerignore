@@ -5,6 +5,7 @@ __tests__/
 build/
 coverage/
 node_modules/
+terraform/
 
 nodemon.json
 *.sh

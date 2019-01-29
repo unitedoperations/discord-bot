@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.6.0
+
+- ADD Terraform scripts for infrastructural automation
+- ADD statistics capturing and `!stats` command for admins to view
+- ADD `!flight` series of commands for UOAF member to manage pickup flights - similar system to `!lfg` commands
+- UPDATE `!ready` to inform when an alarm was overridden
+
 ## v2.5.0
 
 - ADD `!ready` command to register for player count alerts

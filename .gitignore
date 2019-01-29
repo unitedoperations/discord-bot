@@ -1,4 +1,9 @@
+.terraform/
 build/
 coverage/
 node_modules/
+
 .env*
+*.tfvars
+*.tfstate*
+terraform/*.json
