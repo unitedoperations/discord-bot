@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.7.0
+
+- FIX tagging UOAF group for new pickups flights
+- UPDATE Terraform CI/CD
+- UPDATE error handling for Discord client
+
 ## v2.6.0
 
 - ADD Terraform scripts for infrastructural automation

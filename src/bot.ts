@@ -46,6 +46,7 @@ export type BotAction = (
  * @static @readonly @property {string} REGULARS_CHANNEL
  * @static @readonly @property {string} ARMA_CHANNEL
  * @static @readonly @property {string} BMS_CHANNEL
+ * @static @readonly @property {string} FLIGHTS_CHANNEL
  *
  * @static @property {string} VERSION
  * @static @property {string} ARMA_PLAYER_ROLE
@@ -76,6 +77,7 @@ export class Bot implements Routinable {
   public static ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
   public static BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
   public static NUM_PLAYERS_FOR_ALERT: number = parseInt(process.env.NUM_PLAYERS_FOR_ALERT!)
+  public static FLIGHTS_CHANNEL: string = process.env.DISCORD_FLIGHTS_CHANNEL!
   public static REQUEST_COUNT: number = 0
 
   // Bot instance variables
@@ -109,6 +111,7 @@ export class Bot implements Routinable {
     })
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
+    this._client.on('error', err => log.error(`CLIENT_ERR: ${JSON.stringify(err)}`))
 
     this._calendar = new CalendarFeed(
       'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/',
