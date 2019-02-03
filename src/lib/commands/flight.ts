@@ -1,6 +1,5 @@
 import { Message, Guild, TextChannel, RichEmbed } from 'discord.js'
-import { Bot } from '../../bot'
-import { GroupStore, Flight, GroupType } from '../state'
+import { GroupStore, Flight, GroupType, EnvStore } from '../state'
 import { flightsMessage, flightCreatedMessage } from '../messages'
 
 /**
@@ -131,7 +130,7 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
   const f: Flight = {
     id: flights.length + 1,
     owner: msg.author,
-    game: args[0].toUpperCase() as 'BMS' | 'DCS',
+    game: args[1].toUpperCase() as 'BMS' | 'DCS',
     details: args.slice(4).join(' '),
     time: new Date(`${year}-${date}T${time}:00Z`),
     found: []
@@ -145,8 +144,8 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
   )
 
   // Send creation announcement to uoaf_flights channel
-  const ch: TextChannel = guild.channels.find(c => c.id === Bot.FLIGHTS_CHANNEL) as TextChannel
-  const role = guild.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
+  const ch: TextChannel = guild.channels.find(c => c.id === EnvStore.FLIGHTS_CHANNEL) as TextChannel
+  const role = guild.roles.find(r => r.name === EnvStore.BMS_PLAYER_ROLE)
   await ch.send(role.toString(), { embed: flightCreatedMessage(f) as RichEmbed })
 
   return `FLIGHT_CREATED: ${f.game}-${f.id}`

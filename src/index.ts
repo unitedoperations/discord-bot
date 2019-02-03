@@ -1,8 +1,13 @@
 require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
+import { EnvStore } from './lib/state'
 import { admins, deprecated } from './lib/access'
 import { error } from './lib/logger'
+
+process.on('unhandledRejection', (reason, _promise) => {
+  error(`Unhandled Rejection ${reason.stack || reason}`)
+})
 
 const { version } = require('../package.json')
 const bot = new Bot(version)
@@ -15,9 +20,9 @@ bot
     admins
   )
   .addCommand(
-    'config',
-    '`!config <key> <value>`: _re-configure available bot options; check GitHub for list of options_',
-    cmd.config,
+    'announce',
+    '`!announce`: _send update message to general channel for the bot_',
+    cmd.announce,
     admins
   )
   .addCommand('events', '`!events`: _displays all pending community events_', cmd.events)
@@ -84,5 +89,5 @@ bot
     cmd.sqfp
   )
   .addCommand('stats', '`!stats`: _view runtime statistics about the bot_', cmd.stats, admins)
-  .start(process.env.BOT_TOKEN!)
+  .start(EnvStore.BOT_TOKEN)
   .catch(err => error(`START: ${err}`))

@@ -8,30 +8,18 @@ import subDay from 'date-fns/sub_days'
 import cheerio from 'cheerio'
 import * as log from './logger'
 import { Routine, Routinable } from './routine'
-import { RoutineStore, EventStore, CalendarEvent } from './state'
-
-/**
- * The environment variable for alert times in hours
- * @export
- */
-export const reminderIntervals: string[] = process.env.ALERT_TIMES!.split(',').map(t => t.trim())
+import { RoutineStore, EventStore, CalendarEvent, EnvStore } from './state'
 
 /**
  * Handles the RSS feed and parsing from the forums calendar
  * @export
  * @class CalendarFeed
  * @implements Routinable
- * @property {number} HOURS_TO_REFRESH
  * @property {FeedParser?} _feed
  * @property {string} _feedUrl
  * @property {(string, CalendarEvent) => void} _sendReminder
  */
 export class CalendarFeed implements Routinable {
-  // Static and readonly variables for the CalendarFeed class
-  private static readonly HOURS_TO_REFRESH: number = parseFloat(
-    process.env.HOURS_TO_REFRESH_CALENDAR!
-  )
-
   // CalendarFeed instance variables
   private _feed?: FeedParser
   private _feedUrl: string
@@ -50,7 +38,7 @@ export class CalendarFeed implements Routinable {
     // Add routine to the store for refreshing the calendar event feed
     RoutineStore.add(
       'feed',
-      new Routine<void>(() => this.pull(), [], CalendarFeed.HOURS_TO_REFRESH * 60 * 60 * 1000)
+      new Routine<void>(() => this.pull(), [], EnvStore.HOURS_TO_REFRESH_CALENDAR * 60 * 60 * 1000)
     )
   }
 
@@ -131,7 +119,7 @@ export class CalendarFeed implements Routinable {
 
           // For each interval set the default ran to false
           // and schedule the cron job for the reminder
-          reminderIntervals.forEach(r => {
+          EnvStore.ALERT_TIMES.forEach(r => {
             newEvent.reminders.set(r, false)
             const [amt, type] = r.split(' ')
 

@@ -3,11 +3,10 @@ import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
 import { CalendarFeed } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, Group, GroupStore, RoutineStore, AlarmStore } from './lib/state'
+import { CalendarEvent, Group, GroupStore, RoutineStore, AlarmStore, EnvStore } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
-  updateMessage,
   welcomeMessage,
   reminderMessage,
   serverMessage,
@@ -39,21 +38,6 @@ export type BotAction = (
  * @class Bot
  * @implements Routinable
  *
- * @static @readonly @property {string} GUILD_ID
- * @static @readonly @property {string} LOG_CHANNEL
- * @static @readonly @property {string} MAIN_CHANNEL
- * @static @readonly @property {string} LFG_CHANNEL
- * @static @readonly @property {string} REGULARS_CHANNEL
- * @static @readonly @property {string} ARMA_CHANNEL
- * @static @readonly @property {string} BMS_CHANNEL
- * @static @readonly @property {string} FLIGHTS_CHANNEL
- *
- * @static @property {string} VERSION
- * @static @property {string} ARMA_PLAYER_ROLE
- * @static @property {string} BMS_PLAYER_ROLE
- * @static @property {number} NUM_PLAYERS_FOR_ALERT
- * @static @property {number} REQUEST_COUNT
- *
  * @property {Discord.Guild?} _guild
  * @property {CalendarFeed} _calendar
  * @property {Discord.Client} _client
@@ -63,21 +47,8 @@ export type BotAction = (
  * @property {ThreadInformation[]} _activePolls
  */
 export class Bot implements Routinable {
-  // Static and readonly variables for the Bot class
-  private static readonly GUILD_ID: string = process.env.DISCORD_SERVER_ID!
-  private static readonly LOG_CHANNEL: string = process.env.DISCORD_LOG_CHANNEL!
-  private static readonly MAIN_CHANNEL: string = process.env.DISCORD_MAIN_CHANNEL!
-  private static readonly LFG_CHANNEL: string = process.env.DISCORD_LFG_CHANNEL!
-  private static readonly REGULARS_CHANNEL: string = process.env.DISCORD_REGULARS_CHANNEL!
-  private static readonly ARMA_CHANNEL: string = process.env.DISCORD_ARMA_CHANNEL!
-  private static readonly BMS_CHANNEL: string = process.env.DISCORD_BMS_CHANNEL!
-
   // Public static Bot class variables that are able to be changed via config command
   public static VERSION: string
-  public static ARMA_PLAYER_ROLE: string = process.env.DISCORD_ARMA_PLAYER_ROLE!
-  public static BMS_PLAYER_ROLE: string = process.env.DISCORD_BMS_PLAYER_ROLE!
-  public static NUM_PLAYERS_FOR_ALERT: number = parseInt(process.env.NUM_PLAYERS_FOR_ALERT!)
-  public static FLIGHTS_CHANNEL: string = process.env.DISCORD_FLIGHTS_CHANNEL!
   public static REQUEST_COUNT: number = 0
 
   // Bot instance variables
@@ -99,19 +70,11 @@ export class Bot implements Routinable {
     this._client = new Discord.Client()
     this._client.on('ready', () => {
       log.fav(`Logged in as ${this._client.user.tag} v${Bot.VERSION}`)
-      this._guild = this._client.guilds.find(g => g.id === Bot.GUILD_ID)
-
-      // If the ANNOUNCE env is set by Docker then announce the major or minor update in Discord
-      if (process.env.ANNOUNCE === 'true') {
-        const chan = this._guild.channels.find(
-          c => c.id === Bot.MAIN_CHANNEL
-        ) as Discord.TextChannel
-        chan.send({ embed: updateMessage(Bot.VERSION) })
-      }
+      this._guild = this._client.guilds.find(g => g.id === EnvStore.GUILD_ID)
     })
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
-    this._client.on('error', err => log.error(`CLIENT_ERR: ${JSON.stringify(err)}`))
+    this._client.on('error', err => log.error(`CLIENT_ERR ${err.message}`))
 
     this._calendar = new CalendarFeed(
       'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/',
@@ -226,11 +189,11 @@ export class Bot implements Routinable {
       if (
         (!this._currentMission || info.mission !== this._currentMission.mission) &&
         info.mission !== 'None' &&
-        players >= Bot.NUM_PLAYERS_FOR_ALERT
+        players >= EnvStore.NUM_PLAYERS_FOR_ALERT
       ) {
         this._currentMission = info
         const channel = this._guild!.channels.find(
-          c => c.id === Bot.ARMA_CHANNEL
+          c => c.id === EnvStore.ARMA_CHANNEL
         ) as Discord.TextChannel
         await channel.send(`_**🎉 NEW MISSION**_`, {
           embed: serverMessage(info) as Discord.RichEmbed
@@ -275,7 +238,7 @@ export class Bot implements Routinable {
 
       // Send message for all closed polls and all opened polls
       const channel = this._guild!.channels.find(
-        c => c.id === Bot.REGULARS_CHANNEL
+        c => c.id === EnvStore.REGULARS_CHANNEL
       ) as Discord.TextChannel
 
       // Opened polls message
@@ -308,7 +271,7 @@ export class Bot implements Routinable {
       // Notify the LFG channel if there are any active groups
       if (groups.length > 0) {
         const chan = this._guild!.channels.find(
-          c => c.id === Bot.LFG_CHANNEL
+          c => c.id === EnvStore.LFG_CHANNEL
         ) as Discord.TextChannel
         await chan.send({ embed: groupsMessage(groups) })
       }
@@ -343,30 +306,30 @@ export class Bot implements Routinable {
         switch (e.group) {
           // ArmA 3 event reminder
           case 'UOA3':
-            role = this._guild!.roles.find(r => r.name === Bot.ARMA_PLAYER_ROLE)
+            role = this._guild!.roles.find(r => r.name === EnvStore.ARMA_PLAYER_ROLE)
             channel = this._guild!.channels.find(
-              c => c.id === Bot.ARMA_CHANNEL
+              c => c.id === EnvStore.ARMA_CHANNEL
             ) as Discord.TextChannel
             break
           // BMS event reminder
           case 'UOAF':
-            role = this._guild!.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
+            role = this._guild!.roles.find(r => r.name === EnvStore.BMS_PLAYER_ROLE)
             channel = this._guild!.channels.find(
-              c => c.id === Bot.BMS_CHANNEL
+              c => c.id === EnvStore.BMS_CHANNEL
             ) as Discord.TextChannel
             break
           // UOTC course reminder
           case 'UOTC':
             role = null
             channel = this._guild!.channels.find(
-              c => c.id === Bot.ARMA_CHANNEL
+              c => c.id === EnvStore.ARMA_CHANNEL
             ) as Discord.TextChannel
             break
           // Unknown event type reminder
           default:
             role = null
             channel = this._guild!.channels.find(
-              c => c.id === Bot.MAIN_CHANNEL
+              c => c.id === EnvStore.MAIN_CHANNEL
             ) as Discord.TextChannel
         }
 
@@ -463,7 +426,7 @@ export class Bot implements Routinable {
     try {
       const timestamp = new Date().toISOString()
       const logChannel = this._guild!.channels.find(
-        c => c.id === Bot.LOG_CHANNEL
+        c => c.id === EnvStore.LOG_CHANNEL
       ) as Discord.TextChannel
       return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
     } catch (e) {

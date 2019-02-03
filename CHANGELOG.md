@@ -1,7 +1,18 @@
 # Changelog
 
+## v2.8.0
+
+- ADD separate store to house and manage Discord channel functionality and IDs
+- ADD separate store for housing environment variables
+- UPDATE clean up usage of `process.env` across the whole code-base
+- UPDATE expand `.env` to contain more configurable variables for flexibility
+- FIX naming of UOAF flights generated from `!flight create` command
+- REMOVE `!config` command
+
 ## v2.7.0
 
+- ADD `!announce` admin command for announcing new versions of the bot
+- FIX bot no longer controls upgrade messaging to general chat
 - FIX tagging UOAF group for new pickups flights
 - UPDATE Terraform CI/CD
 - UPDATE error handling for Discord client

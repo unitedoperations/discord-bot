@@ -1,5 +1,5 @@
 import { Message, Guild, TextChannel } from 'discord.js'
-import { GroupStore, Group, GroupType } from '../state'
+import { GroupStore, Group, GroupType, EnvStore } from '../state'
 import { groupsMessage, groupCreatedMessage, groupFullMessage } from '../messages'
 
 /**
@@ -144,9 +144,7 @@ async function lfgCreate(guild: Guild, msg: Message, args: string[]): Promise<st
   )
 
   // Send creation announcement to main Discord channel
-  const ch: TextChannel = guild.channels.find(
-    c => c.id === process.env.DISCORD_LFG_CHANNEL!
-  ) as TextChannel
+  const ch: TextChannel = guild.channels.find(c => c.id === EnvStore.LFG_CHANNEL) as TextChannel
   await ch.send({ embed: groupCreatedMessage(g) })
 
   return `GROUP_CREATED: ${args[2]}`

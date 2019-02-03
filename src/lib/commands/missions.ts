@@ -1,5 +1,6 @@
 import { Message, Guild } from 'discord.js'
 import FTP from 'promise-ftp'
+import { EnvStore } from '../state'
 import { missionsMessage } from '../messages'
 
 /**
@@ -19,9 +20,12 @@ export async function missions(_guild: Guild, msg: Message, args: string[]): Pro
   }
 
   // Log into the mission file FTP server and get the list of all mission on the primary server
-  const { FTP_HOST, FTP_USER, FTP_PASS } = process.env
   const ftp = new FTP()
-  await ftp.connect({ host: FTP_HOST, user: FTP_USER, password: FTP_PASS })
+  await ftp.connect({
+    host: EnvStore.FTP_HOST,
+    user: EnvStore.FTP_USER,
+    password: EnvStore.FTP_PASS
+  })
   const files: FTP.ListingElement[] = await ftp.list('/SRV1')
   await ftp.end()
 

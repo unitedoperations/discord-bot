@@ -7,7 +7,7 @@
 | `!?`, `!help`    |                        -                        |                                Displays the help output for the bot commands and use                                |        All         |
 | `!about`         |                        -                        |                                          Display information about the bot                                          |        All         |
 | `!alerts`        |                        -                        |                              Display the pending alerts that are scheduled in the bot                               |       Admins       |
-| `!config`        |                   key, value                    |                         Reconfigure available bot options; check README for list of options                         |       Admins       |
+| `!announce`      |                        -                        |                               Announce a new bot upgrade to the main Discord channel                                |       Admins       |
 | `!events`        |                        -                        |                                        displays all pending community events                                        |        All         |
 | `!flight list`   |                        -                        |                                         Display all pickup flights pending                                          |        All         |
 | `!flight create` | sim (BMS or DCS), HH:MM zulu, MM/DD, ...details | Create a new pickup flight for the argued SIM to take place on the argued zulu time and date with any extra details |        All         |
@@ -59,44 +59,6 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - `FTP_HOST`: _address of the primary mission file FTP server_
   - `FTP_USER`: _user account name to log into the FTP server_
   - `FTP_PASS`: _password for the FTP server user account_
-
-Sample `.env` file without sensitive values:
-
-```sh
-# Bot authentication configuration
-BOT_ID=
-BOT_SECRET=
-BOT_TOKEN=
-BOT_PERMISSIONS=
-
-# Discord information configuration, channel variables are the channel IDs
-DISCORD_SERVER_ID=
-DISCORD_LOG_CHANNEL=
-DISCORD_MAIN_CHANNEL=
-DISCORD_LFG_CHANNEL=
-DISCORD_REGULARS_CHANNEL=
-DISCORD_ARMA_CHANNEL=
-DISCORD_BMS_CHANNEL=
-DISCORD_ALLOWED_GROUPS=UOA3,UOAF
-DISCORD_ARMA_PLAYER_ROLE=UOA3
-DISCORD_BMS_PLAYER_ROLE=UOAF
-
-# All times are in hours!
-# Format as: <amount> <type>
-ALERT_TIMES=7 days,2 days,1 day,12 hours,2 hours,5 minutes
-NUM_PLAYERS_FOR_ALERT=10
-
-# Number of hours between calendar event pulls to refresh
-HOURS_TO_REFRESH_CALENDAR=1
-
-# Role(s) permitted to perform admin commands on the bot
-ADMIN_ROLES=GSO,WSO
-
-# FTP server variables
-FTP_HOST=
-FTP_USER=
-FTP_PASS=
-```
 
 ### Discord
 
