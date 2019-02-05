@@ -18,6 +18,12 @@ export async function ready(_guild: Guild, msg: Message, args: string[]): Promis
     return 'INVALID_ARGS'
   }
 
+  if (args[0] === 'count') {
+    const count: number = AlarmStore.numberOfAlarms()
+    await msg.author.send(`There are ${count} players waiting for player count alerts.`)
+    return 'READY_ALARMS_COUNT'
+  }
+
   try {
     const num: number = parseInt(args[0])
     const alreadyRegistered: boolean = AlarmStore.register(num, msg.author)

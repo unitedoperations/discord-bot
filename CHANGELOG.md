@@ -4,6 +4,7 @@
 
 - ADD separate store to house and manage Discord channel functionality and IDs
 - ADD separate store for housing environment variables
+- ADD `!ready count` subcommand to see how many users are waiting for player count alerts
 - UPDATE clean up usage of `process.env` across the whole code-base
 - UPDATE expand `.env` to contain more configurable variables for flexibility
 - FIX naming of UOAF flights generated from `!flight create` command

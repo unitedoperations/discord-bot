@@ -69,7 +69,7 @@ bot
   )
   .addCommand(
     'ready',
-    '`!ready <#>`: _receive an alert from the bot when the primary server reaches a certain player count_',
+    '`!ready <#> | count`: _receive an alert from the bot when the primary server reaches a certain player count or see how many users are waiting for alerts_',
     cmd.ready
   )
   .addCommand(
