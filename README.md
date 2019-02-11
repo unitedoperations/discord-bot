@@ -59,6 +59,8 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - `FTP_HOST`: _address of the primary mission file FTP server_
   - `FTP_USER`: _user account name to log into the FTP server_
   - `FTP_PASS`: _password for the FTP server user account_
+  - `API_BASE`: _base url for the forum's REST API_
+  - `API_KEY`: _API key provided by forums admin for access to the REST API_
 
 ### Discord
 

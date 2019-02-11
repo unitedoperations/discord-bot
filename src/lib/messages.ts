@@ -144,7 +144,7 @@ export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessag
   color: 11640433,
   title: `🔔 **Reminder:** *${event.title}*`,
   description: `_...taking place in about **${away}**_`,
-  url: event.link,
+  url: event.url,
   image: {
     url: event.img
   }
@@ -160,7 +160,7 @@ export const eventsMessage = (events: CalendarEvent[]): EmbedMessage => ({
   color: 11640433,
   title: '⏳ **Community Events**',
   description: `_There are a total of ${events.length} upcoming community events!_`,
-  fields: events.map(e => ({ name: e.title, value: e.link }))
+  fields: events.map(e => ({ name: e.title, value: e.url }))
 })
 
 /**

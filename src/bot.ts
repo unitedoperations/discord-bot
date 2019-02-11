@@ -1,7 +1,7 @@
 import Discord from 'discord.js'
 import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
-import { CalendarFeed } from './lib/calendar'
+import { Calendar } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
 import { CalendarEvent, Group, GroupStore, RoutineStore, AlarmStore, EnvStore } from './lib/state'
 import { CommandProvision } from './lib/access'
@@ -53,7 +53,7 @@ export class Bot implements Routinable {
 
   // Bot instance variables
   private _guild?: Discord.Guild
-  private _calendar: CalendarFeed
+  private _calendar: Calendar
   private _client: Discord.Client
   private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
@@ -76,8 +76,8 @@ export class Bot implements Routinable {
     this._client.on('guildMemberAdd', this._onNewMember)
     this._client.on('error', err => log.error(`CLIENT_ERR ${err.message}`))
 
-    this._calendar = new CalendarFeed(
-      'http://forums.unitedoperations.net/index.php/rss/calendar/1-community-calendar/',
+    this._calendar = new Calendar(
+      `${EnvStore.API_BASE}/calendar/events&sortBy=start&sortDir=desc`,
       this._sendEventReminder.bind(this)
     )
   }
@@ -99,7 +99,7 @@ export class Bot implements Routinable {
       await this._client.login(token)
 
       // Initial calendar feed pull, handled by routine in CalendarFeed instance after
-      await this._calendar.pull()
+      await this._calendar.update()
 
       // Add a background routines
       RoutineStore.add(
