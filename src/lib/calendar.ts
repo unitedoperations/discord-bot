@@ -18,7 +18,7 @@ type EventResponseEntity = {
 }
 
 /**
- * Handles the RSS feed and parsing from the forums calendar
+ * Handles the calendar API and parsing events
  * @export
  * @class Calendar
  * @implements Routinable
@@ -46,7 +46,7 @@ export class Calendar implements Routinable {
       new Routine<void>(
         () => this.update(),
         [],
-        EnvStore.HOURS_TO_REFRESH_CALENDAR * 60 * 60 * 1000
+        EnvStore.HOURS_TO_REFRESH_FROM_FORUMS * 60 * 60 * 1000
       )
     )
   }
@@ -67,6 +67,14 @@ export class Calendar implements Routinable {
       }
       const res = await fetch(this._eventsUrl, opts).then(res => res.json())
       const futureEvents: EventResponseEntity[] = this._getFutureEvents(res.results)
+
+      // If there are no more future events, remove all old ones from the store
+      if (futureEvents.length === 0) {
+        EventStore.getEvents().forEach(e => {
+          EventStore.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
+        })
+        return
+      }
 
       for (let e of futureEvents) {
         // If the event store doesn't have the event
@@ -106,7 +114,7 @@ export class Calendar implements Routinable {
               schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
           })
 
-          EventStore.add(e.id, newEvent)
+          EventStore.add(newEvent)
         } else {
           EventStore.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
         }

@@ -2,7 +2,7 @@ require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
 import { EnvStore } from './lib/state'
-import { admins, deprecated } from './lib/access'
+import { admins } from './lib/access'
 import { error } from './lib/logger'
 
 process.on('unhandledRejection', (reason, _promise) => {
@@ -54,8 +54,7 @@ bot
   .addCommand(
     'polls',
     '`!polls`: _get a list of the active polls/voting threads on the forums_',
-    cmd.polls,
-    deprecated
+    cmd.polls
   )
   .addCommand(
     'primary',

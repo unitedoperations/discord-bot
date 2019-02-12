@@ -6,8 +6,10 @@
 - ADD separate store for housing environment variables
 - ADD `!ready count` subcommand to see how many users are waiting for player count alerts
 - UPDATE point calendar event manager to the new forum API
+- UPDATE new member welcome message with updated linked to wiki and forums pages
 - UPDATE clean up usage of `process.env` across the whole code-base
 - UPDATE expand `.env` to contain more configurable variables for flexibility
+- UPDATE the poll thread fetching and notification mechanisms. Now undeprecated.
 - FIX naming of UOAF flights generated from `!flight create` command
 - REMOVE `!config` command
 

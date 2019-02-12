@@ -6,6 +6,7 @@ const tags = {
   fav: '[FAV]',
   cmd: '[COMMAND]',
   event: '[EVENT]',
+  poll: '[POLL]',
   alert: '[ALERT]'
 }
 
@@ -31,6 +32,10 @@ export function cmd(str: string) {
 
 export function event(str: string) {
   withTimestamp(tags.event, str)
+}
+
+export function poll(str: string) {
+  withTimestamp(tags.poll, str)
 }
 
 export function alert(str: string, iteration: string) {

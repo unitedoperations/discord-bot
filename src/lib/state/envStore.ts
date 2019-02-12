@@ -18,7 +18,7 @@
  * @readonly @property {string[]} ALLOWED_GROUPS
  * @readonly @property {string[]} ADMIN_ROLES
  * @readonly @property {string[]} ALERT_TIMES
- * @readonly @property {number} HOURS_TO_REFRESH_CALENDAR
+ * @readonly @property {number} HOURS_TO_REFRESH_FROM_FORUMS
  * @readonly @property {string} FTP_HOST
  * @readonly @property {string} FTP_USER
  * @readonly @property {string} FTP_PASS
@@ -41,8 +41,8 @@ class EnvStore {
   public readonly ALLOWED_GROUPS: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
   public readonly ADMIN_ROLES: string[] = process.env.ADMIN_ROLES!.split(',')
   public readonly ALERT_TIMES: string[] = process.env.ALERT_TIMES!.split(',').map(t => t.trim())
-  public readonly HOURS_TO_REFRESH_CALENDAR: number = parseInt(
-    process.env.HOURS_TO_REFRESH_CALENDAR!
+  public readonly HOURS_TO_REFRESH_FROM_FORUMS: number = parseInt(
+    process.env.HOURS_TO_REFRESH_FROM_FORUMS!
   )
   public readonly FTP_HOST: string = process.env.FTP_HOST!
   public readonly FTP_USER: string = process.env.FTP_USER!

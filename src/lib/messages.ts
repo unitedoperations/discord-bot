@@ -63,39 +63,39 @@ export const updateMessage = (newVersion: string): EmbedMessage => ({
 export const welcomeMessage = (name: string): EmbedMessage => ({
   color: 11640433, // Integer representation of UO color #B19E71
   title: `👋🏼 **Welcome to United Operations Discord, ${name}!**`,
-  url: 'http://forums.unitedoperations.net',
+  url: 'https://unitedoperations.net/forums/',
   description: '*Tactical Gaming Community*',
   thumbnail: {
     url: 'https://units.arma3.com/groups/img/1222/vSClUszph6.png'
   },
   image: {
     url:
-      'http://forums.unitedoperations.net/public/style_images/United_Operations___Animated/scooby_banner_bg.png'
+      'http://forums.unitedoperations.net/public/style_images/United_Operations___Animated/scooby_banner_bg.png' // FIXME:
   },
   fields: [
     {
       name: 'Getting Started (Arma 3)',
-      value: 'http://www.unitedoperations.net/wiki/Getting_Started_Guide_(Arma_3)'
+      value: 'https://wiki.unitedoperations.net/wiki/Getting_Started_Guide_(Arma_3)'
     },
     {
       name: 'Getting Started (BMS)',
-      value: 'http://www.unitedoperations.net/wiki/BMS_Configuration_and_Setup'
+      value: 'https://wiki.unitedoperations.net/wiki/BMS_Configuration_and_Setup'
     },
     {
       name: 'Community Wiki',
-      value: 'http://www.unitedoperations.net/wiki/Main_Page'
+      value: 'https://wiki.unitedoperations.net/wiki/Main_Page'
     },
     {
       name: 'Forums',
-      value: 'http://forums.unitedoperations.net/'
+      value: 'https://unitedoperations.net/forums/'
     },
     {
       name: 'Charter',
-      value: 'http://www.unitedoperations.net/wiki/United_Operations_Charter'
+      value: 'https://wiki.unitedoperations.net/wiki/United_Operations_Charter'
     },
     {
       name: 'Server Information',
-      value: 'http://forums.unitedoperations.net/index.php/page/servers'
+      value: 'https://unitedoperations.net/forums/index.php?/servers/'
     }
   ]
 })

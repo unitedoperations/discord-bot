@@ -54,7 +54,7 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - \*`DISCORD_BMS_PLAYER_ROLE`: _the role designated for BMS players_
   - `ALERT_TIMES`: _comma deliminated list of "time untils" to post reminder notifications for calendar events. Hold the format of `<amt> <time_type>` (7 days, 12 hours)_
   - \*`NUM_PLAYERS_FOR_ALERT`: _the minimum player count on the server to initial an alert_
-  - `HOURS_TO_REFRESH_CALENDAR`: _number of hours between updating the event list from the RSS feed for the calendar_
+  - `HOURS_TO_REFRESH_FROM_FORUMS`: _number of hours between updating data from API requests to the forum_
   - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
   - `FTP_HOST`: _address of the primary mission file FTP server_
   - `FTP_USER`: _user account name to log into the FTP server_

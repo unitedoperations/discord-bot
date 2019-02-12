@@ -50,12 +50,11 @@ class EventStore {
 
   /**
    * Sets the ID in the events cache to the argued CalendarEvent
-   * @param {number} id
    * @param {CalendarEvent} e
    * @memberof EventStore
    */
-  add(id: number, e: CalendarEvent) {
-    if (!this._events.has(id)) this._events.set(id, e)
+  add(e: CalendarEvent) {
+    if (!this._events.has(e.id)) this._events.set(e.id, e)
   }
 
   /**
