@@ -7,7 +7,7 @@ import subDay from 'date-fns/sub_days'
 import cheerio from 'cheerio'
 import * as log from './logger'
 import { Routine, Routinable } from './routine'
-import { RoutineStore, EventStore, CalendarEvent, EnvStore } from './state'
+import { Routines, Events, CalendarEvent, Env } from './state'
 
 type EventResponseEntity = {
   id: number
@@ -20,12 +20,12 @@ type EventResponseEntity = {
 /**
  * Handles the calendar API and parsing events
  * @export
- * @class Calendar
+ * @class CalendarHandler
  * @implements Routinable
  * @property {string} _eventsUrl
  * @property {(string, CalendarEvent) => void} _sendReminder
  */
-export class Calendar implements Routinable {
+export class CalendarHandler implements Routinable {
   // Calendar instance variables
   private _eventsUrl: string
   private _sendReminder: (r: string, e: CalendarEvent) => void
@@ -34,20 +34,16 @@ export class Calendar implements Routinable {
    * Creates an instance of Calendar.
    * @param {string} url
    * @param {(string, CalendarEvent) => void} reminderFunc
-   * @memberof Calendar
+   * @memberof CalendarHandler
    */
   constructor(url: string, reminderFunc: (r: string, e: CalendarEvent) => void) {
     this._sendReminder = reminderFunc
     this._eventsUrl = url
 
     // Add routine to the store for refreshing the calendar event feed
-    RoutineStore.add(
+    Routines.add(
       'event_updates',
-      new Routine<void>(
-        () => this.update(),
-        [],
-        EnvStore.HOURS_TO_REFRESH_FROM_FORUMS * 60 * 60 * 1000
-      )
+      new Routine<void>(() => this.update(), [], Env.HOURS_TO_REFRESH_FROM_FORUMS * 60 * 60 * 1000)
     )
   }
 
@@ -56,13 +52,13 @@ export class Calendar implements Routinable {
    * and update the in-memory store with those that
    * haven't been registered yet (newly found events)
    * @async
-   * @memberof Calendar
+   * @memberof CalendarHandler
    */
   async update() {
     try {
       const opts: RequestInit = {
         headers: {
-          Authorization: EnvStore.apiAuthToken
+          Authorization: Env.apiAuthToken
         }
       }
       const res = await fetch(this._eventsUrl, opts).then(res => res.json())
@@ -70,15 +66,15 @@ export class Calendar implements Routinable {
 
       // If there are no more future events, remove all old ones from the store
       if (futureEvents.length === 0) {
-        EventStore.getEvents().forEach(e => {
-          EventStore.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
+        Events.getEvents().forEach(e => {
+          Events.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
         })
         return
       }
 
       for (let e of futureEvents) {
         // If the event store doesn't have the event
-        if (!EventStore.has(e.id)) {
+        if (!Events.has(e.id)) {
           log.event(`New Event: ${e.title}`)
 
           // Parse the event title and description for the target player group
@@ -98,7 +94,7 @@ export class Calendar implements Routinable {
 
           // For each interval set the default ran to false
           // and schedule the cron job for the reminder
-          EnvStore.ALERT_TIMES.forEach(r => {
+          Env.ALERT_TIMES.forEach(r => {
             newEvent.reminders.set(r, false)
             const [amt, type] = r.split(' ')
 
@@ -114,9 +110,9 @@ export class Calendar implements Routinable {
               schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
           })
 
-          EventStore.add(newEvent)
+          Events.add(newEvent)
         } else {
-          EventStore.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
+          Events.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
         }
       }
     } catch (e) {
@@ -126,10 +122,10 @@ export class Calendar implements Routinable {
 
   /**
    * Ends all routines running on intervals
-   * @memberof Calendar
+   * @memberof CalendarHandler
    */
   clear(): void {
-    RoutineStore.terminate('event_updates')
+    Routines.terminate('event_updates')
   }
 
   /**
@@ -152,7 +148,7 @@ export class Calendar implements Routinable {
    * @private
    * @param {string} title
    * @returns {string | null}
-   * @memberof Calendar
+   * @memberof CalendarHandler
    */
   private _findGroup(title: string): string {
     const groupMap = {
@@ -174,7 +170,7 @@ export class Calendar implements Routinable {
    * @private
    * @param {EventResponseEntity[]} events
    * @returns {EventResponseEntity[]}
-   * @memberof Calendar
+   * @memberof CalendarHandler
    */
   private _getFutureEvents(events: EventResponseEntity[]): EventResponseEntity[] {
     const now = new Date()

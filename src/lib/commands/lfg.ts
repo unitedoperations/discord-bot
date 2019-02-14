@@ -1,5 +1,5 @@
 import { Message, Guild, TextChannel } from 'discord.js'
-import { GroupStore, Group, GroupType, EnvStore } from '../state'
+import { Groups, Group, GroupType, Env } from '../state'
 import { groupsMessage, groupCreatedMessage, groupFullMessage } from '../messages'
 
 /**
@@ -38,7 +38,7 @@ export async function lfg(guild: Guild, msg: Message, args: string[]): Promise<s
  * @returns {Promise<string>}
  */
 async function lfgList(msg: Message): Promise<string> {
-  const groups: Group[] = GroupStore.getGroups()
+  const groups: Group[] = Groups.getGroups()
   await msg.author.send({ embed: groupsMessage(groups) })
   return 'GROUP_LISTING_OUTPUT'
 }
@@ -52,7 +52,7 @@ async function lfgList(msg: Message): Promise<string> {
  */
 async function lfgJoin(msg: Message, args: string[]): Promise<string> {
   let output: string = 'INVALID_ARGS'
-  const res = GroupStore.joinGroup(msg.author, parseInt(args[1]))
+  const res = Groups.joinGroup(msg.author, parseInt(args[1]))
 
   if (res.group) {
     // Alert the command sender and group owner of the newly joined member
@@ -69,7 +69,7 @@ async function lfgJoin(msg: Message, args: string[]): Promise<string> {
         await u.send({ embed: groupFullMessage(res.group!) })
       })
 
-      GroupStore.remove(res.group.id, GroupType.LFG)
+      Groups.remove(res.group.id, GroupType.LFG)
     }
   } else if (!res.group) {
     // If no group was found with the argued ID
@@ -93,13 +93,13 @@ async function lfgJoin(msg: Message, args: string[]): Promise<string> {
  */
 async function lfgDelete(msg: Message, args: string[]): Promise<string> {
   let output: string = 'INVALID_ARGS'
-  const target: Group[] = GroupStore.getGroups().filter(g => g.id === parseInt(args[1]))
+  const target: Group[] = Groups.getGroups().filter(g => g.id === parseInt(args[1]))
 
   if (target.length === 0) {
     output = 'NO_GROUP_TO_DELETE'
     await msg.author.send(`No group with the ID of ${args[1]} exists.`)
   } else if (target[0].owner === msg.author) {
-    GroupStore.remove(parseInt(args[1]), GroupType.LFG)
+    Groups.remove(parseInt(args[1]), GroupType.LFG)
     output = `GROUP_REMOVE: ${args[1]}`
     await msg.author.send(`Successfully deleted your group **${target[0].name}**.`)
   } else {
@@ -119,10 +119,10 @@ async function lfgDelete(msg: Message, args: string[]): Promise<string> {
  * @returns {Promise<string>}
  */
 async function lfgCreate(guild: Guild, msg: Message, args: string[]): Promise<string> {
-  const groups: Group[] = GroupStore.getGroups()
+  const groups: Group[] = Groups.getGroups()
 
   // First check if they already have an active LFG group, allow 1 active per user
-  if (GroupStore.userAlreadyLooking(msg.author.username, groups)) {
+  if (Groups.userAlreadyLooking(msg.author.username, groups)) {
     await msg.author.send('You already have an active LFG group!')
     return 'TOO_MANY_GROUPS'
   }
@@ -136,7 +136,7 @@ async function lfgCreate(guild: Guild, msg: Message, args: string[]): Promise<st
     found: []
   }
 
-  GroupStore.add(g, GroupType.LFG)
+  Groups.add(g, GroupType.LFG)
   await msg.author.send(
     `You have created the new group **${
       args[2]
@@ -144,7 +144,7 @@ async function lfgCreate(guild: Guild, msg: Message, args: string[]): Promise<st
   )
 
   // Send creation announcement to main Discord channel
-  const ch: TextChannel = guild.channels.find(c => c.id === EnvStore.LFG_CHANNEL) as TextChannel
+  const ch: TextChannel = guild.channels.find(c => c.id === Env.LFG_CHANNEL) as TextChannel
   await ch.send({ embed: groupCreatedMessage(g) })
 
   return `GROUP_CREATED: ${args[2]}`

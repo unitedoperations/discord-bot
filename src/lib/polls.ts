@@ -4,7 +4,7 @@ import differenceInDays from 'date-fns/difference_in_days'
 import addDays from 'date-fns/add_days'
 import * as log from './logger'
 import { Routine, Routinable } from './routine'
-import { RoutineStore, EnvStore, PollStore, PollType, PollThread } from './state'
+import { Routines, Env, Polls, PollType, PollThread } from './state'
 
 type ThreadResponse = PollThread & {
   id: number
@@ -17,12 +17,12 @@ type ThreadResponse = PollThread & {
  * Handle fetching new polls in the voting thread and alerting
  * regulars and officers of new polls when posted
  * @export
- * @class Polls
+ * @class PollsHandler
  * @implements {Routinable}
  * @property {string} _pollsUrl
  * @property {(PollThread) => void} _sendAlert
  */
-export class Polls implements Routinable {
+export class PollsHandler implements Routinable {
   // Polls instance variables
   private _pollsUrl: string
   private _sendAlert: (p: PollThread) => void
@@ -31,19 +31,15 @@ export class Polls implements Routinable {
    * Creates an instance of Polls
    * @param {string} url
    * @param {(p: PollThread) => void} alertFunc
-   * @memberof Polls
+   * @memberof PollsHandler
    */
   constructor(url: string, alertFunc: (p: PollThread) => void) {
     this._sendAlert = alertFunc
     this._pollsUrl = url
 
-    RoutineStore.add(
+    Routines.add(
       'poll_updates',
-      new Routine<void>(
-        () => this.update(),
-        [],
-        EnvStore.HOURS_TO_REFRESH_FROM_FORUMS * 60 * 60 * 1000
-      )
+      new Routine<void>(() => this.update(), [], Env.HOURS_TO_REFRESH_FROM_FORUMS * 60 * 60 * 1000)
     )
   }
 
@@ -52,14 +48,14 @@ export class Polls implements Routinable {
    * updates the in-memory store with those that haven't been
    * registered yet
    * @async
-   * @memberof Polls
+   * @memberof PollsHandler
    */
   async update() {
     // FIXME:
     try {
       const opts: RequestInit = {
         headers: {
-          Authorization: EnvStore.apiAuthToken
+          Authorization: Env.apiAuthToken
         }
       }
       const res = await fetch(this._pollsUrl, opts).then(res => res.json())
@@ -67,15 +63,15 @@ export class Polls implements Routinable {
 
       // Remove any closed polls if none are open
       if (openPolls.length === 0) {
-        PollStore.getPolls().forEach(p => {
-          PollStore.removeIfOld(p.id) ? log.info(`Deleted Poll: ${p.question}`) : null
+        Polls.getPolls().forEach(p => {
+          Polls.removeIfOld(p.id) ? log.info(`Deleted Poll: ${p.question}`) : null
         })
         return
       }
 
       for (let p of openPolls) {
         // If the poll store doesn't have the event
-        if (!PollStore.has(p.id)) {
+        if (!Polls.has(p.id)) {
           log.poll(`New Poll: ${p.question}`)
 
           // Infer the poll type and closure date and create new object
@@ -112,10 +108,10 @@ export class Polls implements Routinable {
 
   /**
    * Ends all routines running on intervals
-   * @memberof Polls
+   * @memberof PollsHandler
    */
   clear(): void {
-    RoutineStore.terminate('poll_updates')
+    Routines.terminate('poll_updates')
   }
 
   /**
@@ -124,7 +120,7 @@ export class Polls implements Routinable {
    * @private
    * @param {PollThread[]} polls
    * @returns {PollThread[]}
-   * @memberof Polls
+   * @memberof PollsHandler
    */
   private _getOpenPolls(polls: ThreadResponse[]): ThreadResponse[] {
     const now = new Date()

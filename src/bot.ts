@@ -1,9 +1,9 @@
 import Discord from 'discord.js'
 import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
-import { Calendar } from './lib/calendar'
+import { CalendarHandler } from './lib/calendar'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, Group, GroupStore, RoutineStore, AlarmStore, EnvStore } from './lib/state'
+import { CalendarEvent, Group, Groups, Routines, Alarms, Env } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
 import {
@@ -39,7 +39,7 @@ export type BotAction = (
  * @implements Routinable
  *
  * @property {Discord.Guild?} _guild
- * @property {CalendarFeed} _calendar
+ * @property {CalendarHandler} _calendar
  * @property {Discord.Client} _client
  * @property {Map<string, string>} _descriptions
  * @property {Map<string, BotAction>} _commands
@@ -53,7 +53,7 @@ export class Bot implements Routinable {
 
   // Bot instance variables
   private _guild?: Discord.Guild
-  private _calendar: Calendar
+  private _calendar: CalendarHandler
   private _client: Discord.Client
   private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
@@ -70,14 +70,14 @@ export class Bot implements Routinable {
     this._client = new Discord.Client()
     this._client.on('ready', () => {
       log.fav(`Logged in as ${this._client.user.tag} v${Bot.VERSION}`)
-      this._guild = this._client.guilds.find(g => g.id === EnvStore.GUILD_ID)
+      this._guild = this._client.guilds.find(g => g.id === Env.GUILD_ID)
     })
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
     this._client.on('error', err => log.error(`CLIENT_ERR ${err.message}`))
 
-    this._calendar = new Calendar(
-      `${EnvStore.API_BASE}/calendar/events&sortBy=start&sortDir=desc`,
+    this._calendar = new CalendarHandler(
+      `${Env.API_BASE}/calendar/events&sortBy=start&sortDir=desc`,
       this._sendEventReminder.bind(this)
     )
   }
@@ -102,7 +102,7 @@ export class Bot implements Routinable {
       await this._calendar.update()
 
       // Add a background routines
-      RoutineStore.add(
+      Routines.add(
         'server',
         new Routine<string>(
           async url => await this._notifyOfNewMission(url),
@@ -112,7 +112,7 @@ export class Bot implements Routinable {
       )
 
       // DEPRECATED:
-      // RoutineStore.add(
+      // Routines.add(
       //   'polls',
       //   new Routine<string>(
       //     async url => await this._notifyOfNewPoll(url),
@@ -121,7 +121,7 @@ export class Bot implements Routinable {
       //   )
       // )
 
-      RoutineStore.add(
+      Routines.add(
         'groups',
         new Routine<void>(async () => await this._notifyOfActiveGroups(), [], 2 * 60 * 60 * 1000)
       )
@@ -136,9 +136,9 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   clear() {
-    RoutineStore.terminate('server')
-    // DEPRECATED: RoutineStore.terminate('polls')
-    RoutineStore.terminate('groups')
+    Routines.terminate('server')
+    // DEPRECATED: Routines.terminate('polls')
+    Routines.terminate('groups')
   }
 
   /**
@@ -189,11 +189,11 @@ export class Bot implements Routinable {
       if (
         (!this._currentMission || info.mission !== this._currentMission.mission) &&
         info.mission !== 'None' &&
-        players >= EnvStore.NUM_PLAYERS_FOR_ALERT
+        players >= Env.NUM_PLAYERS_FOR_ALERT
       ) {
         this._currentMission = info
         const channel = this._guild!.channels.find(
-          c => c.id === EnvStore.ARMA_CHANNEL
+          c => c.id === Env.ARMA_CHANNEL
         ) as Discord.TextChannel
         await channel.send(`_**🎉 NEW MISSION**_`, {
           embed: serverMessage(info) as Discord.RichEmbed
@@ -201,10 +201,10 @@ export class Bot implements Routinable {
       }
 
       // Send alarms to users who are registered for the player count or lower
-      const userAlarms: Discord.User[] = AlarmStore.filter(players)
+      const userAlarms: Discord.User[] = Alarms.filter(players)
       for (const u of userAlarms) {
         await u.send({ embed: alarmMessage(players) })
-        AlarmStore.remove(u)
+        Alarms.remove(u)
       }
     } catch (e) {
       log.error(`NEW_MISSION: ${e.message}`)
@@ -238,7 +238,7 @@ export class Bot implements Routinable {
 
       // Send message for all closed polls and all opened polls
       const channel = this._guild!.channels.find(
-        c => c.id === EnvStore.REGULARS_CHANNEL
+        c => c.id === Env.REGULARS_CHANNEL
       ) as Discord.TextChannel
 
       // Opened polls message
@@ -266,12 +266,12 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private async _notifyOfActiveGroups() {
-    const groups: Group[] = GroupStore.getGroups()
+    const groups: Group[] = Groups.getGroups()
     try {
       // Notify the LFG channel if there are any active groups
       if (groups.length > 0) {
         const chan = this._guild!.channels.find(
-          c => c.id === EnvStore.LFG_CHANNEL
+          c => c.id === Env.LFG_CHANNEL
         ) as Discord.TextChannel
         await chan.send({ embed: groupsMessage(groups) })
       }
@@ -306,30 +306,30 @@ export class Bot implements Routinable {
         switch (e.group) {
           // ArmA 3 event reminder
           case 'UOA3':
-            role = this._guild!.roles.find(r => r.name === EnvStore.ARMA_PLAYER_ROLE)
+            role = this._guild!.roles.find(r => r.name === Env.ARMA_PLAYER_ROLE)
             channel = this._guild!.channels.find(
-              c => c.id === EnvStore.ARMA_CHANNEL
+              c => c.id === Env.ARMA_CHANNEL
             ) as Discord.TextChannel
             break
           // BMS event reminder
           case 'UOAF':
-            role = this._guild!.roles.find(r => r.name === EnvStore.BMS_PLAYER_ROLE)
+            role = this._guild!.roles.find(r => r.name === Env.BMS_PLAYER_ROLE)
             channel = this._guild!.channels.find(
-              c => c.id === EnvStore.BMS_CHANNEL
+              c => c.id === Env.BMS_CHANNEL
             ) as Discord.TextChannel
             break
           // UOTC course reminder
           case 'UOTC':
             role = null
             channel = this._guild!.channels.find(
-              c => c.id === EnvStore.ARMA_CHANNEL
+              c => c.id === Env.ARMA_CHANNEL
             ) as Discord.TextChannel
             break
           // Unknown event type reminder
           default:
             role = null
             channel = this._guild!.channels.find(
-              c => c.id === EnvStore.MAIN_CHANNEL
+              c => c.id === Env.MAIN_CHANNEL
             ) as Discord.TextChannel
         }
 
@@ -426,7 +426,7 @@ export class Bot implements Routinable {
     try {
       const timestamp = new Date().toISOString()
       const logChannel = this._guild!.channels.find(
-        c => c.id === EnvStore.LOG_CHANNEL
+        c => c.id === Env.LOG_CHANNEL
       ) as Discord.TextChannel
       return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
     } catch (e) {

@@ -1,5 +1,5 @@
 import { Message, Guild } from 'discord.js'
-import { AlarmStore } from '../state'
+import { Alarms } from '../state'
 
 /**
  * Register for an alert when the server hits a certain player count
@@ -19,14 +19,14 @@ export async function ready(_guild: Guild, msg: Message, args: string[]): Promis
   }
 
   if (args[0] === 'count') {
-    const count: number = AlarmStore.numberOfAlarms()
+    const count: number = Alarms.numberOfAlarms()
     await msg.author.send(`There are ${count} players waiting for player count alerts.`)
     return 'READY_ALARMS_COUNT'
   }
 
   try {
     const num: number = parseInt(args[0])
-    const alreadyRegistered: boolean = AlarmStore.register(num, msg.author)
+    const alreadyRegistered: boolean = Alarms.register(num, msg.author)
 
     if (alreadyRegistered) {
       await msg.author.send(

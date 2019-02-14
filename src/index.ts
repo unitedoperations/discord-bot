@@ -1,7 +1,7 @@
 require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
-import { EnvStore } from './lib/state'
+import { Env } from './lib/state'
 import { admins } from './lib/access'
 import { error } from './lib/logger'
 
@@ -88,5 +88,5 @@ bot
     cmd.sqfp
   )
   .addCommand('stats', '`!stats`: _view runtime statistics about the bot_', cmd.stats, admins)
-  .start(EnvStore.BOT_TOKEN)
+  .start(Env.BOT_TOKEN)
   .catch(err => error(`START: ${err}`))

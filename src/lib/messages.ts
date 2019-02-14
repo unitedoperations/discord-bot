@@ -69,8 +69,7 @@ export const welcomeMessage = (name: string): EmbedMessage => ({
     url: 'https://units.arma3.com/groups/img/1222/vSClUszph6.png'
   },
   image: {
-    url:
-      'http://forums.unitedoperations.net/public/style_images/United_Operations___Animated/scooby_banner_bg.png' // FIXME:
+    url: 'https://i.imgur.com/8sbhN8F.png'
   },
   fields: [
     {
