@@ -24,7 +24,7 @@ resource "null_resource" "docker" {
     inline = [
       "echo ${var.ssh_password} | sudo -S docker pull ${var.docker_image_name}",
       "sudo docker stop $(sudo docker ps -a -q)",
-      "sudo docker run --rm -d -e \"ANNOUNCE=true\" ${var.docker_image_name}",
+      "sudo docker run --rm -d ${var.docker_image_name}",
       "sudo docker rmi $(sudo docker images -q | awk 'FNR == 2')",
     ]
   }
