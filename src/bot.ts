@@ -80,7 +80,7 @@ export class Bot implements Routinable {
     this._polls = new PollsHandler(
       `${
         Env.API_BASE
-      }/forums/topics&forums=132&archived=0&locked=0&hasPoll=1&sortBy=date&sortDir=desc`,
+      }/forums/topics&forums=132&archived=0&hidden=0&locked=0&hasPoll=1&sortBy=date&sortDir=desc`,
       this._notifyOfPoll.bind(this)
     )
   }

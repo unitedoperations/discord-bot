@@ -9,6 +9,10 @@ import { Routines, Env, Polls, PollType, PollRule, PollThread } from './state'
 export type PollThreadResponse = PollThread & {
   id: number
   prefix: string
+  tags: string[]
+  firstPost: {
+    date: string
+  }
   date: string
   poll: {
     title: string
@@ -65,7 +69,7 @@ export class PollsHandler implements Routinable {
           Authorization: Env.apiAuthToken
         }
       }
-      const res = await fetch(this._pollsUrl, opts).then(res => res.json())
+      const res = await fetch(this._pollsUrl, opts).then(r => r.json())
       const openPolls: PollThreadResponse[] = this._getOpenPolls(res.results)
 
       // Remove any closed polls if none are open
@@ -79,11 +83,11 @@ export class PollsHandler implements Routinable {
       for (let p of openPolls) {
         // If the poll store doesn't have the event
         if (!Polls.has(p.id)) {
-          log.poll(`New Poll: ${p.question}`)
+          log.poll(`New Poll: ${p.poll.title}`)
 
           // Infer the poll type and closure date and create new object
           let rule: PollRule
-          switch (p.prefix.toUpperCase()) {
+          switch (p.tags[0].toUpperCase() || p.prefix.toUpperCase()) {
             case 'OFFICER':
               rule = {
                 type: PollType.Officer,
@@ -123,7 +127,7 @@ export class PollsHandler implements Routinable {
               throw new Error(`Found an unsupported voting thread tag: ${p.prefix}`)
           }
 
-          const closeDate: Date = addDays(new Date(p.date), rule.lengthInDays)
+          const closeDate: Date = addDays(new Date(p.firstPost.date), rule.lengthInDays)
 
           const newPoll: PollThread = {
             id: p.id,
@@ -174,7 +178,7 @@ export class PollsHandler implements Routinable {
     const open: PollThreadResponse[] = []
 
     for (const p of polls) {
-      if (differenceInDays(new Date(p.date), now) <= 15) open.push(p)
+      if (differenceInDays(now, new Date(p.firstPost.date)) <= 15) open.push(p)
       else break
     }
     return open
