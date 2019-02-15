@@ -5,12 +5,14 @@
 - ADD separate store to house and manage Discord channel functionality and IDs
 - ADD separate store for housing environment variables
 - ADD `!ready count` subcommand to see how many users are waiting for player count alerts
+- ADD regular role access restriction to the `!polls` command
 - UPDATE point calendar event manager to the new forum API
 - UPDATE new member welcome message with updated linked to wiki and forums pages
 - UPDATE clean up usage of `process.env` across the whole code-base
 - UPDATE expand `.env` to contain more configurable variables for flexibility
-- UPDATE the poll thread fetching and notification mechanisms. Now undeprecated.
+- UPDATE the poll thread fetching and notification mechanisms. Now undeprecated
 - FIX naming of UOAF flights generated from `!flight create` command
+- FIX several architectural flaws to make the bot more efficient in its processes
 - REMOVE `!config` command
 
 ## v2.7.0

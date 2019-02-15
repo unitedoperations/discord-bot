@@ -2,10 +2,10 @@ require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
 import { Env } from './lib/state'
-import { admins } from './lib/access'
+import { admins, regulars } from './lib/access'
 import { error } from './lib/logger'
 
-process.on('unhandledRejection', (reason, _promise) => {
+process.on('unhandledRejection', (reason: any, _promise: Promise<any>) => {
   error(`Unhandled Rejection ${reason.stack || reason}`)
 })
 
@@ -54,7 +54,8 @@ bot
   .addCommand(
     'polls',
     '`!polls`: _get a list of the active polls/voting threads on the forums_',
-    cmd.polls
+    cmd.polls,
+    regulars
   )
   .addCommand(
     'primary',

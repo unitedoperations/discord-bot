@@ -4,13 +4,21 @@ import differenceInDays from 'date-fns/difference_in_days'
 import addDays from 'date-fns/add_days'
 import * as log from './logger'
 import { Routine, Routinable } from './routine'
-import { Routines, Env, Polls, PollType, PollThread } from './state'
+import { Routines, Env, Polls, PollType, PollRule, PollThread } from './state'
 
-type ThreadResponse = PollThread & {
+export type PollThreadResponse = PollThread & {
   id: number
   prefix: string
   date: string
-  poll: Record<'title', string>
+  poll: {
+    title: string
+    questions: {
+      options: {
+        Yes: number
+        No: number
+      }
+    }[]
+  }
 }
 
 /**
@@ -20,20 +28,20 @@ type ThreadResponse = PollThread & {
  * @class PollsHandler
  * @implements {Routinable}
  * @property {string} _pollsUrl
- * @property {(PollThread) => void} _sendAlert
+ * @property {(PollThread, 'open' | 'closed') => void} _sendAlert
  */
 export class PollsHandler implements Routinable {
   // Polls instance variables
   private _pollsUrl: string
-  private _sendAlert: (p: PollThread) => void
+  private _sendAlert: (p: PollThread, status: 'open' | 'closed') => void
 
   /**
    * Creates an instance of Polls
    * @param {string} url
-   * @param {(p: PollThread) => void} alertFunc
+   * @param {(p: PollThread, status: 'open' | 'closed') => void} alertFunc
    * @memberof PollsHandler
    */
-  constructor(url: string, alertFunc: (p: PollThread) => void) {
+  constructor(url: string, alertFunc: (p: PollThread, status: 'open' | 'closed') => void) {
     this._sendAlert = alertFunc
     this._pollsUrl = url
 
@@ -51,7 +59,6 @@ export class PollsHandler implements Routinable {
    * @memberof PollsHandler
    */
   async update() {
-    // FIXME:
     try {
       const opts: RequestInit = {
         headers: {
@@ -59,7 +66,7 @@ export class PollsHandler implements Routinable {
         }
       }
       const res = await fetch(this._pollsUrl, opts).then(res => res.json())
-      const openPolls: ThreadResponse[] = this._getOpenPolls(res.results)
+      const openPolls: PollThreadResponse[] = this._getOpenPolls(res.results)
 
       // Remove any closed polls if none are open
       if (openPolls.length === 0) {
@@ -75,30 +82,70 @@ export class PollsHandler implements Routinable {
           log.poll(`New Poll: ${p.question}`)
 
           // Infer the poll type and closure date and create new object
-          const type: PollType =
-            p.prefix === 'OFFICER'
-              ? PollType.Officer
-              : p.prefix === 'REGULAR'
-              ? PollType.Regular
-              : PollType.Addon
+          let rule: PollRule
+          switch (p.prefix.toUpperCase()) {
+            case 'OFFICER':
+              rule = {
+                type: PollType.Officer,
+                percentToPass: 1 / 2,
+                lengthInDays: 14
+              }
+              break
+            case 'REGULAR':
+              rule = {
+                type: PollType.Regular,
+                percentToPass: 2 / 3,
+                lengthInDays: 7
+              }
+              break
+            case 'ADDON':
+              rule = {
+                type: PollType.Addon,
+                percentToPass: 3 / 4,
+                lengthInDays: 14
+              }
+              break
+            case 'CHARTER':
+              rule = {
+                type: PollType.Charter,
+                percentToPass: 3 / 4,
+                lengthInDays: 14
+              }
+              break
+            case 'REMOVAL':
+              rule = {
+                type: PollType.Removal,
+                percentToPass: 2 / 3,
+                lengthInDays: 14
+              }
+              break
+            default:
+              throw new Error(`Found an unsupported voting thread tag: ${p.prefix}`)
+          }
 
-          const closeDate: Date =
-            type === PollType.Addon || type === PollType.Officer
-              ? addDays(new Date(p.date), 14)
-              : addDays(new Date(p.date), 7)
+          const closeDate: Date = addDays(new Date(p.date), rule.lengthInDays)
 
           const newPoll: PollThread = {
             id: p.id,
-            type,
+            rule,
             question: p.poll.title,
             closeDate,
-            url: p.url
+            url: p.url,
+            votes: {
+              Yes: p.poll.questions[0].options.Yes,
+              No: p.poll.questions[0].options.No
+            }
           }
 
+          // Alert the regulars channel of new poll threads
+          await this._sendAlert(newPoll, 'open')
+
           // Schedule the poll closed message for the closure date
-          schedule.scheduleJob(`poll_closed_${p.id}`, newPoll.closeDate, () =>
-            this._sendAlert(newPoll)
+          schedule.scheduleJob(`poll_closed_${p.id}`, closeDate, () =>
+            this._sendAlert(newPoll, 'closed')
           )
+        } else {
+          Polls.update(p.id, p.poll.questions[0].options)
         }
       }
     } catch (e) {
@@ -118,16 +165,16 @@ export class PollsHandler implements Routinable {
    * Filter the input list of poll entities for those
    * that are still open for user voting
    * @private
-   * @param {PollThread[]} polls
-   * @returns {PollThread[]}
+   * @param {PollThreadResponse[]} polls
+   * @returns {PollThreadResponse[]}
    * @memberof PollsHandler
    */
-  private _getOpenPolls(polls: ThreadResponse[]): ThreadResponse[] {
+  private _getOpenPolls(polls: PollThreadResponse[]): PollThreadResponse[] {
     const now = new Date()
-    const open: ThreadResponse[] = []
+    const open: PollThreadResponse[] = []
 
     for (const p of polls) {
-      if (differenceInDays(new Date(p.date), now) <= 14) open.push(p)
+      if (differenceInDays(new Date(p.date), now) <= 15) open.push(p)
       else break
     }
     return open

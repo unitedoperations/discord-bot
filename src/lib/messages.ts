@@ -1,6 +1,6 @@
 import { Bot } from '../bot'
-import { CalendarEvent, Group, Flight } from './state'
-import { ServerInformation, ThreadInformation } from './helpers'
+import { CalendarEvent, Group, Flight, PollThread } from './state'
+import { ServerInformation } from './helpers'
 
 interface EmbedMessageImage {
   url: string | null
@@ -201,29 +201,65 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
  * Creates the message structure for displaying the active and open
  * polls on the voting discussion and poll threads on the forums
  * @export
- * @param {ThreadInformation[]} threads
+ * @param {PollThread} poll
+ * @param {('open' | 'closed')} status
  * @returns {EmbedMessage}
  */
-export const pollsMessage = (
-  threads: ThreadInformation[],
-  state: 'open' | 'close'
-): EmbedMessage => ({
+export const pollAlertMessage = (poll: PollThread, status: 'open' | 'closed'): EmbedMessage => {
+  let fields: EmbedMessageField[] = [
+    {
+      name: `${poll.rule.type}: ${poll.question}`,
+      value: poll.url
+    }
+  ]
+
+  if (status === 'closed') {
+    const toPercent = (total: number, x: number): number => x / total
+
+    const { Yes, No } = poll.votes
+    const percentYes = toPercent(Yes + No, Yes)
+    const prefix = percentYes >= poll.rule.percentToPass ? '✅' : '❌'
+
+    fields.push({
+      name: 'Final Result',
+      value: `${prefix} **Yes**: ${percentYes * 100}%, with ${Yes + No} total votes.`
+    })
+  }
+
+  return {
+    color: 11640433,
+    title: status === 'open' ? '📊 **New Poll**' : '🔒 **Poll Closed**',
+    description:
+      status === 'open'
+        ? `_A new poll has been created in the voting section of the forums!_`
+        : `_A pending poll has just ended!_`,
+    fields
+  }
+}
+
+/**
+ * Creates an embed message for the listing of active voting threads
+ * @export
+ * @param {PollThread[]} polls
+ * @returns {EmbedMessage}
+ */
+export const pollListingMessage = (polls: PollThread[]): EmbedMessage => ({
   color: 11640433,
-  title: state === 'open' ? '📊 **Open Polls**' : '🔒 **Closed Polls**',
+  title: '📊 **Active Polls**',
   description:
-    state === 'open'
-      ? `_There are currently ${threads.length} active polls to vote on!_`
-      : `_There were ${threads.length} polls clsoed!_`,
-  fields: threads.map(t => ({ name: `${t.type || 'Other'}: ${t.title}`, value: t.link }))
+    polls.length > 0
+      ? `_There are ${polls.length} active polls on the forums!_`
+      : `_There are currently no active polls on the forums._`,
+  fields: polls.map(p => ({ name: p.question, value: p.url }))
 })
 
 /**
  * Creates the embed message for the pending scheduled alerts
  * @export
- * @param {{ [name: string]: string[] }} alerts
+ * @param {Record<string, string[]>} alerts
  * @returns {EmbedMessage}
  */
-export const alertsMessage = (alerts: { [name: string]: string[] }): EmbedMessage => ({
+export const alertsMessage = (alerts: Record<string, string[]>): EmbedMessage => ({
   color: 11640433,
   title: '**⏰ Scheduled Reminders**',
   description: '_Pending timestamps for event reminders._',

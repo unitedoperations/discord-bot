@@ -6,7 +6,21 @@
 export enum PollType {
   Regular = 'REGULAR',
   Officer = 'OFFICER',
-  Addon = 'ADDON'
+  Addon = 'ADDON',
+  Charter = 'CHARTER',
+  Removal = 'REMOVAL'
+}
+
+/**
+ * Interface type to define a poll type and its required
+ * passing rate
+ * @export
+ * @interface PollRule
+ */
+export interface PollRule {
+  type: PollType
+  percentToPass: number
+  lengthInDays: number
 }
 
 /**
@@ -16,10 +30,11 @@ export enum PollType {
  */
 export interface PollThread {
   id: number
-  type: PollType
+  rule: PollRule
   question: string
   closeDate: Date
   url: string
+  votes: Record<'Yes' | 'No', number>
 }
 
 /**
@@ -66,6 +81,22 @@ class PollStore {
    */
   add(p: PollThread) {
     if (!this._polls.has(p.id)) this._polls.set(p.id, p)
+  }
+
+  /**
+   * Update the vote counts for an existing poll in the store
+   * @param {number} id
+   * @param {(Record<'Yes' | 'No', number>)} votes
+   * @memberof PollStore
+   */
+  update(id: number, votes: Record<'Yes' | 'No', number>) {
+    if (this._polls.has(id)) {
+      const old = this._polls.get(id) as PollThread
+      this._polls.set(id, {
+        ...old,
+        votes
+      })
+    }
   }
 
   /**

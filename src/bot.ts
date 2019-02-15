@@ -1,26 +1,22 @@
 import Discord from 'discord.js'
+import fetch, { RequestInit } from 'node-fetch'
 import isFuture from 'date-fns/is_future'
 import * as log from './lib/logger'
 import { CalendarHandler } from './lib/calendar'
+import { PollsHandler, PollThreadResponse } from './lib/polls'
 import { Routine, Routinable } from './lib/routine'
-import { CalendarEvent, Group, Groups, Routines, Alarms, Env } from './lib/state'
+import { CalendarEvent, Group, Groups, Routines, Alarms, Env, PollThread } from './lib/state'
 import { CommandProvision } from './lib/access'
 import { help } from './lib/commands'
+import { scrapeServerPage, ServerInformation } from './lib/helpers'
 import {
   welcomeMessage,
   reminderMessage,
   serverMessage,
-  pollsMessage,
+  pollAlertMessage,
   groupsMessage,
   alarmMessage
 } from './lib/messages'
-import {
-  arrayDiff,
-  scrapeServerPage,
-  scrapeThreadsPage,
-  ServerInformation,
-  ThreadInformation
-} from './lib/helpers'
 
 /**
  * Type definition for bot action functions
@@ -40,11 +36,11 @@ export type BotAction = (
  *
  * @property {Discord.Guild?} _guild
  * @property {CalendarHandler} _calendar
+ * @property {PollsHandler} _polls
  * @property {Discord.Client} _client
  * @property {Map<string, string>} _descriptions
  * @property {Map<string, BotAction>} _commands
  * @property {ServerInformation?} _currentMission
- * @property {ThreadInformation[]} _activePolls
  */
 export class Bot implements Routinable {
   // Public static Bot class variables that are able to be changed via config command
@@ -54,11 +50,11 @@ export class Bot implements Routinable {
   // Bot instance variables
   private _guild?: Discord.Guild
   private _calendar: CalendarHandler
+  private _polls: PollsHandler
   private _client: Discord.Client
   private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
   private _currentMission?: ServerInformation
-  private _activePolls: ThreadInformation[] = []
 
   /**
    * Creates an instance of Bot
@@ -80,6 +76,13 @@ export class Bot implements Routinable {
       `${Env.API_BASE}/calendar/events&sortBy=start&sortDir=desc`,
       this._sendEventReminder.bind(this)
     )
+
+    this._polls = new PollsHandler(
+      `${
+        Env.API_BASE
+      }/forums/topics&forums=132&archived=0&locked=0&hasPoll=1&sortBy=date&sortDir=desc`,
+      this._notifyOfPoll.bind(this)
+    )
   }
 
   /**
@@ -98,8 +101,11 @@ export class Bot implements Routinable {
       // Login with the Discord client
       await this._client.login(token)
 
-      // Initial calendar feed pull, handled by routine in CalendarFeed instance after
+      // Initial calendar feed pull, handled by routine in CalenderHandler instance after
       await this._calendar.update()
+
+      // Initial poll threads pull, handled by routine in PollsHandler instance after
+      await this._polls.update()
 
       // Add a background routines
       Routines.add(
@@ -110,16 +116,6 @@ export class Bot implements Routinable {
           5 * 60 * 1000
         )
       )
-
-      // DEPRECATED:
-      // Routines.add(
-      //   'polls',
-      //   new Routine<string>(
-      //     async url => await this._notifyOfNewPoll(url),
-      //     ['http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'],
-      //     12 * 60 * 60 * 1000
-      //   )
-      // )
 
       Routines.add(
         'groups',
@@ -137,7 +133,6 @@ export class Bot implements Routinable {
    */
   clear() {
     Routines.terminate('server')
-    // DEPRECATED: Routines.terminate('polls')
     Routines.terminate('groups')
   }
 
@@ -216,46 +211,38 @@ export class Bot implements Routinable {
    * when there has been a new post or one is closed.
    * @private
    * @async
-   * @param {string} url
+   * @param {PollThread} poll
+   * @param {('open' | 'closed')} status
    * @memberof Bot
    */
-  // DEPRECATED:
-  // @ts-ignore
-  private async _notifyOfNewPoll(url: string) {
+  private async _notifyOfPoll(poll: PollThread, status: 'open' | 'closed') {
     try {
-      // Scrape the thread url and get information from the list of posts
-      const polls: ThreadInformation[] = await scrapeThreadsPage(url)
-
-      // Get removed (closed) and additions (opened) polls
-      const closed: ThreadInformation[] = arrayDiff<ThreadInformation>(this._activePolls, polls)
-      const opened: ThreadInformation[] = arrayDiff<ThreadInformation>(polls, this._activePolls)
-
-      // If there are no opened or closed polls since last check, exit
-      if (closed.length === 0 && opened.length === 0) return
-
-      // Set new values for active polls
-      this._activePolls = polls
+      if (status === 'closed') {
+        // Fetch the final voting results to append to
+        // the poll object before passing to be alerted
+        const opts: RequestInit = {
+          headers: {
+            Authorization: Env.apiAuthToken
+          }
+        }
+        const res = await fetch(`${Env.API_BASE}/forums/topics/${poll.id}`, opts)
+        const thread: PollThreadResponse = await res.json()
+        poll.votes = {
+          Yes: thread.poll.questions[0].options.Yes,
+          No: thread.poll.questions[0].options.No
+        }
+      }
 
       // Send message for all closed polls and all opened polls
       const channel = this._guild!.channels.find(
         c => c.id === Env.REGULARS_CHANNEL
       ) as Discord.TextChannel
 
-      // Opened polls message
-      if (opened.length > 0) {
-        await channel.send(`@everyone`, {
-          embed: pollsMessage(opened, 'open') as Discord.RichEmbed
-        })
-      }
-
-      // Closed polls message
-      if (closed.length > 0) {
-        await channel.send(`@everyone`, {
-          embed: pollsMessage(closed, 'close') as Discord.RichEmbed
-        })
-      }
+      await channel.send({
+        embed: pollAlertMessage(poll, status)
+      })
     } catch (e) {
-      log.error(`NEW_POLL: ${e.message}`)
+      log.error(`POLL_ALERT: ${e.message}`)
     }
   }
 
