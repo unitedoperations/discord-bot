@@ -1,6 +1,5 @@
 import fetch, { RequestInit } from 'node-fetch'
 import schedule from 'node-schedule'
-import differenceInDays from 'date-fns/difference_in_days'
 import addDays from 'date-fns/add_days'
 import * as log from './logger'
 import { Routine, Routinable } from './routine'
@@ -70,24 +69,25 @@ export class PollsHandler implements Routinable {
         }
       }
       const res = await fetch(this._pollsUrl, opts).then(r => r.json())
-      const openPolls: PollThreadResponse[] = this._getOpenPolls(res.results)
+      const { results }: { results: PollThreadResponse[] } = res
 
       // Remove any closed polls if none are open
-      if (openPolls.length === 0) {
+      if (results.length === 0) {
         Polls.getPolls().forEach(p => {
           Polls.removeIfOld(p.id) ? log.info(`Deleted Poll: ${p.question}`) : null
         })
         return
       }
 
-      for (let p of openPolls) {
+      for (let p of results) {
         // If the poll store doesn't have the event
         if (!Polls.has(p.id)) {
           log.poll(`New Poll: ${p.poll.title}`)
 
           // Infer the poll type and closure date and create new object
           let rule: PollRule
-          switch (p.tags[0].toUpperCase() || p.prefix.toUpperCase()) {
+          const tag: string = p.tags[0] || p.prefix
+          switch (tag.toUpperCase()) {
             case 'OFFICER':
               rule = {
                 type: PollType.Officer,
@@ -163,24 +163,5 @@ export class PollsHandler implements Routinable {
    */
   clear(): void {
     Routines.terminate('poll_updates')
-  }
-
-  /**
-   * Filter the input list of poll entities for those
-   * that are still open for user voting
-   * @private
-   * @param {PollThreadResponse[]} polls
-   * @returns {PollThreadResponse[]}
-   * @memberof PollsHandler
-   */
-  private _getOpenPolls(polls: PollThreadResponse[]): PollThreadResponse[] {
-    const now = new Date()
-    const open: PollThreadResponse[] = []
-
-    for (const p of polls) {
-      if (differenceInDays(now, new Date(p.firstPost.date)) <= 15) open.push(p)
-      else break
-    }
-    return open
   }
 }
