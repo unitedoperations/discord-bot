@@ -1,5 +1,9 @@
 # UO Discord Bot
 
+[_**Contributing Guide**_](./.github/CONTRIBUTING.md)
+
+[_**Change Log**_](./.github/CHANGELOG.md)
+
 ## Commands
 
 | Command          |                    Arguments                    |                                                                 Description                                                                  |    Permissions     |
