@@ -14,6 +14,7 @@
 - FIX naming of UOAF flights generated from `!flight create` command
 - FIX several architectural flaws to make the bot more efficient in its processes
 - REMOVE `!config` command
+- Temporarily deprecate primary server notifier and `!primary` command
 
 ## v2.7.0
 

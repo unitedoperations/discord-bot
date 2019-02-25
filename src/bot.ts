@@ -73,7 +73,7 @@ export class Bot implements Routinable {
     this._client.on('error', err => log.error(`CLIENT_ERR ${err.message}`))
 
     this._calendar = new CalendarHandler(
-      `${Env.API_BASE}/calendar/events&sortBy=start&sortDir=desc`,
+      `${Env.API_BASE}/calendar/events&sortBy=start&sortDir=desc&hidden=0`,
       this._sendEventReminder.bind(this)
     )
 
@@ -108,14 +108,15 @@ export class Bot implements Routinable {
       await this._polls.update()
 
       // Add a background routines
-      Routines.add(
-        'server',
-        new Routine<string>(
-          async url => await this._notifyOfNewMission(url),
-          ['http://www.unitedoperations.net/tools/uosim'],
-          5 * 60 * 1000
-        )
-      )
+      // FIXME:
+      // Routines.add(
+      //   'server',
+      //   new Routine<string>(
+      //     async url => await this._notifyOfNewMission(url),
+      //     ['http://www.unitedoperations.net/tools/uosim'],
+      //     5 * 60 * 1000
+      //   )
+      // )
 
       Routines.add(
         'groups',
@@ -162,6 +163,8 @@ export class Bot implements Routinable {
    * @param {string} url
    * @memberof Bot
    */
+  // FIXME:
+  // @ts-ignore
   private async _notifyOfNewMission(url: string) {
     try {
       let info: ServerInformation | null = await scrapeServerPage(url)
