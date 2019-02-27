@@ -18,17 +18,6 @@ export interface ServerInformation {
 }
 
 /**
- * Interface type for thread information list
- * @export
- * @interface ThreadInformation
- */
-export interface ThreadInformation {
-  title: string
-  type: string
-  link: string
-}
-
-/**
  * Scrapes the HTML of the A3 server page and returns the relevant data
  * @export
  * @async
@@ -71,65 +60,6 @@ export async function scrapeServerPage(url: string): Promise<ServerInformation |
     log.error(`SERVER_SCRAPE: ${e.message}`)
     return null
   }
-}
-
-/**
- * Scrapes the HTML for the URL that points to a list of threads on the forums
- * @export
- * @async
- * @param {string} url
- * @returns {Promise<ThreadInformation[]>}
- */
-// DEPRECATED:
-export async function scrapeThreadsPage(url: string): Promise<ThreadInformation[]> {
-  try {
-    // Get the HTML from the web page
-    // TODO: Resolve forums login issue
-    const res = await fetch(url)
-    const body = await res.text()
-
-    // Parse the HTML into a mock DOM with cheerio
-    const $: CheerioStatic = cheerio.load(body)
-    const openThreads = $('tr.__topic')
-      .map((_, el) => {
-        // Check if the thread is closed or not, exit if locked
-        const locked =
-          $(el)
-            .children('td.col_f_icon')
-            .children('span')
-            .attr('title') === 'This topic is locked'
-        if (locked) return
-
-        // Get elements with key values
-        const content = $(el).children('td.col_f_content')
-        const topic = content.find('a.topic_title')
-
-        // Create object for the thread with type, link and title
-        const type = content.children('a.ipsBadge').text()
-        const link = topic.attr('href')
-        const title = topic.children('span').text()
-        return { type, link, title } as ThreadInformation
-      })
-      .toArray()
-
-    // Weird work around for type casting bug
-    return JSON.parse(JSON.stringify(openThreads)) as ThreadInformation[]
-  } catch (e) {
-    log.error(`THREAD_SCRAPE: ${e.message}`)
-    return []
-  }
-}
-
-/**
- * Finds the difference between the two argued arrays
- * @export
- * @template T
- * @param {T[]} a
- * @param {T[]} b
- * @returns {T[]}
- */
-export function arrayDiff<T>(a: T[], b: T[]): T[] {
-  return a.filter(x => !b.includes(x))
 }
 
 /**

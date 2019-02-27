@@ -1,5 +1,4 @@
-import FeedParser from 'feedparser'
-import fetch from 'node-fetch'
+import fetch, { RequestInit } from 'node-fetch'
 import schedule from 'node-schedule'
 import isFuture from 'date-fns/is_future'
 import subMinute from 'date-fns/sub_minutes'
@@ -8,122 +7,86 @@ import subDay from 'date-fns/sub_days'
 import cheerio from 'cheerio'
 import * as log from './logger'
 import { Routine, Routinable } from './routine'
-import { RoutineStore, EventStore, CalendarEvent } from './state'
+import { Routines, Events, CalendarEvent, Env } from './state'
+
+type EventResponseEntity = {
+  id: number
+  url: string
+  start: string
+  title: string
+  description: string
+}
 
 /**
- * The environment variable for alert times in hours
+ * Handles the calendar API and parsing events
  * @export
- */
-export const reminderIntervals: string[] = process.env.ALERT_TIMES!.split(',').map(t => t.trim())
-
-/**
- * Handles the RSS feed and parsing from the forums calendar
- * @export
- * @class CalendarFeed
+ * @class CalendarHandler
  * @implements Routinable
- * @property {number} HOURS_TO_REFRESH
- * @property {FeedParser?} _feed
- * @property {string} _feedUrl
+ * @property {string} _eventsUrl
  * @property {(string, CalendarEvent) => void} _sendReminder
  */
-export class CalendarFeed implements Routinable {
-  // Static and readonly variables for the CalendarFeed class
-  private static readonly HOURS_TO_REFRESH: number = parseFloat(
-    process.env.HOURS_TO_REFRESH_CALENDAR!
-  )
-
-  // CalendarFeed instance variables
-  private _feed?: FeedParser
-  private _feedUrl: string
+export class CalendarHandler implements Routinable {
+  // Calendar instance variables
+  private _eventsUrl: string
   private _sendReminder: (r: string, e: CalendarEvent) => void
 
   /**
-   * Creates an instance of CalendarFeed.
+   * Creates an instance of Calendar.
    * @param {string} url
    * @param {(string, CalendarEvent) => void} reminderFunc
-   * @memberof CalendarFeed
+   * @memberof CalendarHandler
    */
   constructor(url: string, reminderFunc: (r: string, e: CalendarEvent) => void) {
     this._sendReminder = reminderFunc
-    this._feedUrl = url
+    this._eventsUrl = url
 
     // Add routine to the store for refreshing the calendar event feed
-    RoutineStore.add(
-      'feed',
-      new Routine<void>(() => this.pull(), [], CalendarFeed.HOURS_TO_REFRESH * 60 * 60 * 1000)
+    Routines.add(
+      'event_updates',
+      new Routine<void>(() => this.update(), [], Env.HOURS_TO_REFRESH_FROM_FORUMS * 60 * 60 * 1000)
     )
   }
 
   /**
-   * Pull all of the calendar events from the forums that
-   * have not happened yet to parser them with the feed
-   * parser instance by pipping the RSS stream into it
+   * Pull all of the calendar events from the forums
+   * and update the in-memory store with those that
+   * haven't been registered yet (newly found events)
    * @async
-   * @memberof CalendarFeed
+   * @memberof CalendarHandler
    */
-  async pull() {
+  async update() {
     try {
-      this._feed = new FeedParser({ feedurl: this._feedUrl })
-      this._feed.on('readable', this._onFeedReadable)
-      const res = await fetch(this._feedUrl)
-      res.body.pipe(this._feed)
-    } catch (e) {
-      log.error(`PULL ${e.message}`)
-    }
-  }
+      const opts: RequestInit = {
+        headers: {
+          Authorization: Env.apiAuthToken
+        }
+      }
+      const res = await fetch(this._eventsUrl, opts).then(res => res.json())
+      const futureEvents: EventResponseEntity[] = this._getFutureEvents(res.results)
 
-  /**
-   * Ends all routines running on intervals
-   * @memberof CalendarFeed
-   */
-  clear(): void {
-    RoutineStore.terminate('feed')
-  }
+      // If there are no more future events, remove all old ones from the store
+      if (futureEvents.length === 0) {
+        Events.getEvents().forEach(e => {
+          Events.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
+        })
+        return
+      }
 
-  /**
-   * Event handler for when the feed parser receives the
-   * RSS stream from the request to the calendar to read the
-   * entities. Each read RSS item is converted into a
-   * {@type CalendarEvent} and stores them for later use
-   * @private
-   * @memberof CalendarFeed
-   */
-  private _onFeedReadable = () => {
-    try {
-      let e: FeedParser.Item
-
-      // Continue to read the feed until no more events
-      while ((e = this._feed!.read())) {
-        // Ensure the events cache doesn't already contain the event
-        if (!EventStore.has(e.guid)) {
+      for (let e of futureEvents) {
+        // If the event store doesn't have the event
+        if (!Events.has(e.id)) {
           log.event(`New Event: ${e.title}`)
 
-          const imgUrl: string = this._findImage(e.summary)
+          // Parse the event title and description for the target player group
+          // and the url for the image if one is present in the description
+          const imgUrl: string = this._findImage(e.description)
           const group: string = this._findGroup(e.title)
 
-          // Check if the title of the event contains Zulu start time
-          let date: Date = e.date as Date
-          const startTime: string | null =
-            e.title.trim().endsWith('z') || e.title.trim().endsWith('Z')
-              ? e.title.trim().substr(e.title.length - 5, 4)
-              : null
-
-          // Reconstruct event date with found Zulu start time if it exists
-          if (startTime) {
-            const month =
-              date.getUTCMonth() + 1 < 10 ? `0${date.getUTCMonth() + 1}` : date.getUTCMonth() + 1
-            const day = date.getUTCDate() < 10 ? `0${date.getUTCDate()}` : date.getUTCDate()
-            const d = `${date.getUTCFullYear()}-${month}-${day}`
-            const t = `${startTime.substr(0, 2)}:${startTime.substr(2, 2)}Z`
-            date = new Date(`${d}T${t}`)
-          }
-
-          // Create event object instance and add to the cache
           const newEvent: CalendarEvent = {
-            guid: e.guid,
+            id: e.id,
             title: e.title,
-            date,
-            link: e.link,
+            date: new Date(e.start),
+            url: e.url,
             img: imgUrl,
             group,
             reminders: new Map()
@@ -131,7 +94,7 @@ export class CalendarFeed implements Routinable {
 
           // For each interval set the default ran to false
           // and schedule the cron job for the reminder
-          reminderIntervals.forEach(r => {
+          Env.ALERT_TIMES.forEach(r => {
             newEvent.reminders.set(r, false)
             const [amt, type] = r.split(' ')
 
@@ -146,14 +109,23 @@ export class CalendarFeed implements Routinable {
             if (isFuture(time))
               schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
           })
-          EventStore.add(e.guid, newEvent)
+
+          Events.add(newEvent)
         } else {
-          EventStore.removeIfOld(e.guid) ? log.info(`Deleted Event: ${e.title}`) : null
+          Events.removeIfOld(e.id) ? log.info(`Deleted Event: ${e.title}`) : null
         }
       }
     } catch (e) {
-      log.error(`READABLE_FEED: ${e}`)
+      log.error(`CALENDAR UPDATE ${e.message}`)
     }
+  }
+
+  /**
+   * Ends all routines running on intervals
+   * @memberof CalendarHandler
+   */
+  clear(): void {
+    Routines.terminate('event_updates')
   }
 
   /**
@@ -176,7 +148,7 @@ export class CalendarFeed implements Routinable {
    * @private
    * @param {string} title
    * @returns {string | null}
-   * @memberof CalendarFeed
+   * @memberof CalendarHandler
    */
   private _findGroup(title: string): string {
     const groupMap = {
@@ -191,5 +163,23 @@ export class CalendarFeed implements Routinable {
       if (title.toLowerCase().startsWith(k)) return v
     }
     return ''
+  }
+
+  /**
+   * Filters the input list of events for those that are in the future
+   * @private
+   * @param {EventResponseEntity[]} events
+   * @returns {EventResponseEntity[]}
+   * @memberof CalendarHandler
+   */
+  private _getFutureEvents(events: EventResponseEntity[]): EventResponseEntity[] {
+    const now = new Date()
+    const future: EventResponseEntity[] = []
+
+    for (const e of events) {
+      if (new Date(e.start) >= now) future.push(e)
+      else break
+    }
+    return future
   }
 }

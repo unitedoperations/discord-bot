@@ -4,10 +4,10 @@
  * @interface CalendarEvent
  */
 export interface CalendarEvent {
-  guid: string
+  id: number
   title: string
   date: Date
-  link: string
+  url: string
   img: string
   group: string
   reminders: Map<string, boolean>
@@ -17,29 +17,29 @@ export interface CalendarEvent {
  * State store for calendar events pulled from the forums
  * @export
  * @class EventStore
- * @property {Map<string, CalendarEvent>} _events
+ * @property {Map<number, CalendarEvent>} _events
  */
 class EventStore {
-  private _events: Map<string, CalendarEvent> = new Map()
+  private _events: Map<number, CalendarEvent> = new Map()
 
   /**
    * Returns if the argued ID exists in the events cache
-   * @param {string} id
+   * @param {number} id
    * @returns {boolean}
    * @memberof EventStore
    */
-  has(id: string): boolean {
+  has(id: number): boolean {
     return this._events.has(id)
   }
 
   /**
    * Removes the argued event by ID if all reminders have occurred or
    * scheduled date is passed
-   * @param {string} id
+   * @param {number} id
    * @returns {boolean}
    * @memberof EventStore
    */
-  removeIfOld(id: string): boolean {
+  removeIfOld(id: number): boolean {
     const e: CalendarEvent | undefined = this._events.get(id)
     if (e !== undefined && [...e.reminders.values()].every(v => v)) {
       this._events.delete(id)
@@ -50,12 +50,11 @@ class EventStore {
 
   /**
    * Sets the ID in the events cache to the argued CalendarEvent
-   * @param {string} id
    * @param {CalendarEvent} e
    * @memberof EventStore
    */
-  add(id: string, e: CalendarEvent) {
-    if (!this._events.has(id)) this._events.set(id, e)
+  add(e: CalendarEvent) {
+    if (!this._events.has(e.id)) this._events.set(e.id, e)
   }
 
   /**

@@ -1,6 +1,5 @@
 import { Message, Guild, TextChannel, RichEmbed } from 'discord.js'
-import { Bot } from '../../bot'
-import { GroupStore, Flight, GroupType } from '../state'
+import { Groups, Flight, GroupType, Env } from '../state'
 import { flightsMessage, flightCreatedMessage } from '../messages'
 
 /**
@@ -40,7 +39,7 @@ export async function flight(guild: Guild, msg: Message, args: string[]): Promis
  * @returns {Promise<string>}
  */
 async function flightList(msg: Message): Promise<string> {
-  const flights: Flight[] = GroupStore.getFlights()
+  const flights: Flight[] = Groups.getFlights()
   await msg.author.send({ embed: flightsMessage(flights) })
   return 'FLIGHT_LISTING_OUTPUT'
 }
@@ -53,7 +52,7 @@ async function flightList(msg: Message): Promise<string> {
  * @returns {Promise<string>}
  */
 async function flightJoin(msg: Message, args: string[]): Promise<string> {
-  const { joined, flight } = GroupStore.joinFlight(msg.author, parseInt(args[1]))
+  const { joined, flight } = Groups.joinFlight(msg.author, parseInt(args[1]))
 
   if (joined) {
     // Alert the flight owner and command sender that a new member joined
@@ -81,7 +80,7 @@ async function flightJoin(msg: Message, args: string[]): Promise<string> {
  * @returns {Promise<string>}
  */
 async function flightDelete(msg: Message, args: string[]): Promise<string> {
-  const target: Flight[] = GroupStore.getFlights().filter(f => f.id === parseInt(args[1]))
+  const target: Flight[] = Groups.getFlights().filter(f => f.id === parseInt(args[1]))
 
   if (target.length === 0) {
     // If no flight was found...
@@ -89,7 +88,7 @@ async function flightDelete(msg: Message, args: string[]): Promise<string> {
     return 'NO_FLIGHT_TO_DELETE'
   } else if (target[0].owner === msg.author) {
     // Successful find and ownership
-    GroupStore.remove(parseInt(args[1]), GroupType.Flight)
+    Groups.remove(parseInt(args[1]), GroupType.Flight)
     await msg.author.send(`Successfully deleted your flight **${target[0].game}-${target[0].id}**.`)
     return `FLIGHT_REMOVE ${args[1]}`
   } else {
@@ -108,10 +107,10 @@ async function flightDelete(msg: Message, args: string[]): Promise<string> {
  * @returns {Promise<string>}
  */
 async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise<string> {
-  const flights: Flight[] = GroupStore.getFlights()
+  const flights: Flight[] = Groups.getFlights()
 
   // Check if the author already has a registered pickup flight
-  if (GroupStore.userAlreadyLooking(msg.author.username, flights)) {
+  if (Groups.userAlreadyLooking(msg.author.username, flights)) {
     await msg.author.send('You already have a registered pickup flight!')
     return 'TOO_MANY_FLIGHTS'
   }
@@ -131,13 +130,13 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
   const f: Flight = {
     id: flights.length + 1,
     owner: msg.author,
-    game: args[0].toUpperCase() as 'BMS' | 'DCS',
+    game: args[1].toUpperCase() as 'BMS' | 'DCS',
     details: args.slice(4).join(' '),
     time: new Date(`${year}-${date}T${time}:00Z`),
     found: []
   }
 
-  GroupStore.add(f, GroupType.Flight)
+  Groups.add(f, GroupType.Flight)
   await msg.author.send(
     `You have created a new **${f.game}** flight! Players can now join using your flight ID: **${
       f.id
@@ -145,8 +144,8 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
   )
 
   // Send creation announcement to uoaf_flights channel
-  const ch: TextChannel = guild.channels.find(c => c.id === Bot.FLIGHTS_CHANNEL) as TextChannel
-  const role = guild.roles.find(r => r.name === Bot.BMS_PLAYER_ROLE)
+  const ch: TextChannel = guild.channels.find(c => c.id === Env.FLIGHTS_CHANNEL) as TextChannel
+  const role = guild.roles.find(r => r.name === Env.BMS_PLAYER_ROLE)
   await ch.send(role.toString(), { embed: flightCreatedMessage(f) as RichEmbed })
 
   return `FLIGHT_CREATED: ${f.game}-${f.id}`

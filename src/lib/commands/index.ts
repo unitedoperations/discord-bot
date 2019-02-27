@@ -1,6 +1,6 @@
 export { about } from './about'
 export { alerts } from './alerts'
-export { config } from './config'
+export { announce } from './announce'
 export { events } from './events'
 export { flight } from './flight'
 export { help } from './help'
