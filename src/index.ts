@@ -1,8 +1,13 @@
 require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
-import { admins, deprecated } from './lib/access'
+import { Env } from './lib/state'
+import { admins, regulars, deprecated } from './lib/access'
 import { error } from './lib/logger'
+
+process.on('unhandledRejection', (reason: any, _promise: Promise<any>) => {
+  error(`Unhandled Rejection ${reason.stack || reason}`)
+})
 
 const { version } = require('../package.json')
 const bot = new Bot(version)
@@ -15,9 +20,9 @@ bot
     admins
   )
   .addCommand(
-    'config',
-    '`!config <key> <value>`: _re-configure available bot options; check GitHub for list of options_',
-    cmd.config,
+    'announce',
+    '`!announce`: _send update message to general channel for the bot_',
+    cmd.announce,
     admins
   )
   .addCommand('events', '`!events`: _displays all pending community events_', cmd.events)
@@ -50,12 +55,13 @@ bot
     'polls',
     '`!polls`: _get a list of the active polls/voting threads on the forums_',
     cmd.polls,
-    deprecated
+    regulars
   )
   .addCommand(
     'primary',
     '`!primary`: _get the information about the current mission on the A3 primary_',
-    cmd.primary
+    cmd.primary,
+    deprecated
   )
   .addCommand(
     'ratio',
@@ -64,7 +70,7 @@ bot
   )
   .addCommand(
     'ready',
-    '`!ready <#>`: _receive an alert from the bot when the primary server reaches a certain player count_',
+    '`!ready <#> | count`: _receive an alert from the bot when the primary server reaches a certain player count or see how many users are waiting for alerts_',
     cmd.ready
   )
   .addCommand(
@@ -84,5 +90,5 @@ bot
     cmd.sqfp
   )
   .addCommand('stats', '`!stats`: _view runtime statistics about the bot_', cmd.stats, admins)
-  .start(process.env.BOT_TOKEN!)
+  .start(Env.BOT_TOKEN)
   .catch(err => error(`START: ${err}`))

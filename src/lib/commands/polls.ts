@@ -1,6 +1,8 @@
 import { Message, Guild } from 'discord.js'
-import { scrapeThreadsPage } from '../helpers'
-import { pollsMessage } from '../messages'
+import fetch, { RequestInit } from 'node-fetch'
+import { Env, Polls } from '../state'
+import { PollThreadResponse } from '../polls'
+import { pollListingMessage } from '../messages'
 
 /**
  * Pulls and returns a list of open voting threads from the forums
@@ -11,24 +13,22 @@ import { pollsMessage } from '../messages'
  * @param {string[]} _args
  * @returns {Promise<string>}
  */
-// DEPRECATED:
 export async function polls(_guild: Guild, msg: Message, _args: string[]): Promise<string> {
-  try {
-    let openThreads = await scrapeThreadsPage(
-      'http://forums.unitedoperations.net/index.php/forum/132-policy-voting-discussions/'
-    )
-
-    // Check if any open polls exist
-    if (openThreads.length === 0) {
-      await msg.author.send('There are currently no open polls.')
-      return 'NO_OPEN_POLLS'
+  const opts: RequestInit = {
+    headers: {
+      Authorization: Env.apiAuthToken
     }
-
-    await msg.author.send({ embed: pollsMessage(openThreads, 'open') })
-    return 'VOTING_THREADS_OUTPUT'
-  } catch (e) {
-    // If there was an error in any asynchronous operation
-    await msg.author.send('Could not retrieve voting thread data right now.')
-    return 'POLL_THREAD_ERROR'
   }
+
+  const requests: Promise<PollThreadResponse>[] = Polls.getPolls().map(p => {
+    return fetch(`${Env.API_BASE}/forums/topics/${p.id}`, opts).then(r => r.json())
+  })
+
+  const responses: PollThreadResponse[] = await Promise.all(requests)
+  for (const res of responses) {
+    Polls.update(res.id, res.poll.questions[0].options)
+  }
+
+  await msg.author.send({ embed: pollListingMessage(Polls.getPolls()) })
+  return 'POLL_LISTING_OUTPUT'
 }

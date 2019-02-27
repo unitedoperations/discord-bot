@@ -1,6 +1,43 @@
 import { Message, Guild } from 'discord.js'
-import FTP from 'promise-ftp'
+import fetch, { RequestInit } from 'node-fetch'
+import { Env } from '../state'
 import { missionsMessage } from '../messages'
+
+type MissionCategory = {
+  id: number
+  name: string
+  url: string
+}
+
+type MissionAuthor = {
+  id: number
+  name: string
+  email: string
+}
+
+type ArmAMission = {
+  id: number
+  title: string
+  category: MissionCategory
+  fields: Record<string, string>
+  author: MissionAuthor
+  date: string
+  description: string
+  comments: number
+  reviews: number
+  views: number
+  url: string
+  rating: number
+}
+
+enum MissionField {
+  PlayerCount = 'field_40',
+  JIPType = 'field_41',
+  GameMode = 'field_43',
+  Island = 'field_44',
+  FileName = 'field_48',
+  Description = 'field_49'
+}
 
 /**
  * Searches the mission file FTP server for names that match the argued name
@@ -19,16 +56,17 @@ export async function missions(_guild: Guild, msg: Message, args: string[]): Pro
   }
 
   // Log into the mission file FTP server and get the list of all mission on the primary server
-  const { FTP_HOST, FTP_USER, FTP_PASS } = process.env
-  const ftp = new FTP()
-  await ftp.connect({ host: FTP_HOST, user: FTP_USER, password: FTP_PASS })
-  const files: FTP.ListingElement[] = await ftp.list('/SRV1')
-  await ftp.end()
+  const opts: RequestInit = { headers: { Authorization: Env.apiAuthToken } }
+  const params: string = '&categories=41&sortBy=title&sortDir=asc'
+  const response = await fetch(`${Env.API_BASE}/cms/records/7${params}`, opts)
+  const liveMissionList: ArmAMission[] = await response.json().then(x => x.results)
 
   // Filter all the missions that match or are similar to the argued values
-  const matches: string[] = files.map(f => f.name).filter(n => isMatch(args, n.split('_')))
+  const matchesByName: string[] = liveMissionList
+    .map(mission => mission.fields[MissionField.FileName])
+    .filter(n => isMatch(args, n.split('_')))
 
-  await msg.author.send({ embed: missionsMessage(args, matches) })
+  await msg.author.send({ embed: missionsMessage(args, matchesByName) })
   return 'MISSION_SEARCH_OUTPUT'
 }
 

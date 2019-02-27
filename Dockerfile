@@ -12,4 +12,4 @@ RUN npm install
 RUN npm run build
 RUN mv .env.prod .env
 
-CMD [ "pm2-runtime", "./build/index.js" ]
+CMD [ "pm2-runtime", "./build/index.js", "--env=production", "--max-restarts=3" ]

@@ -1,6 +1,6 @@
 import { Message, Guild } from 'discord.js'
 import * as log from '../logger'
-import { allowedDiscordGroups } from '../access'
+import { Env } from '../state'
 
 /**
  * Allows a user to join a group that is within their permissions
@@ -26,7 +26,7 @@ export async function joinGroup(guild: Guild, msg: Message, args: string[]): Pro
     // If no role with the argued name exists end with that message
     await msg.author.send(`The group '${name}' does not exist.`)
     return 'GROUP_DOES_NOT_EXIST'
-  } else if (!allowedDiscordGroups.includes(role.name)) {
+  } else if (!Env.ALLOWED_GROUPS.includes(role.name)) {
     // If the argued group name is not included in the permitted groups
     await msg.author.send(`You don't have permission to join '${role.name}'.`)
     return 'INVALID_PERMISSIONS'

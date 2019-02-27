@@ -1,4 +1,5 @@
 import { Message, Guild } from 'discord.js'
+import { Env } from './state'
 import { BotAction } from '../bot'
 
 const permissionsError: string = 'invalid user permissions'
@@ -10,28 +11,16 @@ const permissionsError: string = 'invalid user permissions'
 export type CommandProvision = (fn: BotAction) => BotAction
 
 /**
- * Constant array of allow Discord server groups for people to join
- * @export
- */
-export const allowedDiscordGroups: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
-
-/**
- * Array of roles allowed to run the admin only commands
- * @export
- */
-export const adminGroups: string[] = process.env.ADMIN_ROLES!.split(',')
-
-/**
  * Role permission wrappers for bot action functions using
  * the `permissioned` currying function
  * @exports
  */
-export const admins: CommandProvision = permissioned(adminGroups)
+export const admins: CommandProvision = permissioned(Env.ADMIN_ROLES)
 Object.defineProperty(admins, 'name', {
   value: 'admins'
 })
 
-export const regulars: CommandProvision = permissioned(['Regulars'])
+export const regulars: CommandProvision = permissioned(['Regulars', ...Env.ADMIN_ROLES])
 Object.defineProperty(regulars, 'name', {
   value: 'regulars'
 })

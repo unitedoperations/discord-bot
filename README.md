@@ -1,32 +1,36 @@
 # UO Discord Bot
 
+[_**Contributing Guide**_](./.github/CONTRIBUTING.md)
+
+[_**Change Log**_](./.github/CHANGELOG.md)
+
 ## Commands
 
-| Command          |                    Arguments                    |                                                     Description                                                     |    Permissions     |
-| :--------------- | :---------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :----------------: |
-| `!?`, `!help`    |                        -                        |                                Displays the help output for the bot commands and use                                |        All         |
-| `!about`         |                        -                        |                                          Display information about the bot                                          |        All         |
-| `!alerts`        |                        -                        |                              Display the pending alerts that are scheduled in the bot                               |       Admins       |
-| `!config`        |                   key, value                    |                         Reconfigure available bot options; check README for list of options                         |       Admins       |
-| `!events`        |                        -                        |                                        displays all pending community events                                        |        All         |
-| `!flight list`   |                        -                        |                                         Display all pickup flights pending                                          |        All         |
-| `!flight create` | sim (BMS or DCS), HH:MM zulu, MM/DD, ...details | Create a new pickup flight for the argued SIM to take place on the argued zulu time and date with any extra details |        All         |
-| `!flight join`   |                    flight_id                    |                                   Join an existing pickup flight by the argued ID                                   |        All         |
-| `!flight delete` |                    flight_id                    |                               Delete a pickup flight that you have created by its ID                                | All (flight owner) |
-| `!join_group`    |                   group_name                    |                               Join the argued group if it exists and have permission                                |        All         |
-| `!leave_group`   |                   group_name                    |                                Leave the argued group if it exists and you are in it                                |        All         |
-| `!lfg list`      |                        -                        |                                   Display all group entities looking for players                                    |        All         |
-| `!lfg create`    |                 #_needed, name                  |                     Create a new group with a designated name and amount of players looking for                     |        All         |
-| `!lfg join`      |                    group_id                     |                                 Join a group by it's ID that is looking for players                                 |        All         |
-| `!lfg delete`    |                    group_id                     |                                    Delete a group that you have create by its ID                                    | All (group owner)  |
-| `!missions`      |                      name                       |            Search for mission on the FTP server with names that fully or partially match the argued name            |        All         |
-| `!polls`         |                        -                        |                               Get a list of active polls/voting threads on the forums                               |     Deprecated     |
-| `!ratio`         |                   total, a, b                   |                                Calculate the player ratio for teams with A:B players                                |        All         |
-| `!ready`         |                      count                      |            Receive a one-time alert from the bot when the primary server reaches a certain player count             |        All         |
-| `!shutdown`      |                        -                        |                                              Turns off the Discord bot                                              |       Admins       |
-| `!sqf`           |                       cmd                       |                              Search the BIS wiki for information about an SQF command                               |        All         |
-| `!sqfp`          |                       cmd                       |                  Search BIS wiki for information about an SQF command and post the result publicly                  |        All         |
-| `!stats`         |                        -                        |                                        View runtime statistics about the bot                                        |       Admins       |
+| Command          |                    Arguments                    |                                                                 Description                                                                  |    Permissions     |
+| :--------------- | :---------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------: | :----------------: |
+| `!?`, `!help`    |                        -                        |                                            Displays the help output for the bot commands and use                                             |        All         |
+| `!about`         |                        -                        |                                                      Display information about the bot                                                       |        All         |
+| `!alerts`        |                        -                        |                                           Display the pending alerts that are scheduled in the bot                                           |       Admins       |
+| `!announce`      |                        -                        |                                            Announce a new bot upgrade to the main Discord channel                                            |       Admins       |
+| `!events`        |                        -                        |                                                    displays all pending community events                                                     |        All         |
+| `!flight list`   |                        -                        |                                                      Display all pickup flights pending                                                      |        All         |
+| `!flight create` | sim (BMS or DCS), HH:MM zulu, MM/DD, ...details |             Create a new pickup flight for the argued SIM to take place on the argued zulu time and date with any extra details              |        All         |
+| `!flight join`   |                    flight_id                    |                                               Join an existing pickup flight by the argued ID                                                |        All         |
+| `!flight delete` |                    flight_id                    |                                            Delete a pickup flight that you have created by its ID                                            | All (flight owner) |
+| `!join_group`    |                   group_name                    |                                            Join the argued group if it exists and have permission                                            |        All         |
+| `!leave_group`   |                   group_name                    |                                            Leave the argued group if it exists and you are in it                                             |        All         |
+| `!lfg list`      |                        -                        |                                                Display all group entities looking for players                                                |        All         |
+| `!lfg create`    |                 #_needed, name                  |                                 Create a new group with a designated name and amount of players looking for                                  |        All         |
+| `!lfg join`      |                    group_id                     |                                             Join a group by it's ID that is looking for players                                              |        All         |
+| `!lfg delete`    |                    group_id                     |                                                Delete a group that you have create by its ID                                                 | All (group owner)  |
+| `!missions`      |                      name                       |                        Search for mission on the FTP server with names that fully or partially match the argued name                         |        All         |
+| `!polls`         |                        -                        |                                           Get a list of active polls/voting threads on the forums                                            |     Deprecated     |
+| `!ratio`         |                   total, a, b                   |                                            Calculate the player ratio for teams with A:B players                                             |        All         |
+| `!ready`         |            "count" OR # to wait for             | Receive a one-time alert from the bot when the primary server reaches a certain player count, or see how many users are waiting with "count" |        All         |
+| `!shutdown`      |                        -                        |                                                          Turns off the Discord bot                                                           |       Admins       |
+| `!sqf`           |                       cmd                       |                                           Search the BIS wiki for information about an SQF command                                           |        All         |
+| `!sqfp`          |                       cmd                       |                              Search BIS wiki for information about an SQF command and post the result publicly                               |        All         |
+| `!stats`         |                        -                        |                                                    View runtime statistics about the bot                                                     |       Admins       |
 
 ## Requirements and Setup
 
@@ -54,49 +58,13 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - \*`DISCORD_BMS_PLAYER_ROLE`: _the role designated for BMS players_
   - `ALERT_TIMES`: _comma deliminated list of "time untils" to post reminder notifications for calendar events. Hold the format of `<amt> <time_type>` (7 days, 12 hours)_
   - \*`NUM_PLAYERS_FOR_ALERT`: _the minimum player count on the server to initial an alert_
-  - `HOURS_TO_REFRESH_CALENDAR`: _number of hours between updating the event list from the RSS feed for the calendar_
+  - `HOURS_TO_REFRESH_FROM_FORUMS`: _number of hours between updating data from API requests to the forum_
   - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
   - `FTP_HOST`: _address of the primary mission file FTP server_
   - `FTP_USER`: _user account name to log into the FTP server_
   - `FTP_PASS`: _password for the FTP server user account_
-
-Sample `.env` file without sensitive values:
-
-```sh
-# Bot authentication configuration
-BOT_ID=
-BOT_SECRET=
-BOT_TOKEN=
-BOT_PERMISSIONS=
-
-# Discord information configuration, channel variables are the channel IDs
-DISCORD_SERVER_ID=
-DISCORD_LOG_CHANNEL=
-DISCORD_MAIN_CHANNEL=
-DISCORD_LFG_CHANNEL=
-DISCORD_REGULARS_CHANNEL=
-DISCORD_ARMA_CHANNEL=
-DISCORD_BMS_CHANNEL=
-DISCORD_ALLOWED_GROUPS=UOA3,UOAF
-DISCORD_ARMA_PLAYER_ROLE=UOA3
-DISCORD_BMS_PLAYER_ROLE=UOAF
-
-# All times are in hours!
-# Format as: <amount> <type>
-ALERT_TIMES=7 days,2 days,1 day,12 hours,2 hours,5 minutes
-NUM_PLAYERS_FOR_ALERT=10
-
-# Number of hours between calendar event pulls to refresh
-HOURS_TO_REFRESH_CALENDAR=1
-
-# Role(s) permitted to perform admin commands on the bot
-ADMIN_ROLES=GSO,WSO
-
-# FTP server variables
-FTP_HOST=
-FTP_USER=
-FTP_PASS=
-```
+  - `API_BASE`: _base url for the forum's REST API_
+  - `API_KEY`: _API key provided by forums admin for access to the REST API_
 
 ### Discord
 

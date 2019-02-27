@@ -1,6 +1,6 @@
 import { Bot } from '../bot'
-import { CalendarEvent, Group, Flight } from './state'
-import { ServerInformation, ThreadInformation } from './helpers'
+import { CalendarEvent, Group, Flight, PollThread } from './state'
+import { ServerInformation } from './helpers'
 
 interface EmbedMessageImage {
   url: string | null
@@ -63,39 +63,38 @@ export const updateMessage = (newVersion: string): EmbedMessage => ({
 export const welcomeMessage = (name: string): EmbedMessage => ({
   color: 11640433, // Integer representation of UO color #B19E71
   title: `👋🏼 **Welcome to United Operations Discord, ${name}!**`,
-  url: 'http://forums.unitedoperations.net',
+  url: 'https://unitedoperations.net/forums/',
   description: '*Tactical Gaming Community*',
   thumbnail: {
     url: 'https://units.arma3.com/groups/img/1222/vSClUszph6.png'
   },
   image: {
-    url:
-      'http://forums.unitedoperations.net/public/style_images/United_Operations___Animated/scooby_banner_bg.png'
+    url: 'https://i.imgur.com/8sbhN8F.png'
   },
   fields: [
     {
       name: 'Getting Started (Arma 3)',
-      value: 'http://www.unitedoperations.net/wiki/Getting_Started_Guide_(Arma_3)'
+      value: 'https://wiki.unitedoperations.net/wiki/Getting_Started_Guide_(Arma_3)'
     },
     {
       name: 'Getting Started (BMS)',
-      value: 'http://www.unitedoperations.net/wiki/BMS_Configuration_and_Setup'
+      value: 'https://wiki.unitedoperations.net/wiki/BMS_Configuration_and_Setup'
     },
     {
       name: 'Community Wiki',
-      value: 'http://www.unitedoperations.net/wiki/Main_Page'
+      value: 'https://wiki.unitedoperations.net/wiki/Main_Page'
     },
     {
       name: 'Forums',
-      value: 'http://forums.unitedoperations.net/'
+      value: 'https://unitedoperations.net/forums/'
     },
     {
       name: 'Charter',
-      value: 'http://www.unitedoperations.net/wiki/United_Operations_Charter'
+      value: 'https://wiki.unitedoperations.net/wiki/United_Operations_Charter'
     },
     {
       name: 'Server Information',
-      value: 'http://forums.unitedoperations.net/index.php/page/servers'
+      value: 'https://unitedoperations.net/forums/index.php?/servers/'
     }
   ]
 })
@@ -144,7 +143,7 @@ export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessag
   color: 11640433,
   title: `🔔 **Reminder:** *${event.title}*`,
   description: `_...taking place in about **${away}**_`,
-  url: event.link,
+  url: event.url,
   image: {
     url: event.img
   }
@@ -160,7 +159,7 @@ export const eventsMessage = (events: CalendarEvent[]): EmbedMessage => ({
   color: 11640433,
   title: '⏳ **Community Events**',
   description: `_There are a total of ${events.length} upcoming community events!_`,
-  fields: events.map(e => ({ name: e.title, value: e.link }))
+  fields: events.map(e => ({ name: e.title, value: e.url }))
 })
 
 /**
@@ -202,29 +201,65 @@ export const serverMessage = (info: ServerInformation): EmbedMessage => ({
  * Creates the message structure for displaying the active and open
  * polls on the voting discussion and poll threads on the forums
  * @export
- * @param {ThreadInformation[]} threads
+ * @param {PollThread} poll
+ * @param {('open' | 'closed')} status
  * @returns {EmbedMessage}
  */
-export const pollsMessage = (
-  threads: ThreadInformation[],
-  state: 'open' | 'close'
-): EmbedMessage => ({
+export const pollAlertMessage = (poll: PollThread, status: 'open' | 'closed'): EmbedMessage => {
+  let fields: EmbedMessageField[] = [
+    {
+      name: `${poll.rule.type}: ${poll.question}`,
+      value: poll.url
+    }
+  ]
+
+  if (status === 'closed') {
+    const toPercent = (total: number, x: number): number => x / total
+
+    const { Yes, No } = poll.votes
+    const percentYes = toPercent(Yes + No, Yes)
+    const prefix = percentYes >= poll.rule.percentToPass ? '✅' : '❌'
+
+    fields.push({
+      name: 'Final Result',
+      value: `${prefix} **Yes**: ${percentYes * 100}%, with ${Yes + No} total votes.`
+    })
+  }
+
+  return {
+    color: 11640433,
+    title: status === 'open' ? '📊 **New Poll**' : '🔒 **Poll Closed**',
+    description:
+      status === 'open'
+        ? `_A new poll has been created in the voting section of the forums!_`
+        : `_A pending poll has just ended!_`,
+    fields
+  }
+}
+
+/**
+ * Creates an embed message for the listing of active voting threads
+ * @export
+ * @param {PollThread[]} polls
+ * @returns {EmbedMessage}
+ */
+export const pollListingMessage = (polls: PollThread[]): EmbedMessage => ({
   color: 11640433,
-  title: state === 'open' ? '📊 **Open Polls**' : '🔒 **Closed Polls**',
+  title: '📊 **Active Polls**',
   description:
-    state === 'open'
-      ? `_There are currently ${threads.length} active polls to vote on!_`
-      : `_There were ${threads.length} polls clsoed!_`,
-  fields: threads.map(t => ({ name: `${t.type || 'Other'}: ${t.title}`, value: t.link }))
+    polls.length > 0
+      ? `_There are ${polls.length} active polls on the forums!_`
+      : `_There are currently no active polls on the forums._`,
+  fields: polls.map(p => ({ name: p.question, value: p.url }))
 })
 
 /**
  * Creates the embed message for the pending scheduled alerts
  * @export
- * @param {{ [name: string]: string[] }} alerts
+ * @param {Record<string, string[]>} alerts
  * @returns {EmbedMessage}
  */
-export const alertsMessage = (alerts: { [name: string]: string[] }): EmbedMessage => ({
+export const alertsMessage = (alerts: Record<string, string[]>): EmbedMessage => ({
   color: 11640433,
   title: '**⏰ Scheduled Reminders**',
   description: '_Pending timestamps for event reminders._',
