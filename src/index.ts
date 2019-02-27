@@ -2,7 +2,7 @@ require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
 import { Env } from './lib/state'
-import { admins, regulars } from './lib/access'
+import { admins, regulars, deprecated } from './lib/access'
 import { error } from './lib/logger'
 
 process.on('unhandledRejection', (reason: any, _promise: Promise<any>) => {
@@ -60,7 +60,8 @@ bot
   .addCommand(
     'primary',
     '`!primary`: _get the information about the current mission on the A3 primary_',
-    cmd.primary
+    cmd.primary,
+    deprecated
   )
   .addCommand(
     'ratio',

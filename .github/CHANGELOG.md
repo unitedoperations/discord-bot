@@ -11,6 +11,7 @@
 - UPDATE clean up usage of `process.env` across the whole code-base
 - UPDATE expand `.env` to contain more configurable variables for flexibility
 - UPDATE the poll thread fetching and notification mechanisms. Now undeprecated
+- UPDATE `!missions` command to use forums API instead of FTP access
 - FIX naming of UOAF flights generated from `!flight create` command
 - FIX several architectural flaws to make the bot more efficient in its processes
 - REMOVE `!config` command
