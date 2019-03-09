@@ -23,7 +23,7 @@
 | `!lfg create`    |                 #_needed, name                  |                                 Create a new group with a designated name and amount of players looking for                                  |        All         |
 | `!lfg join`      |                    group_id                     |                                             Join a group by it's ID that is looking for players                                              |        All         |
 | `!lfg delete`    |                    group_id                     |                                                Delete a group that you have create by its ID                                                 | All (group owner)  |
-| `!missions`      |                      name                       |                        Search for mission on the FTP server with names that fully or partially match the argued name                         |        All         |
+| `!missions`      |                      name                       |                        Search for mission on the forums API with names that fully or partially match the argued name                         |        All         |
 | `!polls`         |                        -                        |                                           Get a list of active polls/voting threads on the forums                                            |     Deprecated     |
 | `!ratio`         |                   total, a, b                   |                                            Calculate the player ratio for teams with A:B players                                             |        All         |
 | `!ready`         |            "count" OR # to wait for             | Receive a one-time alert from the bot when the primary server reaches a certain player count, or see how many users are waiting with "count" |        All         |
@@ -60,11 +60,10 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - \*`NUM_PLAYERS_FOR_ALERT`: _the minimum player count on the server to initial an alert_
   - `HOURS_TO_REFRESH_FROM_FORUMS`: _number of hours between updating data from API requests to the forum_
   - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
-  - `FTP_HOST`: _address of the primary mission file FTP server_
-  - `FTP_USER`: _user account name to log into the FTP server_
-  - `FTP_PASS`: _password for the FTP server user account_
   - `API_BASE`: _base url for the forum's REST API_
   - `API_KEY`: _API key provided by forums admin for access to the REST API_
+  - `PUSHER_CLUSTER`: _cluster that the Pusher application and channels are in_
+  - `PUSHER_KEY`: _application key for accessing the Pusher channels to listen for events_
 
 ### Discord
 

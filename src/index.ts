@@ -48,7 +48,7 @@ bot
   )
   .addCommand(
     'missions',
-    '`!missions <name>`: _search for mission on the FTP server with names that fully or partially match the argued name_',
+    '`!missions <name>`: _search for mission on the forums API with names that fully or partially match the argued name_',
     cmd.missions
   )
   .addCommand(
