@@ -390,6 +390,7 @@ export const alarmMessage = (x: number): EmbedMessage => ({
 export const statsMessage = (
   uptime: string,
   reqs: number,
+  newMembers: number,
   events: number,
   alarms: number,
   groups: number
@@ -405,6 +406,10 @@ export const statsMessage = (
     {
       name: 'Total Requests',
       value: reqs
+    },
+    {
+      name: 'New Members Joined',
+      value: newMembers
     },
     {
       name: 'Upcoming Events',

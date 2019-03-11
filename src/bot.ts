@@ -42,6 +42,7 @@ type Nullable<T> = T | null
  *
  * @static @property {string} VERSION
  * @static @property {number} REQUEST_COUNT
+ * @static @property {number} NEW_MEMBER_MESSAGES_SENT
  *
  * @private @property {Discord.Guild?} _guild
  * @private @property {CalendarHandler} _calendar
@@ -57,6 +58,7 @@ export class Bot implements Routinable {
   // Public static Bot class variables that are able to be changed via config command
   public static VERSION: string
   public static REQUEST_COUNT: number = 0
+  public static NEW_MEMBER_MESSAGES_SENT: number = 0
 
   // Bot instance variables
   private _guild?: Discord.Guild
@@ -362,6 +364,7 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private _onNewMember = async (member: Discord.GuildMember) => {
+    Bot.NEW_MEMBER_MESSAGES_SENT++
     const username: string = member.user.username
     try {
       await member.send({ embed: welcomeMessage(username) })

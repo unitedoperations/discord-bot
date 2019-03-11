@@ -2,8 +2,8 @@
 
 ## v2.9.0
 
-- ADD "Steel Beasts" to the support list of groups to join/leave
 - ADD `pusher-js` capabilities for hooking in the event stream served by the UO Authenticator for providing and revoking user permissions
+- UPDATE calendar event notification intervals
 - REMOVE FTP related environment variable dependencies since transition to forums API for mission searching
 
 ## v2.8.0
