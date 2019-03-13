@@ -55,11 +55,11 @@ function permissioned(group: string[]): (fn: BotAction) => BotAction {
  * @param {BotAction} cmd
  * @returns {BotAction}
  */
-export function deprecated(cmd: BotAction): BotAction {
+export function disabled(cmd: BotAction): BotAction {
   return async (_guild: Guild, msg: Message, _args: string[]): Promise<string> => {
     const output: string = `The \`${
       cmd.name
-    }\` command is currently broken or deprecated. Please contact the developers or post a GitHub issue at the link found by running \`!?\`.`
+    }\` command is currently broken or temporaryily disabled. Please contact the developers or post a GitHub issue at the link found by running \`!?\`.`
     await msg.author.send(output)
     return output
   }
