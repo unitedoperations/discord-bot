@@ -281,7 +281,7 @@ export const groupsMessage = (groups: Group[]): EmbedMessage => {
   return {
     color: 11640433,
     title: '**👥 Active Groups Looking for Players**',
-    description: 'Run `!lfg join <id>` to join one of these active groups_',
+    description: '_Run `!lfg join <id>` to join one of these active groups_',
     fields:
       items.length > 0
         ? items

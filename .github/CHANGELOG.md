@@ -3,6 +3,7 @@
 ## v2.9.0
 
 - ADD `pusher-js` capabilities for hooking in the event stream served by the UO Authenticator for providing and revoking user permissions
+- UPDATE flight and LFG groups expire after 12 hours
 - UPDATE calendar event notification intervals
 - UPDATE temporarily disable `!ready` command until primary server features are updated to be compatible
 - REMOVE FTP related environment variable dependencies since transition to forums API for mission searching

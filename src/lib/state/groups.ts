@@ -1,4 +1,6 @@
 import { User } from 'discord.js'
+import schedule from 'node-schedule'
+import addHour from 'date-fns/add_hours'
 
 /**
  * Type definition for a group entity for LFG
@@ -71,9 +73,19 @@ class GroupStore {
    */
   add<T extends Group | Flight>(g: T, t: GroupType) {
     if (t === GroupType.LFG) {
-      if (!this._groups.has(g.id)) this._groups.set(g.id, g as Group)
+      if (!this._groups.has(g.id)) {
+        this._groups.set(g.id, g as Group)
+        schedule.scheduleJob(`remove_group:${g.id}`, addHour(new Date(), 12), () =>
+          this.remove(g.id, GroupType.LFG)
+        )
+      }
     } else {
-      if (!this._flights.has(g.id)) this._flights.set(g.id, g as Flight)
+      if (!this._flights.has(g.id)) {
+        this._flights.set(g.id, g as Flight)
+        schedule.scheduleJob(`remove_group:${g.id}`, addHour(new Date(), 12), () =>
+          this.remove(g.id, GroupType.Flight)
+        )
+      }
     }
   }
 
