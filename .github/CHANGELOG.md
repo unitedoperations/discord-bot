@@ -3,7 +3,8 @@
 ## v2.9.0
 
 - ADD `pusher-js` capabilities for hooking in the event stream served by the UO Authenticator for providing and revoking user permissions
-- UPDATE flight and LFG groups expire after 12 hours
+- ADD `Steel Beasts` Discord role to the approved list for `join_group` and `leave_group`. **Replace all spaces with underscores in role names when running the command**
+- UPDATE flight and LFG groups expire after 8 hours
 - UPDATE calendar event notification intervals
 - UPDATE temporarily disable `!ready` command until primary server features are updated to be compatible
 - REMOVE FTP related environment variable dependencies since transition to forums API for mission searching

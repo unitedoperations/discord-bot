@@ -19,7 +19,7 @@ export async function joinGroup(guild: Guild, msg: Message, args: string[]): Pro
   }
 
   // Get group name from arguments and check if the role exists in the guild
-  const name = args[0]
+  const name = args[0].replace(/_/g, ' ')
   const role = guild.roles.find(r => r.name === name)
 
   if (!role) {

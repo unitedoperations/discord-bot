@@ -332,7 +332,9 @@ export const flightsMessage = (flights: Flight[]): EmbedMessage => {
 export const groupCreatedMessage = (g: Group): EmbedMessage => ({
   color: 11640433,
   title: `👥 _**${g.owner.username}**_ Created Group **${g.name}**`,
-  description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${g.id}\`._`
+  description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${
+    g.id
+  }\`. This group will expire in 12 hours._`
 })
 
 /**
@@ -344,7 +346,9 @@ export const groupCreatedMessage = (g: Group): EmbedMessage => ({
 export const flightCreatedMessage = (f: Flight): EmbedMessage => ({
   color: 11640433,
   title: `🛩 _**${f.owner.username}**_ Created Flight **${f.game}-${f.id}**`,
-  description: `You can join this pickup flight by running \`!flight join ${f.id}\``
+  description: `_You can join this pickup flight by running \`!flight join ${
+    f.id
+  }\`. This flight will expire in 12 hours._`
 })
 
 /**

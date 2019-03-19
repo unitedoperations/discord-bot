@@ -18,7 +18,7 @@ export async function leaveGroup(guild: Guild, msg: Message, args: string[]): Pr
   }
 
   // Get group name from arguments and check if the role exists
-  const name = args[0]
+  const name = args[0].replace(/_/g, ' ')
   const role = guild.roles.find(r => r.name === name)
 
   if (!role) {
