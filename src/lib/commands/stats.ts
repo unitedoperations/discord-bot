@@ -17,6 +17,7 @@ export async function stats(_guild: Guild, msg: Message, _args: string[]): Promi
     embed: statsMessage(
       formatUptime(process.uptime()),
       Bot.REQUEST_COUNT,
+      Bot.NEW_MEMBER_MESSAGES_SENT,
       Events.getEvents().length,
       Alarms.numberOfAlarms(),
       Groups.getGroups().length

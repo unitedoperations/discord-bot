@@ -281,7 +281,7 @@ export const groupsMessage = (groups: Group[]): EmbedMessage => {
   return {
     color: 11640433,
     title: '**👥 Active Groups Looking for Players**',
-    description: 'Run `!lfg join <id>` to join one of these active groups_',
+    description: '_Run `!lfg join <id>` to join one of these active groups_',
     fields:
       items.length > 0
         ? items
@@ -332,7 +332,9 @@ export const flightsMessage = (flights: Flight[]): EmbedMessage => {
 export const groupCreatedMessage = (g: Group): EmbedMessage => ({
   color: 11640433,
   title: `👥 _**${g.owner.username}**_ Created Group **${g.name}**`,
-  description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${g.id}\`._`
+  description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${
+    g.id
+  }\`. This group will expire in 12 hours._`
 })
 
 /**
@@ -344,7 +346,9 @@ export const groupCreatedMessage = (g: Group): EmbedMessage => ({
 export const flightCreatedMessage = (f: Flight): EmbedMessage => ({
   color: 11640433,
   title: `🛩 _**${f.owner.username}**_ Created Flight **${f.game}-${f.id}**`,
-  description: `You can join this pickup flight by running \`!flight join ${f.id}\``
+  description: `_You can join this pickup flight by running \`!flight join ${
+    f.id
+  }\`. This flight will expire in 12 hours._`
 })
 
 /**
@@ -390,6 +394,7 @@ export const alarmMessage = (x: number): EmbedMessage => ({
 export const statsMessage = (
   uptime: string,
   reqs: number,
+  newMembers: number,
   events: number,
   alarms: number,
   groups: number
@@ -405,6 +410,10 @@ export const statsMessage = (
     {
       name: 'Total Requests',
       value: reqs
+    },
+    {
+      name: 'New Members Joined',
+      value: newMembers
     },
     {
       name: 'Upcoming Events',

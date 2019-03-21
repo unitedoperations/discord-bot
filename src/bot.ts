@@ -1,6 +1,7 @@
 import Discord from 'discord.js'
 import fetch, { RequestInit } from 'node-fetch'
 import isFuture from 'date-fns/is_future'
+import Pusher from 'pusher-js'
 import * as log from './lib/logger'
 import { CalendarHandler } from './lib/calendar'
 import { PollsHandler, PollThreadResponse } from './lib/polls'
@@ -29,23 +30,35 @@ export type BotAction = (
 ) => Promise<string>
 
 /**
+ * Definition for a generic type that can be T or null
+ */
+type Nullable<T> = T | null
+
+/**
  * Wrapper class for the Discord SDK and handling custom commands
  * @export
  * @class Bot
  * @implements Routinable
  *
- * @property {Discord.Guild?} _guild
- * @property {CalendarHandler} _calendar
- * @property {PollsHandler} _polls
- * @property {Discord.Client} _client
- * @property {Map<string, string>} _descriptions
- * @property {Map<string, BotAction>} _commands
- * @property {ServerInformation?} _currentMission
+ * @static @property {string} VERSION
+ * @static @property {number} REQUEST_COUNT
+ * @static @property {number} NEW_MEMBER_MESSAGES_SENT
+ *
+ * @private @property {Discord.Guild?} _guild
+ * @private @property {CalendarHandler} _calendar
+ * @private @property {PollsHandler} _polls
+ * @private @property {Discord.Client} _client
+ * @private @property {Map<string, string>} _descriptions
+ * @private @property {Map<string, BotAction>} _commands
+ * @private @property {ServerInformation?} _currentMission
+ * @private @property {Pusher} _pusherClient
+ * @private @property {Pusher.Channel} _subscriber
  */
 export class Bot implements Routinable {
   // Public static Bot class variables that are able to be changed via config command
   public static VERSION: string
   public static REQUEST_COUNT: number = 0
+  public static NEW_MEMBER_MESSAGES_SENT: number = 0
 
   // Bot instance variables
   private _guild?: Discord.Guild
@@ -55,6 +68,8 @@ export class Bot implements Routinable {
   private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
   private _currentMission?: ServerInformation
+  private _pusherClient: Pusher.Pusher
+  private _subscriber: Pusher.Channel
 
   /**
    * Creates an instance of Bot
@@ -83,6 +98,11 @@ export class Bot implements Routinable {
       }/forums/topics&forums=132&hidden=0&locked=0&hasPoll=1&sortBy=date&sortDir=desc`,
       this._notifyOfPoll.bind(this)
     )
+
+    this._pusherClient = new Pusher(Env.PUSHER_KEY, {
+      cluster: Env.PUSHER_CLUSTER
+    })
+    this._subscriber = this._pusherClient.subscribe('discord_permissions')
   }
 
   /**
@@ -122,6 +142,9 @@ export class Bot implements Routinable {
         'groups',
         new Routine<void>(async () => await this._notifyOfActiveGroups(), [], 2 * 60 * 60 * 1000)
       )
+
+      this._subscriber.bind('assign', this._assignUserRoles)
+      this._subscriber.bind('revoke', this._removeUserRoles)
     } catch (e) {
       log.error(`START: ${e.message}`)
       process.exit(1)
@@ -167,7 +190,7 @@ export class Bot implements Routinable {
   // @ts-ignore
   private async _notifyOfNewMission(url: string) {
     try {
-      let info: ServerInformation | null = await scrapeServerPage(url)
+      let info: Nullable<ServerInformation> = await scrapeServerPage(url)
 
       // Set default information if error or none found
       if (!info) {
@@ -292,7 +315,7 @@ export class Bot implements Routinable {
       try {
         // Determine the channel that the message should be send to and who to tag
         let channel: Discord.TextChannel
-        let role: Discord.Role | null
+        let role: Nullable<Discord.Role>
         switch (e.group) {
           // ArmA 3 event reminder
           case 'UOA3':
@@ -341,6 +364,7 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private _onNewMember = async (member: Discord.GuildMember) => {
+    Bot.NEW_MEMBER_MESSAGES_SENT++
     const username: string = member.user.username
     try {
       await member.send({ embed: welcomeMessage(username) })
@@ -398,6 +422,65 @@ export class Bot implements Routinable {
           log.error('MESSAGE_DELETE')
         }
       }
+    }
+  }
+
+  /**
+   * Handles the Pusher.js 'assign' event from the channel subscription and
+   * uses the payload's user ID and roles list to assign the appropriate user
+   * the roles on the Discord server they should belong to
+   * @private
+   * @param {{ id: string, roles: string[] }} payload
+   * @memberof Bot
+   */
+  private _assignUserRoles = (payload: { id: string; roles: string[] }) => {
+    try {
+      const member: Nullable<Discord.GuildMember> = this._guild!.members.find(
+        m => m.user.id === payload.id
+      )
+
+      if (member) {
+        const rolesToAdd: Discord.Role[] = []
+        for (const role of payload.roles) {
+          const guildRole: Nullable<Discord.Role> = this._guild!.roles.find(r => r.name === role)
+          if (guildRole) rolesToAdd.push(guildRole)
+        }
+        member.addRoles(rolesToAdd, 'Provision Task via UO Authenticator')
+      }
+
+      this._log(
+        'United Operations',
+        'AUTH_PROVISIONING',
+        `${member.user.username} -> ${payload.roles}`
+      )
+    } catch (err) {
+      log.error('AUTH_PROVISIONING_FAILURE')
+      this._log('United Operations', 'AUTH_PROVISIONING', `FAILED: ${payload.id}`)
+    }
+  }
+
+  /**
+   * Handles the Pusher.js 'revoke' event from the channel subscription and
+   * uses the payload's user ID to remove all roles from the argued user
+   * if found in the Discord server
+   * @private
+   * @param {{ id: string }} payload
+   * @memberof Bot
+   */
+  private _removeUserRoles = (payload: { id: string }) => {
+    try {
+      const member: Nullable<Discord.GuildMember> = this._guild!.members.find(
+        m => m.user.id === payload.id
+      )
+
+      if (member) {
+        member.removeRoles(member.roles)
+      }
+
+      this._log('United Operations', 'AUTH_REVOKE', member.user.username)
+    } catch (err) {
+      log.error('AUTH_REVOKE_FAILURE')
+      this._log('United Operations', 'AUTH_REVOKE', `FAILED: ${payload.id}`)
     }
   }
 

@@ -19,10 +19,11 @@
  * @readonly @property {string[]} ADMIN_ROLES
  * @readonly @property {string[]} ALERT_TIMES
  * @readonly @property {number} HOURS_TO_REFRESH_FROM_FORUMS
- * @readonly @property {string} FTP_HOST
- * @readonly @property {string} FTP_USER
- * @readonly @property {string} FTP_PASS
  * @readonly @property {string} API_BASE
+ * @readonly @property {string} API_KEY
+ * @readonly @property {string} PUSHER_CLUSTER
+ * @readonly @property {string} PUSHER_KEY
+ * @readonly @property {string} apiAuthToken
  */
 class EnvStore {
   // Static and readonly variables for the Bot class
@@ -44,11 +45,10 @@ class EnvStore {
   public readonly HOURS_TO_REFRESH_FROM_FORUMS: number = parseInt(
     process.env.HOURS_TO_REFRESH_FROM_FORUMS!
   )
-  public readonly FTP_HOST: string = process.env.FTP_HOST!
-  public readonly FTP_USER: string = process.env.FTP_USER!
-  public readonly FTP_PASS: string = process.env.FTP_PASS!
   public readonly API_BASE: string = process.env.API_BASE!
   public readonly API_KEY: string = process.env.API_KEY!
+  public readonly PUSHER_CLUSTER: string = process.env.PUSHER_CLUSTER!
+  public readonly PUSHER_KEY: string = process.env.PUSHER_KEY!
 
   get apiAuthToken(): string {
     return `Basic ${Buffer.from(`${this.API_KEY}:`).toString('base64')}`

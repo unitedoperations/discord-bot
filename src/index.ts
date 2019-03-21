@@ -2,7 +2,7 @@ require('dotenv').config()
 import { Bot } from './bot'
 import * as cmd from './lib/commands'
 import { Env } from './lib/state'
-import { admins, regulars, deprecated } from './lib/access'
+import { admins, regulars, disabled } from './lib/access'
 import { error } from './lib/logger'
 
 process.on('unhandledRejection', (reason: any, _promise: Promise<any>) => {
@@ -48,7 +48,7 @@ bot
   )
   .addCommand(
     'missions',
-    '`!missions <name>`: _search for mission on the FTP server with names that fully or partially match the argued name_',
+    '`!missions <name>`: _search for mission on the forums API with names that fully or partially match the argued name_',
     cmd.missions
   )
   .addCommand(
@@ -61,7 +61,7 @@ bot
     'primary',
     '`!primary`: _get the information about the current mission on the A3 primary_',
     cmd.primary,
-    deprecated
+    disabled
   )
   .addCommand(
     'ratio',
@@ -71,7 +71,8 @@ bot
   .addCommand(
     'ready',
     '`!ready <#> | count`: _receive an alert from the bot when the primary server reaches a certain player count or see how many users are waiting for alerts_',
-    cmd.ready
+    cmd.ready,
+    disabled
   )
   .addCommand(
     'shutdown',
