@@ -1,6 +1,7 @@
 import { Bot } from '../bot'
 import { CalendarEvent, Group, Flight, PollThread } from './state'
 import { ServerInformation } from './helpers'
+import { Message, GuildMember } from 'discord.js'
 
 interface EmbedMessageImage {
   url: string | null
@@ -13,7 +14,11 @@ interface EmbedMessageField {
 
 interface EmbedMessage {
   color: number
-  title: string
+  author?: {
+    name: string
+    icon_url: string
+  }
+  title?: string
   url?: string
   description?: string
   thumbnail?: EmbedMessageImage
@@ -391,6 +396,16 @@ export const alarmMessage = (x: number): EmbedMessage => ({
   description: `_The primary server has reached or exceeded **${x}** players!_`
 })
 
+/**
+ * Embed message for showing the bot process statistics
+ * @param {string} uptime
+ * @param {number} reqs
+ * @param {number} newMembers
+ * @param {number} events
+ * @param {number} alarms
+ * @param {number} groups
+ * @returns {EmbedMessage}
+ */
 export const statsMessage = (
   uptime: string,
   reqs: number,
@@ -426,6 +441,156 @@ export const statsMessage = (
     {
       name: 'Groups Waiting',
       value: groups
+    }
+  ]
+})
+
+/**
+ * Log message format for when a message was deleted
+ * @param {string} time
+ * @param {Discord.Message} msg
+ * @returns {EmbedMessage}
+ */
+export const messageDeletedLogMessage = (time: string, msg: Message): EmbedMessage => ({
+  color: 15090499,
+  author: {
+    name: 'Message Deleted',
+    icon_url: msg.author.avatarURL
+  },
+  fields: [
+    {
+      name: '**Member**',
+      value: msg.author.tag
+    },
+    {
+      name: '**Channel**',
+      value: msg.channel.toString()
+    },
+    {
+      name: '**Message Created At**',
+      value: new Date(msg.createdTimestamp).toUTCString()
+    },
+    {
+      name: '**Message Deleted At**',
+      value: time
+    },
+    {
+      name: '**Contents**',
+      value: msg.content
+    }
+  ]
+})
+
+/**
+ * Log message format for when a message was updated or edited
+ * @param {string} time
+ * @param {Discord.Message} oldMsg
+ * @param {Discord.Message} newMsg
+ * @returns {EmbedMessage}
+ */
+export const messageUpdatedLogMessage = (
+  time: string,
+  oldMsg: Message,
+  newMsg: Message
+): EmbedMessage => ({
+  color: 11617254,
+  author: {
+    name: 'Message Updated',
+    icon_url: newMsg.author.avatarURL
+  },
+  fields: [
+    {
+      name: '**Member**',
+      value: newMsg.author.tag
+    },
+    {
+      name: '**Channel**',
+      value: newMsg.channel.toString()
+    },
+    {
+      name: '**Message Created At**',
+      value: new Date(oldMsg.createdTimestamp).toUTCString()
+    },
+    {
+      name: '**Message Updated At**',
+      value: time
+    },
+    {
+      name: '**Original**',
+      value: oldMsg.content
+    },
+    {
+      name: '**New**',
+      value: newMsg.content
+    }
+  ]
+})
+
+/**
+ * Log message for when a user executes a bot command
+ * @param {Discord.Message} msg
+ * @param {string} output
+ * @returns {EmbedMessage}
+ */
+export const commandUseLogMessage = (msg: Message, output: string): EmbedMessage => ({
+  color: 4449937,
+  author: {
+    name: 'Command Executed',
+    icon_url: msg.author.avatarURL
+  },
+  fields: [
+    {
+      name: '**Member**',
+      value: msg.author.tag
+    },
+    {
+      name: '**Command**',
+      value: msg.content
+    },
+    {
+      name: '**Executed At**',
+      value: new Date(msg.createdTimestamp).toUTCString()
+    },
+    {
+      name: '**Output**',
+      value: output
+    }
+  ]
+})
+
+/**
+ * Log message for when a user roles are changed by the authentication system
+ * @param {Discord.GuildMember} member
+ * @param {string} action
+ * @param {string} result
+ * @returns {EmbedMessage}
+ */
+export const rolesUpdatedLogMessage = (
+  member: GuildMember,
+  action: string,
+  result: string
+): EmbedMessage => ({
+  color: 15110979,
+  author: {
+    name: 'Roles Updated',
+    icon_url: member.user.avatarURL
+  },
+  fields: [
+    {
+      name: '**Member**',
+      value: member.user.tag
+    },
+    {
+      name: '**Action**',
+      value: action
+    },
+    {
+      name: '**Updated At**',
+      value: new Date().toUTCString()
+    },
+    {
+      name: '**Result**',
+      value: result
     }
   ]
 })

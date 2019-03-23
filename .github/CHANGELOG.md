@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.0.0
+
+- ADD bot auditing for deleted and edited messages
+- ADD bot auditing for command usage
+- ADD bot auditing for authentication system's role changes
+- UPDATE finalize authentication system support and communication
+- UPDATE command use bot log format to match new delete and update logs
+
 ## v2.9.0
 
 - ADD `pusher-js` capabilities for hooking in the event stream served by the UO Authenticator for providing and revoking user permissions

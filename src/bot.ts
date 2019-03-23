@@ -16,7 +16,11 @@ import {
   serverMessage,
   pollAlertMessage,
   groupsMessage,
-  alarmMessage
+  alarmMessage,
+  messageDeletedLogMessage,
+  messageUpdatedLogMessage,
+  commandUseLogMessage,
+  rolesUpdatedLogMessage
 } from './lib/messages'
 
 /**
@@ -62,6 +66,7 @@ export class Bot implements Routinable {
 
   // Bot instance variables
   private _guild?: Discord.Guild
+  private _logChannel?: Discord.TextChannel
   private _calendar: CalendarHandler
   private _polls: PollsHandler
   private _client: Discord.Client
@@ -82,9 +87,14 @@ export class Bot implements Routinable {
     this._client.on('ready', () => {
       log.fav(`Logged in as ${this._client.user.tag} v${Bot.VERSION}`)
       this._guild = this._client.guilds.find(g => g.id === Env.GUILD_ID)
+      this._logChannel = this._guild.channels.find(
+        c => c.id === Env.LOG_CHANNEL
+      ) as Discord.TextChannel
     })
     this._client.on('message', this._onMessage)
     this._client.on('guildMemberAdd', this._onNewMember)
+    this._client.on('messageDelete', this._logMessageDelete)
+    this._client.on('messageUpdate', this._logMessageUpdate)
     this._client.on('error', err => log.error(`CLIENT_ERR ${err.message}`))
 
     this._calendar = new CalendarHandler(
@@ -406,7 +416,7 @@ export class Bot implements Routinable {
           if (origin === 'GLD') await msg.delete()
 
           const output = await fn(msg.guild || this._guild, msg, args)
-          await this._log(msg.author.tag, [cmd, ...args].join(' '), output)
+          this._logCommandUse(msg, output)
           log.cmd(`(${origin})(${msg.author.username} - ${cmd}) - ${output}`)
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
@@ -448,14 +458,9 @@ export class Bot implements Routinable {
         member.addRoles(rolesToAdd, 'Provision Task via UO Authenticator')
       }
 
-      this._log(
-        'United Operations',
-        'AUTH_PROVISIONING',
-        `${member.user.username} -> ${payload.roles}`
-      )
+      this._logRoleChangeFromAuth(member, 'AUTH_PROVISIONING', payload.roles.join(', '))
     } catch (err) {
       log.error('AUTH_PROVISIONING_FAILURE')
-      this._log('United Operations', 'AUTH_PROVISIONING', `FAILED: ${payload.id}`)
     }
   }
 
@@ -477,10 +482,9 @@ export class Bot implements Routinable {
         member.removeRoles(member.roles)
       }
 
-      this._log('United Operations', 'AUTH_REVOKE', member.user.username)
+      this._logRoleChangeFromAuth(member, 'AUTH_REVOKE', `${member.user.username} roles revoked`)
     } catch (err) {
       log.error('AUTH_REVOKE_FAILURE')
-      this._log('United Operations', 'AUTH_REVOKE', `FAILED: ${payload.id}`)
     }
   }
 
@@ -490,21 +494,65 @@ export class Bot implements Routinable {
    * @private
    * @async
    * @param {string} tag
-   * @param {string} cmd
+   * @param {Discord.Message} cmd
    * @param {string} output
-   * @returns {Promise<any>}
    * @memberof Bot
    */
-  private _log(tag: string, cmd: string, output: string): Promise<any> | void {
+  private _logCommandUse(cmd: Discord.Message, output: string) {
     try {
-      const timestamp = new Date().toISOString()
-      const logChannel = this._guild!.channels.find(
-        c => c.id === Env.LOG_CHANNEL
-      ) as Discord.TextChannel
-      return logChannel.send(`${tag} ran "${cmd.replace('@&', '')}" at ${timestamp}: "${output}"`)
+      this._logChannel!.send({ embed: commandUseLogMessage(cmd, output) })
     } catch (e) {
-      log.error('FAILED_LOG')
-      return
+      log.error('COMMAND_USE_LOG_FAILED')
+    }
+  }
+
+  /**
+   * Pushes to bot audit logs for a user's role being updated by the
+   * new authentication system
+   * @private
+   * @param {Discord.GuildMember} user
+   * @param {string} action
+   * @param {string} result
+   * @memberof Bot
+   */
+  private _logRoleChangeFromAuth(user: Discord.GuildMember, action: string, result: string) {
+    try {
+      this._logChannel!.send({ embed: rolesUpdatedLogMessage(user, action, result) })
+    } catch (e) {
+      log.error('ROLE_CHANGE_LOG_FAILED')
+    }
+  }
+
+  /**
+   * Pushes to the bot audit logs for a message that was deleted
+   * @private
+   * @param {Discord.Message} message
+   * @memberof Bot
+   */
+  private _logMessageDelete = (message: Discord.Message) => {
+    if (message.content.startsWith('!')) return
+    try {
+      const timestamp = new Date().toUTCString()
+      this._logChannel!.send({ embed: messageDeletedLogMessage(timestamp, message) })
+    } catch (e) {
+      log.error('MESSAGE_DELETE_LOG_FAILED')
+    }
+  }
+
+  /**
+   * Pushes to the audit logs for a message that was updated or edited
+   * @private
+   * @param {Discord.Message} oldMessage
+   * @param {Discord.Message} newMessage
+   * @memberof Bot
+   */
+  private _logMessageUpdate = (oldMessage: Discord.Message, newMessage: Discord.Message) => {
+    if (!oldMessage.content || !newMessage.content) return
+    try {
+      const timestamp = new Date().toUTCString()
+      this._logChannel!.send({ embed: messageUpdatedLogMessage(timestamp, oldMessage, newMessage) })
+    } catch (e) {
+      log.error('MESSAGE_UPDATE_LOG_FAILED')
     }
   }
 }
