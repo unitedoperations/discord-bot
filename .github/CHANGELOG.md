@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.0
+
+- HOTFIX rules for logging and auditing server actions
+
 ## v3.0.0
 
 - ADD bot auditing for deleted and edited messages

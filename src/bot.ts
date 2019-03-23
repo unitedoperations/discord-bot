@@ -547,7 +547,9 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   private _logMessageUpdate = (oldMessage: Discord.Message, newMessage: Discord.Message) => {
-    if (!oldMessage.content || !newMessage.content) return
+    if (!oldMessage.content || !newMessage.content || oldMessage.content === newMessage.content)
+      return
+
     try {
       const timestamp = new Date().toUTCString()
       this._logChannel!.send({ embed: messageUpdatedLogMessage(timestamp, oldMessage, newMessage) })
