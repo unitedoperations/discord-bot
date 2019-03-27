@@ -19,11 +19,13 @@
  * @readonly @property {string[]} ADMIN_ROLES
  * @readonly @property {string[]} ALERT_TIMES
  * @readonly @property {number} HOURS_TO_REFRESH_FROM_FORUMS
- * @readonly @property {string} API_BASE
- * @readonly @property {string} API_KEY
+ * @readonly @property {string} FORUMS_API_BASE
+ * @readonly @property {string} FORUMS_API_KEY
+ * @readonly @property {string} AUTH_API_BASE
+ * @readonly @property {string} AUTH_API_KEY
  * @readonly @property {string} PUSHER_CLUSTER
  * @readonly @property {string} PUSHER_KEY
- * @readonly @property {string} apiAuthToken
+ * @readonly @property {string} forumsAPIAuthToken
  */
 class EnvStore {
   // Static and readonly variables for the Bot class
@@ -45,13 +47,15 @@ class EnvStore {
   public readonly HOURS_TO_REFRESH_FROM_FORUMS: number = parseInt(
     process.env.HOURS_TO_REFRESH_FROM_FORUMS!
   )
-  public readonly API_BASE: string = process.env.API_BASE!
-  public readonly API_KEY: string = process.env.API_KEY!
+  public readonly FORUMS_API_BASE: string = process.env.FORUMS_API_BASE!
+  public readonly FORUMS_API_KEY: string = process.env.FORUMS_API_KEY!
+  public readonly AUTH_API_BASE: string = process.env.AUTH_API_BASE!
+  public readonly AUTH_API_KEY: string = process.env.AUTH_API_KEY!
   public readonly PUSHER_CLUSTER: string = process.env.PUSHER_CLUSTER!
   public readonly PUSHER_KEY: string = process.env.PUSHER_KEY!
 
-  get apiAuthToken(): string {
-    return `Basic ${Buffer.from(`${this.API_KEY}:`).toString('base64')}`
+  get forumsAPIAuthToken(): string {
+    return `Basic ${Buffer.from(`${this.FORUMS_API_KEY}:`).toString('base64')}`
   }
 }
 

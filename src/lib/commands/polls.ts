@@ -16,12 +16,12 @@ import { pollListingMessage } from '../messages'
 export async function polls(_guild: Guild, msg: Message, _args: string[]): Promise<string> {
   const opts: RequestInit = {
     headers: {
-      Authorization: Env.apiAuthToken
+      Authorization: Env.forumsAPIAuthToken
     }
   }
 
   const requests: Promise<PollThreadResponse>[] = Polls.getPolls().map(p => {
-    return fetch(`${Env.API_BASE}/forums/topics/${p.id}`, opts).then(r => r.json())
+    return fetch(`${Env.FORUMS_API_BASE}/forums/topics/${p.id}`, opts).then(r => r.json())
   })
 
   const responses: PollThreadResponse[] = await Promise.all(requests)

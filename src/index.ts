@@ -91,5 +91,11 @@ bot
     cmd.sqfp
   )
   .addCommand('stats', '`!stats`: _view runtime statistics about the bot_', cmd.stats, admins)
+  .addCommand(
+    'user',
+    '`!user <username>`: _view authentication information for a given user_',
+    cmd.user,
+    admins
+  )
   .start(Env.BOT_TOKEN)
   .catch(err => error(`START: ${err}`))

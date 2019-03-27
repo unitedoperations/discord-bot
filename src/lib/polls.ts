@@ -65,7 +65,7 @@ export class PollsHandler implements Routinable {
     try {
       const opts: RequestInit = {
         headers: {
-          Authorization: Env.apiAuthToken
+          Authorization: Env.forumsAPIAuthToken
         }
       }
       const res = await fetch(this._pollsUrl, opts).then(r => r.json())

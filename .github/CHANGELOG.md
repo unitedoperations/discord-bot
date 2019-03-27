@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.2.0
+
+- ADD `!user` command for admins to get authentication information about a given user
+
 ## v3.1.0
 
 - HOTFIX rules for logging and auditing server actions

@@ -1,7 +1,8 @@
+import { Message, GuildMember } from 'discord.js'
 import { Bot } from '../bot'
 import { CalendarEvent, Group, Flight, PollThread } from './state'
 import { ServerInformation } from './helpers'
-import { Message, GuildMember } from 'discord.js'
+import { UserEntity } from './commands/user'
 
 interface EmbedMessageImage {
   url: string | null
@@ -441,6 +442,47 @@ export const statsMessage = (
     {
       name: 'Groups Waiting',
       value: groups
+    }
+  ]
+})
+
+/**
+ * Embed message for responding to the !user command for authentication information
+ * @param {UserEntity} user
+ * @returns {EmbedMessage}
+ */
+export const authenticatedUserMessage = (user: UserEntity): EmbedMessage => ({
+  color: 11640433,
+  title: `**👤 ${user.username}'s Information**`,
+  description: `_Information stored about their authentication and clients_`,
+  fields: [
+    {
+      name: 'Last Authentication Date',
+      value: user.createdAt
+    },
+    {
+      name: 'Email Address',
+      value: user.email
+    },
+    {
+      name: 'Discord ID',
+      value: user.discord_id
+    },
+    {
+      name: 'Forums ID',
+      value: user.forums_id
+    },
+    {
+      name: 'TeamSpeak ID',
+      value: user.teamspeak_id
+    },
+    {
+      name: 'TeamSpeak Database ID',
+      value: user.teamspeak_db_id
+    },
+    {
+      name: 'Last Known IP Address',
+      value: user.ip
     }
   ]
 })

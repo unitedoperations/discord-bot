@@ -58,7 +58,7 @@ export class CalendarHandler implements Routinable {
     try {
       const opts: RequestInit = {
         headers: {
-          Authorization: Env.apiAuthToken
+          Authorization: Env.forumsAPIAuthToken
         }
       }
       const res = await fetch(this._eventsUrl, opts).then(res => res.json())

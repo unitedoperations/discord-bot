@@ -31,6 +31,7 @@
 | `!sqf`           |                       cmd                       |                                           Search the BIS wiki for information about an SQF command                                           |        All         |
 | `!sqfp`          |                       cmd                       |                              Search BIS wiki for information about an SQF command and post the result publicly                               |        All         |
 | `!stats`         |                        -                        |                                                    View runtime statistics about the bot                                                     |       Admins       |
+| `!user`          |                    username                     |                                                 Get authentication information about a user                                                  |       Admins       |
 
 ## Requirements and Setup
 

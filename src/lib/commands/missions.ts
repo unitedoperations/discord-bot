@@ -56,9 +56,9 @@ export async function missions(_guild: Guild, msg: Message, args: string[]): Pro
   }
 
   // Log into the mission file FTP server and get the list of all mission on the primary server
-  const opts: RequestInit = { headers: { Authorization: Env.apiAuthToken } }
+  const opts: RequestInit = { headers: { Authorization: Env.forumsAPIAuthToken } }
   const params: string = '&categories=41&sortBy=title&sortDir=asc'
-  const response = await fetch(`${Env.API_BASE}/cms/records/7${params}`, opts)
+  const response = await fetch(`${Env.FORUMS_API_BASE}/cms/records/7${params}`, opts)
   const liveMissionList: ArmAMission[] = await response.json().then(x => x.results)
 
   // Filter all the missions that match or are similar to the argued values

@@ -98,13 +98,13 @@ export class Bot implements Routinable {
     this._client.on('error', err => log.error(`CLIENT_ERR ${err.message}`))
 
     this._calendar = new CalendarHandler(
-      `${Env.API_BASE}/calendar/events&sortBy=start&sortDir=desc&hidden=0`,
+      `${Env.FORUMS_API_BASE}/calendar/events&sortBy=start&sortDir=desc&hidden=0`,
       this._sendEventReminder.bind(this)
     )
 
     this._polls = new PollsHandler(
       `${
-        Env.API_BASE
+        Env.FORUMS_API_BASE
       }/forums/topics&forums=132&hidden=0&locked=0&hasPoll=1&sortBy=date&sortDir=desc`,
       this._notifyOfPoll.bind(this)
     )
@@ -258,10 +258,10 @@ export class Bot implements Routinable {
         // the poll object before passing to be alerted
         const opts: RequestInit = {
           headers: {
-            Authorization: Env.apiAuthToken
+            Authorization: Env.forumsAPIAuthToken
           }
         }
-        const res = await fetch(`${Env.API_BASE}/forums/topics/${poll.id}`, opts)
+        const res = await fetch(`${Env.FORUMS_API_BASE}/forums/topics/${poll.id}`, opts)
         const thread: PollThreadResponse = await res.json()
         poll.votes = {
           Yes: thread.poll.questions[0].options.Yes,
