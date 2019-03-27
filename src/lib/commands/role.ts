@@ -11,15 +11,20 @@ import { Env } from '../state'
  * @param {string[]} args
  * @returns {Promise<string>}
  */
-export async function joinGroup(guild: Guild, msg: Message, args: string[]): Promise<string> {
+export async function role(guild: Guild, msg: Message, args: string[]): Promise<string> {
   // Check if a group name was provided as an argument
   if (args.length === 0) {
-    await msg.author.send("You didn't provide a group to join.")
+    await msg.author.send("You didn't provide an action or group.")
     return 'INVALID_ARGS'
   }
 
+  const action: string = args[0]
+  if (action !== 'add' && action !== 'remove') {
+    await msg.author.send('The action must be either `add` or `remove` for the first argument.')
+  }
+
   // Get group name from arguments and check if the role exists in the guild
-  const name = args[0].replace(/_/g, ' ')
+  const name = args[1].replace(/_/g, ' ')
   const role = guild.roles.find(r => r.name === name)
 
   if (!role) {
@@ -31,12 +36,20 @@ export async function joinGroup(guild: Guild, msg: Message, args: string[]): Pro
     await msg.author.send(`You don't have permission to join '${role.name}'.`)
     return 'INVALID_PERMISSIONS'
   } else {
-    // If it exists and is permitted for joining, add the user
-    await guild
-      .member(msg.author)
-      .addRole(role, 'Requested through bot command')
-      .catch(log.error)
-    await msg.author.send(`Successfully added to group '${role.name}'.`)
-    return `ADDED_TO_GROUP: ${role.name}`
+    if (action === 'add') {
+      await guild
+        .member(msg.author)
+        .addRole(role, 'Requested through bot command')
+        .catch(log.error)
+      await msg.author.send(`Successfully added role '${role.name}'.`)
+      return `ADDED_TO_GROUP: ${role.name}`
+    } else {
+      await guild
+        .member(msg.author)
+        .removeRole(role, 'Requested through bot command')
+        .catch(log.error)
+      await msg.author.send(`Successfully removed role '${role.name}'.`)
+      return `ADDED_TO_GROUP: ${role.name}`
+    }
   }
 }

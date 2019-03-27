@@ -32,16 +32,6 @@ bot
     cmd.flight
   )
   .addCommand(
-    'join_group',
-    '`!join_group <group>`: _join the argued group if it exists and have permission_',
-    cmd.joinGroup
-  )
-  .addCommand(
-    'leave_group',
-    '`!leave_group <group>`: _leave the argued group if it exists and you are in it_',
-    cmd.leaveGroup
-  )
-  .addCommand(
     'lfg',
     '`!lfg list | create <# needed> <name> | join <id> | delete <id>`: _looking for group functionality to find people to play a game with_',
     cmd.lfg
@@ -73,6 +63,11 @@ bot
     '`!ready <#> | count`: _receive an alert from the bot when the primary server reaches a certain player count or see how many users are waiting for alerts_',
     cmd.ready,
     disabled
+  )
+  .addCommand(
+    'role',
+    '`!role add | remove <group>`: _assign or remove a Discord role if it exists and is in the permitted list_',
+    cmd.role
   )
   .addCommand(
     'shutdown',

@@ -17,8 +17,8 @@
 | `!flight create` | sim (BMS or DCS), HH:MM zulu, MM/DD, ...details |             Create a new pickup flight for the argued SIM to take place on the argued zulu time and date with any extra details              |        All         |
 | `!flight join`   |                    flight_id                    |                                               Join an existing pickup flight by the argued ID                                                |        All         |
 | `!flight delete` |                    flight_id                    |                                            Delete a pickup flight that you have created by its ID                                            | All (flight owner) |
-| `!join_group`    |                   group_name                    |                                            Join the argued group if it exists and have permission                                            |        All         |
-| `!leave_group`   |                   group_name                    |                                            Leave the argued group if it exists and you are in it                                             |        All         |
+| `!role add`      |                   group_name                    |                                            Join the argued group if it exists and have permission                                            |        All         |
+| `!role remove`   |                   group_name                    |                                           Leave the argued group if it exists and you're a member                                            |        All         |
 | `!lfg list`      |                        -                        |                                                Display all group entities looking for players                                                |        All         |
 | `!lfg create`    |                 #_needed, name                  |                                 Create a new group with a designated name and amount of players looking for                                  |        All         |
 | `!lfg join`      |                    group_id                     |                                             Join a group by it's ID that is looking for players                                              |        All         |
@@ -61,8 +61,10 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - \*`NUM_PLAYERS_FOR_ALERT`: _the minimum player count on the server to initial an alert_
   - `HOURS_TO_REFRESH_FROM_FORUMS`: _number of hours between updating data from API requests to the forum_
   - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
-  - `API_BASE`: _base url for the forum's REST API_
-  - `API_KEY`: _API key provided by forums admin for access to the REST API_
+  - `FORUMS_API_BASE`: _base url for the forum's REST API_
+  - `FORUMS_API_KEY`: _API key provided by forums admin for access to the REST API_
+  - `AUTH_API_BASE`: _base url for the UO authentication system API_
+  - `AUTH_API_KEY`: _API key provided for access to UO authenticatino system API calls_
   - `PUSHER_CLUSTER`: _cluster that the Pusher application and channels are in_
   - `PUSHER_KEY`: _application key for accessing the Pusher channels to listen for events_
 

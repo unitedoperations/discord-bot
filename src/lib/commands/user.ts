@@ -38,7 +38,7 @@ export async function user(_guild: Guild, msg: Message, args: string[]): Promise
   const resJson: { user?: UserEntity; error?: string } = await response.json()
 
   if (resJson.error) {
-    await msg.author.send(`${args[0]} does not match any authentication users in the system.`)
+    await msg.author.send(`${args[0]} does not match any authenticated users in the system.`)
     return 'USER_NOT_FOUND'
   }
 
