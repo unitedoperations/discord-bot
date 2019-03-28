@@ -42,14 +42,14 @@ export async function role(guild: Guild, msg: Message, args: string[]): Promise<
         .addRole(role, 'Requested through bot command')
         .catch(log.error)
       await msg.author.send(`Successfully added role '${role.name}'.`)
-      return `ADDED_TO_GROUP: ${role.name}`
+      return `ADDED_ROLE: ${role.name}`
     } else {
       await guild
         .member(msg.author)
         .removeRole(role, 'Requested through bot command')
         .catch(log.error)
       await msg.author.send(`Successfully removed role '${role.name}'.`)
-      return `ADDED_TO_GROUP: ${role.name}`
+      return `REMOVED_ROLE: ${role.name}`
     }
   }
 }

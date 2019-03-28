@@ -421,7 +421,7 @@ export class Bot implements Routinable {
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
         } catch (e) {
-          log.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e}`)
+          log.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e.message}`)
         }
       } else {
         try {

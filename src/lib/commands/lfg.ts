@@ -133,7 +133,7 @@ async function lfgCreate(guild: Guild, msg: Message, args: string[]): Promise<st
     owner: msg.author,
     name: args[2],
     needed: parseInt(args[1]),
-    found: []
+    found: [msg.author]
   }
 
   Groups.add(g, GroupType.LFG)

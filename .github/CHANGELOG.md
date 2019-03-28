@@ -4,6 +4,7 @@
 
 - ADD `!user` command for admins to get authentication information about a given user
 - UPDATE the `!leave_group` and `!join_group` to be combined into a `!role` command with additional arguments, `add` or `remove`
+- UPDATE group or flight creator now count in total player count
 
 ## v3.1.0
 

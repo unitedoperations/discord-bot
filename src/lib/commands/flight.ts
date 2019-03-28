@@ -133,7 +133,7 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
     game: args[1].toUpperCase() as 'BMS' | 'DCS',
     details: args.slice(4).join(' '),
     time: new Date(`${year}-${date}T${time}:00Z`),
-    found: []
+    found: [msg.author]
   }
 
   Groups.add(f, GroupType.Flight)
