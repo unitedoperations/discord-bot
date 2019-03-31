@@ -11,6 +11,8 @@ export interface CalendarEvent {
   img: string
   group: string
   reminders: Map<string, boolean>
+  rsvpLimit?: number
+  rsvps?: number
 }
 
 /**

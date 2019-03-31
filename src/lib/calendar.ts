@@ -15,6 +15,8 @@ type EventResponseEntity = {
   start: string
   title: string
   description: string
+  rsvp: boolean
+  rsvpLimit?: number
 }
 
 /**
@@ -90,6 +92,14 @@ export class CalendarHandler implements Routinable {
             img: imgUrl,
             group,
             reminders: new Map()
+          }
+
+          // Fetch RSVP information is available for the event
+          if (e.rsvp) {
+            newEvent.rsvpLimit = e.rsvpLimit
+            const res = await fetch(`${Env.FORUMS_API_BASE}/calendar/events/${e.id}/rsvps`, opts)
+            const resJson: Record<string, any> = await res.json()
+            newEvent.rsvps = resJson.attending.length
           }
 
           // For each interval set the default ran to false

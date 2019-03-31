@@ -145,15 +145,22 @@ export const aboutMessage = (): EmbedMessage => ({
  * @param {CalendarEvent} event
  * @returns {EmbedMessage}
  */
-export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessage => ({
-  color: 11640433,
-  title: `🔔 **Reminder:** *${event.title}*`,
-  description: `_...taking place in about **${away}**_`,
-  url: event.url,
-  image: {
-    url: event.img
+export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessage => {
+  const msg: EmbedMessage = {
+    color: 11640433,
+    title: `🔔 **Reminder:** *${event.title}*`,
+    description: `_...taking place in about **${away}**_`,
+    url: event.url,
+    image: {
+      url: event.img
+    }
   }
-})
+
+  if (event.rsvpLimit)
+    msg.fields = [{ name: 'RSVPs', value: `${event.rsvps}/${event.rsvpLimit} spots taken` }]
+
+  return msg
+}
 
 /**
  * Embed message creater for displaying all pending community events
