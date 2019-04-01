@@ -1,5 +1,10 @@
 # UO Discord Bot
 
+![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/unitedoperations/uo-discordbot/master.svg?label=Version&color=blue&style=flat-square)
+![GitHub](https://img.shields.io/github/license/unitedoperations/uo-discordbot.svg?color=red&style=flat-square)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/unitedoperations/uo-discordbot.svg?color=gr&style=flat-square)
+![Discord](https://img.shields.io/discord/94842918803615744.svg?color=%23b19e71&label=Discord&style=flat-square)
+
 [_**Contributing Guide**_](./.github/CONTRIBUTING.md)
 
 [_**Change Log**_](./.github/CHANGELOG.md)
