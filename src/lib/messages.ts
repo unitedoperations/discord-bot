@@ -50,7 +50,8 @@ export const helpMessage = (descriptions: Map<string, string>): EmbedMessage => 
 export const updateMessage = (newVersion: string): EmbedMessage => ({
   color: 11640433,
   title: `🤖 **Upgrade to v${newVersion}!**`,
-  description: '_Run the `!?` or `!help` command to see if any new commands were added._',
+  description:
+    '_Run the `!?` or `!help` command to see if any new commands were added, or read to changelog to see everything that was updated._',
   fields: [
     {
       name: 'Changelog',

@@ -49,16 +49,16 @@ export async function user(_guild: Guild, msg: Message, args: string[]): Promise
 
   // Log into the mission file FTP server and get the list of all mission on the primary server
   const opts: RequestInit = { headers: { 'X-API-Key': Env.AUTH_API_KEY } }
-  const response = await fetch(`${Env.AUTH_API_BASE}/user?username=${args[0]}`, opts)
+  const response = await fetch(`${Env.AUTH_API_BASE}/users?username=${args[0]}`, opts)
 
   // JSON respsonse will contain an error if the user could not be found, otherwise the user object
-  const resJson: { user?: UserEntity; error?: string } = await response.json()
+  const resJson: { users?: UserEntity[] | null; error?: string } = await response.json()
 
   if (resJson.error) {
     await msg.author.send(`${args[0]} does not match any authenticated users in the system.`)
     return 'USER_NOT_FOUND'
   }
 
-  await msg.author.send({ embed: authenticatedUserMessage(resJson.user!) })
+  await msg.author.send({ embed: authenticatedUserMessage(resJson.users![0]) })
   return 'MISSION_SEARCH_OUTPUT'
 }

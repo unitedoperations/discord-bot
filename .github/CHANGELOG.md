@@ -8,6 +8,7 @@
 - UPDATE group or flight creator now count in total player count
 - UPDATE event notifications to include RSVP limit and current amount if available
 - UPDATE license from MIT to GNU GPL
+- UPDATE `!user` command's interaction with UO-Authenticator API
 - FIX changelog file link in the new bot update message
 
 ## v3.1.0
