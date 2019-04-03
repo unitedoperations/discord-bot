@@ -16,11 +16,13 @@
  */
 
 require('dotenv').config()
-import { Bot } from './bot'
+import grpc from 'grpc'
+import { loadSync, PackageDefinition } from '@grpc/proto-loader'
+import { Bot, UserRoleSets } from './bot'
 import * as cmd from './lib/commands'
 import { Env } from './lib/state'
 import { admins, regulars, disabled } from './lib/access'
-import { error } from './lib/logger'
+import { info, error } from './lib/logger'
 
 process.on('unhandledRejection', (reason: any, _promise: Promise<any>) => {
   error(`Unhandled Rejection ${reason.stack || reason}`)
@@ -110,4 +112,34 @@ bot
     admins
   )
   .start(Env.BOT_TOKEN)
+  .then(() => {
+    const definition: PackageDefinition = loadSync(__dirname + '/roles.proto')
+    const descriptor: grpc.GrpcObject = grpc.loadPackageDefinition(definition)
+    const server = new grpc.Server()
+
+    type ServiceCall = {
+      domain: string | null
+      _events: Record<any, any>
+      _eventsCount: number
+      call: Record<any, any>
+      cancelled: boolean
+      metadata: {
+        _internal_repr: {
+          'user-agent': string[]
+        }
+      }
+      request: any
+    }
+
+    server.addService(descriptor.RoleService.service, {
+      get: (call: ServiceCall, callback: any) => {
+        const res: UserRoleSets = bot.getUserRoles(call.request.id)
+        callback(null, res)
+      }
+    })
+
+    server.bind('0.0.0.0:50051', grpc.ServerCredentials.createInsecure())
+    server.start()
+    info('gRPC server running on :50051')
+  })
   .catch(err => error(`START: ${err}`))

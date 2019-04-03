@@ -51,6 +51,17 @@ export type BotAction = (
 ) => Promise<string>
 
 /**
+ * Type definition for querying for user roles on Discord
+ * @export
+ */
+export type UserRoleSets = {
+  users: {
+    id: string
+    roles: string[]
+  }[]
+}
+
+/**
  * Definition for a generic type that can be T or null
  */
 type Nullable<T> = T | null
@@ -127,7 +138,8 @@ export class Bot implements Routinable {
     )
 
     this._pusherClient = new Pusher(Env.PUSHER_KEY, {
-      cluster: Env.PUSHER_CLUSTER
+      cluster: Env.PUSHER_CLUSTER,
+      encrypted: true
     })
     this._subscriber = this._pusherClient.subscribe('discord_permissions')
   }
@@ -203,6 +215,28 @@ export class Bot implements Routinable {
     if (provision) desc += ` _**(${provision.name})**_`
     this._descriptions.set(cmd, desc)
     return this
+  }
+
+  /**
+   * Handler for gRPC call for fetching one or all users' set of role names
+   * currently assigned on the Discord server.
+   * @param {string} [id]
+   * @returns {UserRoleSets}
+   * @memberof Bot
+   */
+  getUserRoles(id?: string): UserRoleSets {
+    // Get a single user's role set
+    if (id) {
+      const roles: string[] = this._guild!.members.find(m => m.id === id).roles.map(r => r.name)
+      return { users: [{ id, roles }] }
+    }
+
+    // Get role sets for all users in Discord server
+    const users: { id: string; roles: string[] }[] = []
+    this._guild!.members.forEach(m => {
+      users.push({ id: m.id, roles: m.roles.map(r => r.name) })
+    })
+    return { users }
   }
 
   /**

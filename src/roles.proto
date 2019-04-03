@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+service RoleService {
+  rpc Get(User) returns (UserRolesList);
+}
+
+message Empty {}
+
+message User {
+  string id = 1;
+}
+
+message UserRolesList {
+  message RoleSet {
+    string id = 1;
+    repeated string roles = 2;
+  }
+  
+  repeated RoleSet users = 1;
+}
+
+message AllUserRolesList {
+  repeated UserRolesList users = 1;
+}
