@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2019  United Operations
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import Discord from 'discord.js'
 import fetch, { RequestInit } from 'node-fetch'
 import isFuture from 'date-fns/is_future'
@@ -32,6 +49,17 @@ export type BotAction = (
   msg: Discord.Message,
   args: string[]
 ) => Promise<string>
+
+/**
+ * Type definition for querying for user roles on Discord
+ * @export
+ */
+export type UserRoleSets = {
+  users: {
+    id: string
+    roles: string[]
+  }[]
+}
 
 /**
  * Definition for a generic type that can be T or null
@@ -98,19 +126,20 @@ export class Bot implements Routinable {
     this._client.on('error', err => log.error(`CLIENT_ERR ${err.message}`))
 
     this._calendar = new CalendarHandler(
-      `${Env.API_BASE}/calendar/events&sortBy=start&sortDir=desc&hidden=0`,
+      `${Env.FORUMS_API_BASE}/calendar/events&sortBy=start&sortDir=desc&hidden=0`,
       this._sendEventReminder.bind(this)
     )
 
     this._polls = new PollsHandler(
       `${
-        Env.API_BASE
+        Env.FORUMS_API_BASE
       }/forums/topics&forums=132&hidden=0&locked=0&hasPoll=1&sortBy=date&sortDir=desc`,
       this._notifyOfPoll.bind(this)
     )
 
     this._pusherClient = new Pusher(Env.PUSHER_KEY, {
-      cluster: Env.PUSHER_CLUSTER
+      cluster: Env.PUSHER_CLUSTER,
+      encrypted: true
     })
     this._subscriber = this._pusherClient.subscribe('discord_permissions')
   }
@@ -189,6 +218,28 @@ export class Bot implements Routinable {
   }
 
   /**
+   * Handler for gRPC call for fetching one or all users' set of role names
+   * currently assigned on the Discord server.
+   * @param {string} [id]
+   * @returns {UserRoleSets}
+   * @memberof Bot
+   */
+  getUserRoles(id?: string): UserRoleSets {
+    // Get a single user's role set
+    if (id) {
+      const roles: string[] = this._guild!.members.find(m => m.id === id).roles.map(r => r.name)
+      return { users: [{ id, roles }] }
+    }
+
+    // Get role sets for all users in Discord server
+    const users: { id: string; roles: string[] }[] = []
+    this._guild!.members.forEach(m => {
+      users.push({ id: m.id, roles: m.roles.map(r => r.name) })
+    })
+    return { users }
+  }
+
+  /**
    * Performs a scrape of the A3 primary's server information URL argued
    * and if there is an update since the last run, notify to A3 player group
    * @private
@@ -258,10 +309,10 @@ export class Bot implements Routinable {
         // the poll object before passing to be alerted
         const opts: RequestInit = {
           headers: {
-            Authorization: Env.apiAuthToken
+            Authorization: Env.forumsAPIAuthToken
           }
         }
-        const res = await fetch(`${Env.API_BASE}/forums/topics/${poll.id}`, opts)
+        const res = await fetch(`${Env.FORUMS_API_BASE}/forums/topics/${poll.id}`, opts)
         const thread: PollThreadResponse = await res.json()
         poll.votes = {
           Yes: thread.poll.questions[0].options.Yes,
@@ -421,7 +472,7 @@ export class Bot implements Routinable {
 
           if (cmd === '!shutdown' && output === 'shutdown successful') process.exit(0)
         } catch (e) {
-          log.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e}`)
+          log.error(`COMMAND (${origin})(${msg.author.username} - ${cmd}) : ${e.message}`)
         }
       } else {
         try {

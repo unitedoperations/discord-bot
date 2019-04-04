@@ -1,9 +1,27 @@
+/*
+ * Copyright (C) 2019  United Operations
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 require('dotenv').config()
 import { Bot } from './bot'
+import * as server from './grpc'
 import * as cmd from './lib/commands'
 import { Env } from './lib/state'
 import { admins, regulars, disabled } from './lib/access'
-import { error } from './lib/logger'
+import { fav, error } from './lib/logger'
 
 process.on('unhandledRejection', (reason: any, _promise: Promise<any>) => {
   error(`Unhandled Rejection ${reason.stack || reason}`)
@@ -30,16 +48,6 @@ bot
     'flight',
     '`!flight list | create <SIM> <HH:MM> <MM/DD> <details> | join <id> | delete <id>`: _manage pickup flights for UOAF_',
     cmd.flight
-  )
-  .addCommand(
-    'join_group',
-    '`!join_group <group>`: _join the argued group if it exists and have permission_',
-    cmd.joinGroup
-  )
-  .addCommand(
-    'leave_group',
-    '`!leave_group <group>`: _leave the argued group if it exists and you are in it_',
-    cmd.leaveGroup
   )
   .addCommand(
     'lfg',
@@ -75,6 +83,11 @@ bot
     disabled
   )
   .addCommand(
+    'role',
+    '`!role add | remove <group>`: _assign or remove a Discord role if it exists and is in the permitted list_',
+    cmd.role
+  )
+  .addCommand(
     'shutdown',
     '`!shutdown`: _turns off the Discord bot with the correct permissions_',
     cmd.shutdown,
@@ -91,5 +104,15 @@ bot
     cmd.sqfp
   )
   .addCommand('stats', '`!stats`: _view runtime statistics about the bot_', cmd.stats, admins)
+  .addCommand(
+    'user',
+    '`!user <username>`: _view authentication information for a given user_',
+    cmd.user,
+    admins
+  )
   .start(Env.BOT_TOKEN)
+  .then(() => {
+    server.init(bot).start()
+    fav(`gRPC server running on :${process.env.GRPC_PORT!}`)
+  })
   .catch(err => error(`START: ${err}`))

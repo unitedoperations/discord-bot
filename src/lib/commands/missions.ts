@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2019  United Operations
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { Message, Guild } from 'discord.js'
 import fetch, { RequestInit } from 'node-fetch'
 import { Env } from '../state'
@@ -56,9 +73,9 @@ export async function missions(_guild: Guild, msg: Message, args: string[]): Pro
   }
 
   // Log into the mission file FTP server and get the list of all mission on the primary server
-  const opts: RequestInit = { headers: { Authorization: Env.apiAuthToken } }
+  const opts: RequestInit = { headers: { Authorization: Env.forumsAPIAuthToken } }
   const params: string = '&categories=41&sortBy=title&sortDir=asc'
-  const response = await fetch(`${Env.API_BASE}/cms/records/7${params}`, opts)
+  const response = await fetch(`${Env.FORUMS_API_BASE}/cms/records/7${params}`, opts)
   const liveMissionList: ArmAMission[] = await response.json().then(x => x.results)
 
   // Filter all the missions that match or are similar to the argued values

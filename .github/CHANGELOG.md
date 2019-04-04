@@ -1,5 +1,18 @@
 # Changelog
 
+## v3.2.0
+
+- ADD `!user` command for admins to get authentication information about a given user
+- ADD proper licensing to entire code-base
+- ADD lightweight gRPC server for `uo-sentry` project queries
+- UPDATE the `!leave_group` and `!join_group` to be combined into a `!role` command with additional arguments, `add` or `remove`
+- UPDATE group or flight creator now count in total player count
+- UPDATE event notifications to include RSVP limit and current amount if available
+- UPDATE license from MIT to GNU GPL
+- UPDATE `!user` command's interaction with UO-Authenticator API
+- UPDATE use TLS for Pusher channel connections
+- FIX changelog file link in the new bot update message
+
 ## v3.1.0
 
 - HOTFIX rules for logging and auditing server actions

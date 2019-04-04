@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2019  United Operations
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 import { Message, Guild, TextChannel, RichEmbed } from 'discord.js'
 import { Groups, Flight, GroupType, Env } from '../state'
 import { flightsMessage, flightCreatedMessage } from '../messages'
@@ -133,7 +150,7 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
     game: args[1].toUpperCase() as 'BMS' | 'DCS',
     details: args.slice(4).join(' '),
     time: new Date(`${year}-${date}T${time}:00Z`),
-    found: []
+    found: [msg.author]
   }
 
   Groups.add(f, GroupType.Flight)

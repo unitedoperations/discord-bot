@@ -1,7 +1,8 @@
+import { Message, GuildMember } from 'discord.js'
 import { Bot } from '../bot'
 import { CalendarEvent, Group, Flight, PollThread } from './state'
 import { ServerInformation } from './helpers'
-import { Message, GuildMember } from 'discord.js'
+import { UserEntity } from './commands/user'
 
 interface EmbedMessageImage {
   url: string | null
@@ -49,12 +50,13 @@ export const helpMessage = (descriptions: Map<string, string>): EmbedMessage => 
 export const updateMessage = (newVersion: string): EmbedMessage => ({
   color: 11640433,
   title: `🤖 **Upgrade to v${newVersion}!**`,
-  description: '_Run the `!?` or `!help` command to see if any new commands were added._',
+  description:
+    '_Run the `!?` or `!help` command to see if any new commands were added, or read to changelog to see everything that was updated._',
   fields: [
     {
       name: 'Changelog',
       value:
-        '[Read the changelog for a full list of updates.](https://github.com/unitedoperations/uo-discordbot/blob/master/CHANGELOG.md)'
+        '[Read the changelog for a full list of updates.](https://github.com/unitedoperations/uo-discordbot/blob/master/.github/CHANGELOG.md)'
     }
   ]
 })
@@ -144,15 +146,22 @@ export const aboutMessage = (): EmbedMessage => ({
  * @param {CalendarEvent} event
  * @returns {EmbedMessage}
  */
-export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessage => ({
-  color: 11640433,
-  title: `🔔 **Reminder:** *${event.title}*`,
-  description: `_...taking place in about **${away}**_`,
-  url: event.url,
-  image: {
-    url: event.img
+export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessage => {
+  const msg: EmbedMessage = {
+    color: 11640433,
+    title: `🔔 **Reminder:** *${event.title}*`,
+    description: `_...taking place in about **${away}**_`,
+    url: event.url,
+    image: {
+      url: event.img
+    }
   }
-})
+
+  if (event.rsvpLimit)
+    msg.fields = [{ name: 'RSVPs', value: `${event.rsvps}/${event.rsvpLimit} spots taken` }]
+
+  return msg
+}
 
 /**
  * Embed message creater for displaying all pending community events
@@ -441,6 +450,47 @@ export const statsMessage = (
     {
       name: 'Groups Waiting',
       value: groups
+    }
+  ]
+})
+
+/**
+ * Embed message for responding to the !user command for authentication information
+ * @param {UserEntity} user
+ * @returns {EmbedMessage}
+ */
+export const authenticatedUserMessage = (user: UserEntity): EmbedMessage => ({
+  color: 11640433,
+  title: `**👤 ${user.username}'s Information**`,
+  description: `_Information stored about their authentication and clients_`,
+  fields: [
+    {
+      name: 'Last Authentication Date',
+      value: user.createdAt
+    },
+    {
+      name: 'Email Address',
+      value: user.email
+    },
+    {
+      name: 'Discord ID',
+      value: user.discord_id
+    },
+    {
+      name: 'Forums ID',
+      value: user.forums_id
+    },
+    {
+      name: 'TeamSpeak ID',
+      value: user.teamspeak_id
+    },
+    {
+      name: 'TeamSpeak Database ID',
+      value: user.teamspeak_db_id
+    },
+    {
+      name: 'Last Known IP Address',
+      value: user.ip
     }
   ]
 })

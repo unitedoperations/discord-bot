@@ -1,5 +1,10 @@
 # UO Discord Bot
 
+![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/unitedoperations/uo-discordbot/master.svg?label=Version&color=blue&style=flat-square)
+![GitHub](https://img.shields.io/github/license/unitedoperations/uo-discordbot.svg?color=red&style=flat-square)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/unitedoperations/uo-discordbot.svg?color=gr&style=flat-square)
+![Discord](https://img.shields.io/discord/94842918803615744.svg?color=%23b19e71&label=Discord&style=flat-square)
+
 [_**Contributing Guide**_](./.github/CONTRIBUTING.md)
 
 [_**Change Log**_](./.github/CHANGELOG.md)
@@ -17,8 +22,8 @@
 | `!flight create` | sim (BMS or DCS), HH:MM zulu, MM/DD, ...details |             Create a new pickup flight for the argued SIM to take place on the argued zulu time and date with any extra details              |        All         |
 | `!flight join`   |                    flight_id                    |                                               Join an existing pickup flight by the argued ID                                                |        All         |
 | `!flight delete` |                    flight_id                    |                                            Delete a pickup flight that you have created by its ID                                            | All (flight owner) |
-| `!join_group`    |                   group_name                    |                                            Join the argued group if it exists and have permission                                            |        All         |
-| `!leave_group`   |                   group_name                    |                                            Leave the argued group if it exists and you are in it                                             |        All         |
+| `!role add`      |                   group_name                    |                                            Join the argued group if it exists and have permission                                            |        All         |
+| `!role remove`   |                   group_name                    |                                           Leave the argued group if it exists and you're a member                                            |        All         |
 | `!lfg list`      |                        -                        |                                                Display all group entities looking for players                                                |        All         |
 | `!lfg create`    |                 #_needed, name                  |                                 Create a new group with a designated name and amount of players looking for                                  |        All         |
 | `!lfg join`      |                    group_id                     |                                             Join a group by it's ID that is looking for players                                              |        All         |
@@ -31,6 +36,7 @@
 | `!sqf`           |                       cmd                       |                                           Search the BIS wiki for information about an SQF command                                           |        All         |
 | `!sqfp`          |                       cmd                       |                              Search BIS wiki for information about an SQF command and post the result publicly                               |        All         |
 | `!stats`         |                        -                        |                                                    View runtime statistics about the bot                                                     |       Admins       |
+| `!user`          |                    username                     |                                                 Get authentication information about a user                                                  |       Admins       |
 
 ## Requirements and Setup
 
@@ -60,10 +66,13 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - \*`NUM_PLAYERS_FOR_ALERT`: _the minimum player count on the server to initial an alert_
   - `HOURS_TO_REFRESH_FROM_FORUMS`: _number of hours between updating data from API requests to the forum_
   - `ADMIN_ROLES`: _roles permitted to run the admin only commands for the bot_
-  - `API_BASE`: _base url for the forum's REST API_
-  - `API_KEY`: _API key provided by forums admin for access to the REST API_
+  - `FORUMS_API_BASE`: _base url for the forum's REST API_
+  - `FORUMS_API_KEY`: _API key provided by forums admin for access to the REST API_
+  - `AUTH_API_BASE`: _base url for the UO authentication system API_
+  - `AUTH_API_KEY`: _API key provided for access to UO authenticatino system API calls_
   - `PUSHER_CLUSTER`: _cluster that the Pusher application and channels are in_
   - `PUSHER_KEY`: _application key for accessing the Pusher channels to listen for events_
+  - `GRPC_PORT`: _port for the lightweight gRPC server to run on_
 
 ### Discord
 
