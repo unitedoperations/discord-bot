@@ -4,6 +4,8 @@ LABEL author="Matthew Callens <callensm>"
 LABEL description="Discord chat bot for United Operations"
 LABEL repository="https://github.com/unitedoperations/uo-discordbot.git"
 
+EXPOSE 50051/tcp
+
 ADD . /bot
 WORKDIR /bot
 

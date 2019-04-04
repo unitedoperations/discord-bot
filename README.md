@@ -72,6 +72,7 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - `AUTH_API_KEY`: _API key provided for access to UO authenticatino system API calls_
   - `PUSHER_CLUSTER`: _cluster that the Pusher application and channels are in_
   - `PUSHER_KEY`: _application key for accessing the Pusher channels to listen for events_
+  - `GRPC_PORT`: _port for the lightweight gRPC server to run on_
 
 ### Discord
 
