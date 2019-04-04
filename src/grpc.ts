@@ -45,7 +45,8 @@ export function init(bot: Bot): grpc.Server {
   const descriptor: grpc.GrpcObject = grpc.loadPackageDefinition(definition)
   const server = new grpc.Server()
 
-  server.addService(descriptor.RoleService.service, {
+  // @ts-ignore: TypeScript doesn't recognize the nested services on a GrpcObject instance
+  server.addProtoService(descriptor.RoleService.service, {
     get: (call: ServiceCall, callback: any) => {
       const res: UserRoleSets = bot.getUserRoles(call.request.id)
       callback(null, res)

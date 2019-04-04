@@ -1,6 +1,6 @@
 {
   "name": "uo-discordbot",
-  "version": "3.1.9",
+  "version": "3.2.0",
   "homepage": "http://forums.unitedoperations.net",
   "description": "Discord bot for the United Operations server",
   "repository": "https://github.com/unitedoperations/uo-discordbot.git",
@@ -31,6 +31,7 @@
     "@types/node-schedule": "^1.2.2",
     "@types/pusher-js": "^4.2.0",
     "nodemon": "^1.18.9",
+    "protobufjs": "^6.8.8",
     "ts-node": "^7.0.1",
     "typescript": "^3.2.4"
   }
