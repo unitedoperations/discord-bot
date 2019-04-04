@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "nodemon --config ./nodemon.json",
     "test": "jest --coverage",
-    "build": "tsc --project .",
+    "build": "tsc --project . && cp src/roles.proto build",
     "start": "node build/index.js"
   },
   "dependencies": {
