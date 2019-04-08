@@ -17,11 +17,16 @@
 
 syntax = "proto3";
 
-service RoleService {
+service ProvisionService {
   rpc Get(User) returns (UserRolesList);
+  rpc Provision(RoleDiff) returns (Status);
 }
 
 message Empty {}
+
+message Status {
+  bool success = 1;
+}
 
 message User {
   string id = 1;
@@ -38,4 +43,10 @@ message UserRolesList {
 
 message AllUserRolesList {
   repeated UserRolesList users = 1;
+}
+
+message RoleDiff {
+  string id = 1;
+  repeated string assign = 2;
+  repeated string revoke = 3;
 }

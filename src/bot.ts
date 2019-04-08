@@ -240,6 +240,26 @@ export class Bot implements Routinable {
   }
 
   /**
+   * GRPC handler function for provisioning a set of assigns and revokes for user roles
+   * @param {string} id
+   * @param {string[]} assign
+   * @param {string[]} revoke
+   * @returns {Promise<boolean>}
+   * @memberof Bot
+   */
+  async provisionUserRoles(id: string, assign: string[], revoke: string[]): Promise<boolean> {
+    const member: Discord.GuildMember = this._guild!.members.find(m => m.id === id)
+    try {
+      if (assign.length > 0) await member.addRoles(assign)
+      if (revoke.length > 0) await member.removeRoles(revoke)
+      return true
+    } catch (err) {
+      log.error(`FAILED_GRPC_PROVISION: ${id}`)
+      return false
+    }
+  }
+
+  /**
    * Performs a scrape of the A3 primary's server information URL argued
    * and if there is an update since the last run, notify to A3 player group
    * @private

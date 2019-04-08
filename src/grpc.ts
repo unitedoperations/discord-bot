@@ -41,7 +41,7 @@ type ServiceCall = {
  * @returns {grpc.Server}
  */
 export function init(bot: Bot): grpc.Server {
-  const definition: PackageDefinition = loadSync(join(__dirname, 'roles.proto'))
+  const definition: PackageDefinition = loadSync(join(__dirname, 'protos/provision.proto'))
   const descriptor: grpc.GrpcObject = grpc.loadPackageDefinition(definition)
   const server = new grpc.Server()
 
@@ -50,6 +50,15 @@ export function init(bot: Bot): grpc.Server {
     get: (call: ServiceCall, callback: any) => {
       const res: UserRoleSets = bot.getUserRoles(call.request.id)
       callback(null, res)
+    },
+    provision: async (call: ServiceCall, callback: any) => {
+      const {
+        id,
+        assign,
+        revoke
+      }: { id: string; assign: string[]; revoke: string[] } = call.request
+      const res: boolean = await bot.provisionUserRoles(id, assign, revoke)
+      callback(null, { success: res })
     }
   })
 
