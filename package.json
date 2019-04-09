@@ -1,6 +1,6 @@
 {
   "name": "uo-discordbot",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "homepage": "http://forums.unitedoperations.net",
   "description": "Discord bot for the United Operations server",
   "repository": "https://github.com/unitedoperations/uo-discordbot.git",

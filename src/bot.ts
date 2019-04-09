@@ -183,7 +183,7 @@ export class Bot implements Routinable {
       )
 
       this._subscriber.bind('assign', this._assignUserRoles)
-      this._subscriber.bind('revoke', this._removeUserRoles)
+      this._subscriber.bind('revoke', this._revokeUserRoles)
     } catch (e) {
       log.error(`START: ${e.message}`)
       process.exit(1)
@@ -248,10 +248,9 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   async provisionUserRoles(id: string, assign: string[], revoke: string[]): Promise<boolean> {
-    const member: Discord.GuildMember = this._guild!.members.find(m => m.id === id)
     try {
-      if (assign.length > 0) await member.addRoles(assign)
-      if (revoke.length > 0) await member.removeRoles(revoke)
+      if (assign.length > 0) await this._assignUserRoles({ id, roles: assign })
+      if (revoke.length > 0) await this._revokeUserRoles({ id, roles: revoke })
       return true
     } catch (err) {
       log.error(`FAILED_GRPC_PROVISION: ${id}`)
@@ -514,7 +513,7 @@ export class Bot implements Routinable {
    * @param {{ id: string, roles: string[] }} payload
    * @memberof Bot
    */
-  private _assignUserRoles = (payload: { id: string; roles: string[] }) => {
+  private _assignUserRoles = async (payload: { id: string; roles: string[] }) => {
     try {
       const member: Nullable<Discord.GuildMember> = this._guild!.members.find(
         m => m.user.id === payload.id
@@ -526,7 +525,7 @@ export class Bot implements Routinable {
           const guildRole: Nullable<Discord.Role> = this._guild!.roles.find(r => r.name === role)
           if (guildRole) rolesToAdd.push(guildRole)
         }
-        member.addRoles(rolesToAdd, 'Provision Task via UO Authenticator')
+        await member.addRoles(rolesToAdd, 'Provision Task via UO Authenticator or Sentry')
       }
 
       this._logRoleChangeFromAuth(member, 'AUTH_PROVISIONING', payload.roles.join(', '))
@@ -540,17 +539,28 @@ export class Bot implements Routinable {
    * uses the payload's user ID to remove all roles from the argued user
    * if found in the Discord server
    * @private
-   * @param {{ id: string }} payload
+   * @param {{ id: string, roles?: string[] }} payload
    * @memberof Bot
    */
-  private _removeUserRoles = (payload: { id: string }) => {
+  private _revokeUserRoles = async (payload: { id: string; roles?: string[] }) => {
     try {
       const member: Nullable<Discord.GuildMember> = this._guild!.members.find(
         m => m.user.id === payload.id
       )
 
+      let rolesToRevoke: Discord.Role[] | Discord.Collection<string, Discord.Role>
+      if (payload.roles) {
+        rolesToRevoke = []
+        for (const role of payload.roles) {
+          const guildRole: Nullable<Discord.Role> = this._guild!.roles.find(r => r.name === role)
+          if (guildRole) rolesToRevoke.push(guildRole)
+        }
+      } else {
+        rolesToRevoke = member.roles
+      }
+
       if (member) {
-        member.removeRoles(member.roles)
+        await member.removeRoles(rolesToRevoke, 'Provision Task via UO Authenticator or Sentry')
       }
 
       this._logRoleChangeFromAuth(member, 'AUTH_REVOKE', `${member.user.username} roles revoked`)
