@@ -18,7 +18,7 @@
 import Discord from 'discord.js'
 import fetch, { RequestInit } from 'node-fetch'
 import isFuture from 'date-fns/is_future'
-import Pusher from 'pusher-js'
+// FIXME: import Pusher from 'pusher-js'
 import * as log from './lib/logger'
 import { CalendarHandler } from './lib/calendar'
 import { PollsHandler, PollThreadResponse } from './lib/polls'
@@ -101,8 +101,8 @@ export class Bot implements Routinable {
   private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
   private _currentMission?: ServerInformation
-  private _pusherClient: Pusher.Pusher
-  private _subscriber: Pusher.Channel
+  // FIXME: private _pusherClient: Pusher.Pusher
+  // FIXME: private _subscriber: Pusher.Channel
 
   /**
    * Creates an instance of Bot
@@ -137,11 +137,12 @@ export class Bot implements Routinable {
       this._notifyOfPoll.bind(this)
     )
 
-    this._pusherClient = new Pusher(Env.PUSHER_KEY, {
-      cluster: Env.PUSHER_CLUSTER,
-      encrypted: true
-    })
-    this._subscriber = this._pusherClient.subscribe('discord_permissions')
+    // FIXME:
+    // this._pusherClient = new Pusher(Env.PUSHER_KEY, {
+    //   cluster: Env.PUSHER_CLUSTER,
+    //   encrypted: true
+    // })
+    // this._subscriber = this._pusherClient.subscribe('discord_permissions')
   }
 
   /**
@@ -182,8 +183,9 @@ export class Bot implements Routinable {
         new Routine<void>(async () => await this._notifyOfActiveGroups(), [], 2 * 60 * 60 * 1000)
       )
 
-      this._subscriber.bind('assign', this._assignUserRoles)
-      this._subscriber.bind('revoke', this._revokeUserRoles)
+      // FIXME:
+      // this._subscriber.bind('assign', this._assignUserRoles)
+      // this._subscriber.bind('revoke', this._revokeUserRoles)
     } catch (e) {
       log.error(`START: ${e.message}`)
       process.exit(1)
@@ -251,6 +253,9 @@ export class Bot implements Routinable {
     try {
       if (assign.length > 0) await this._assignUserRoles({ id, roles: assign })
       if (revoke.length > 0) await this._revokeUserRoles({ id, roles: revoke })
+      else if (revoke.length === 1 && revoke[0] === 'Symbol(all)')
+        await this._revokeUserRoles({ id })
+
       return true
     } catch (err) {
       log.error(`FAILED_GRPC_PROVISION: ${id}`)
@@ -506,7 +511,7 @@ export class Bot implements Routinable {
   }
 
   /**
-   * Handles the Pusher.js 'assign' event from the channel subscription and
+   * Handles the GRPC provision calls for assigning user roles and
    * uses the payload's user ID and roles list to assign the appropriate user
    * the roles on the Discord server they should belong to
    * @private
@@ -535,7 +540,7 @@ export class Bot implements Routinable {
   }
 
   /**
-   * Handles the Pusher.js 'revoke' event from the channel subscription and
+   * Handles the GRPC provision calls for revoking user roles and
    * uses the payload's user ID to remove all roles from the argued user
    * if found in the Discord server
    * @private
