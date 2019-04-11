@@ -1,9 +1,9 @@
 {
-  "name": "uo-discordbot",
-  "version": "3.2.3",
-  "homepage": "http://forums.unitedoperations.net",
+  "name": "discord-bot",
+  "version": "3.2.4",
+  "homepage": "http://unitedoperations.net/",
   "description": "Discord bot for the United Operations server",
-  "repository": "https://github.com/unitedoperations/uo-discordbot.git",
+  "repository": "https://github.com/unitedoperations/discord-bot.git",
   "author": "Matthew Callens <callensmatt@gmail.com>",
   "license": "MIT",
   "scripts": {

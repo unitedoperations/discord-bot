@@ -37,7 +37,7 @@ export const helpMessage = (descriptions: Map<string, string>): EmbedMessage => 
   color: 11640433,
   title: '**Commands**',
   description:
-    '_All bug reports and feature requests are submitted as issues at https://github.com/unitedoperations/uo-discordbot_',
+    '_All bug reports and feature requests are submitted as issues at https://github.com/unitedoperations/discord-bot_',
   fields: [...descriptions.entries()].map(e => ({ name: e[0], value: e[1] }))
 })
 
@@ -56,7 +56,7 @@ export const updateMessage = (newVersion: string): EmbedMessage => ({
     {
       name: 'Changelog',
       value:
-        '[Read the changelog for a full list of updates.](https://github.com/unitedoperations/uo-discordbot/blob/master/.github/CHANGELOG.md)'
+        '[Read the changelog for a full list of updates.](https://github.com/unitedoperations/discord-bot/blob/master/.github/CHANGELOG.md)'
     }
   ]
 })
@@ -130,11 +130,11 @@ export const aboutMessage = (): EmbedMessage => ({
     },
     {
       name: 'Repository',
-      value: 'https://github.com/unitedoperations/uo-discordbot'
+      value: 'https://github.com/unitedoperations/discord-bot'
     },
     {
       name: 'Feature Requests & Bug Reports',
-      value: 'https://github.com/unitedoperations/uo-discordbot/issues'
+      value: 'https://github.com/unitedoperations/discord-bot/issues'
     }
   ]
 })

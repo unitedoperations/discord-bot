@@ -249,12 +249,13 @@ export class Bot implements Routinable {
    * @returns {Promise<boolean>}
    * @memberof Bot
    */
-  async provisionUserRoles(id: string, assign: string[], revoke: string[]): Promise<boolean> {
+  async provisionUserRoles(id: string, assign?: string[], revoke?: string[]): Promise<boolean> {
     try {
-      if (assign.length > 0) await this._assignUserRoles({ id, roles: assign })
-      if (revoke.length > 0) await this._revokeUserRoles({ id, roles: revoke })
-      else if (revoke.length === 1 && revoke[0] === 'Symbol(all)')
-        await this._revokeUserRoles({ id })
+      if (assign && assign.length > 0) await this._assignUserRoles({ id, roles: assign })
+      if (revoke && revoke.length > 0) {
+        if (revoke.length === 1 && revoke[0] === 'Symbol(all)') await this._revokeUserRoles({ id })
+        else await this._revokeUserRoles({ id, roles: revoke })
+      }
 
       return true
     } catch (err) {
