@@ -70,8 +70,6 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - `FORUMS_API_KEY`: _API key provided by forums admin for access to the REST API_
   - `AUTH_API_BASE`: _base url for the UO authentication system API_
   - `AUTH_API_KEY`: _API key provided for access to UO authenticatino system API calls_
-  - `PUSHER_CLUSTER`: _cluster that the Pusher application and channels are in_
-  - `PUSHER_KEY`: _application key for accessing the Pusher channels to listen for events_
   - `GRPC_PORT`: _port for the lightweight gRPC server to run on_
 
 ### Discord

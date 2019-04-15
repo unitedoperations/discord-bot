@@ -18,7 +18,6 @@
 import Discord from 'discord.js'
 import fetch, { RequestInit } from 'node-fetch'
 import isFuture from 'date-fns/is_future'
-// FIXME: import Pusher from 'pusher-js'
 import * as log from './lib/logger'
 import { CalendarHandler } from './lib/calendar'
 import { PollsHandler, PollThreadResponse } from './lib/polls'
@@ -101,8 +100,6 @@ export class Bot implements Routinable {
   private _descriptions: Map<string, string> = new Map()
   private _commands: Map<string, BotAction> = new Map()
   private _currentMission?: ServerInformation
-  // FIXME: private _pusherClient: Pusher.Pusher
-  // FIXME: private _subscriber: Pusher.Channel
 
   /**
    * Creates an instance of Bot
@@ -136,13 +133,6 @@ export class Bot implements Routinable {
       }/forums/topics&forums=132&hidden=0&locked=0&hasPoll=1&sortBy=date&sortDir=desc`,
       this._notifyOfPoll.bind(this)
     )
-
-    // FIXME:
-    // this._pusherClient = new Pusher(Env.PUSHER_KEY, {
-    //   cluster: Env.PUSHER_CLUSTER,
-    //   encrypted: true
-    // })
-    // this._subscriber = this._pusherClient.subscribe('discord_permissions')
   }
 
   /**
@@ -182,10 +172,6 @@ export class Bot implements Routinable {
         'groups',
         new Routine<void>(async () => await this._notifyOfActiveGroups(), [], 2 * 60 * 60 * 1000)
       )
-
-      // FIXME:
-      // this._subscriber.bind('assign', this._assignUserRoles)
-      // this._subscriber.bind('revoke', this._revokeUserRoles)
     } catch (e) {
       log.error(`START: ${e.message}`)
       process.exit(1)
@@ -250,14 +236,19 @@ export class Bot implements Routinable {
    * @memberof Bot
    */
   async provisionUserRoles(id: string, assign?: string[], revoke?: string[]): Promise<boolean> {
+    let success: boolean = true
+
     try {
-      if (assign && assign.length > 0) await this._assignUserRoles({ id, roles: assign })
+      if (assign && assign.length > 0)
+        success = success && (await this._assignUserRoles({ id, roles: assign }))
+
       if (revoke && revoke.length > 0) {
-        if (revoke.length === 1 && revoke[0] === 'Symbol(all)') await this._revokeUserRoles({ id })
-        else await this._revokeUserRoles({ id, roles: revoke })
+        if (revoke.length === 1 && revoke[0] === 'Symbol(all)')
+          success = success && (await this._revokeUserRoles({ id }))
+        else success = success && (await this._revokeUserRoles({ id, roles: revoke }))
       }
 
-      return true
+      return success
     } catch (err) {
       log.error(`FAILED_GRPC_PROVISION: ${id}`)
       return false
@@ -517,9 +508,10 @@ export class Bot implements Routinable {
    * the roles on the Discord server they should belong to
    * @private
    * @param {{ id: string, roles: string[] }} payload
+   * @returns {Promise<boolean>}
    * @memberof Bot
    */
-  private _assignUserRoles = async (payload: { id: string; roles: string[] }) => {
+  private _assignUserRoles = async (payload: { id: string; roles: string[] }): Promise<boolean> => {
     try {
       const member: Nullable<Discord.GuildMember> = this._guild!.members.find(
         m => m.user.id === payload.id
@@ -535,8 +527,10 @@ export class Bot implements Routinable {
       }
 
       this._logRoleChangeFromAuth(member, 'AUTH_PROVISIONING', payload.roles.join(', '))
+      return true
     } catch (err) {
-      log.error('AUTH_PROVISIONING_FAILURE')
+      log.error(`AUTH_PROVISIONING_FAILURE: ${err.message}`)
+      return false
     }
   }
 
@@ -546,9 +540,13 @@ export class Bot implements Routinable {
    * if found in the Discord server
    * @private
    * @param {{ id: string, roles?: string[] }} payload
+   * @returns {Promise<boolean>}
    * @memberof Bot
    */
-  private _revokeUserRoles = async (payload: { id: string; roles?: string[] }) => {
+  private _revokeUserRoles = async (payload: {
+    id: string
+    roles?: string[]
+  }): Promise<boolean> => {
     try {
       const member: Nullable<Discord.GuildMember> = this._guild!.members.find(
         m => m.user.id === payload.id
@@ -570,8 +568,10 @@ export class Bot implements Routinable {
       }
 
       this._logRoleChangeFromAuth(member, 'AUTH_REVOKE', `${member.user.username} roles revoked`)
+      return true
     } catch (err) {
-      log.error('AUTH_REVOKE_FAILURE')
+      log.error(`AUTH_REVOKE_FAILURE: ${err.message}`)
+      return false
     }
   }
 
