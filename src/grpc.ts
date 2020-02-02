@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,11 +52,7 @@ export function init(bot: Bot): grpc.Server {
       callback(null, res)
     },
     provision: async (call: ServiceCall, callback: any) => {
-      const {
-        id,
-        assign,
-        revoke
-      }: { id: string; assign: string[]; revoke: string[] } = call.request
+      const { id, assign, revoke }: { id: string; assign: string[]; revoke: string[] } = call.request
       const res: boolean = await bot.provisionUserRoles(id, assign, revoke)
       callback(null, { success: res })
     }

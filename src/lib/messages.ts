@@ -152,13 +152,14 @@ export const reminderMessage = (event: CalendarEvent, away: string): EmbedMessag
     title: `🔔 **Reminder:** *${event.title}*`,
     description: `_...taking place in about **${away}**_`,
     url: event.url,
-    image: {
-      url: event.img
-    }
+    image: event.img
+      ? {
+          url: event.img
+        }
+      : undefined
   }
 
-  if (event.rsvpLimit)
-    msg.fields = [{ name: 'RSVPs', value: `${event.rsvps}/${event.rsvpLimit} spots taken` }]
+  if (event.rsvpLimit) msg.fields = [{ name: 'RSVPs', value: `${event.rsvps}/${event.rsvpLimit} spots taken` }]
 
   return msg
 }
@@ -186,8 +187,7 @@ export const eventsMessage = (events: CalendarEvent[]): EmbedMessage => ({
 export const serverMessage = (info: ServerInformation): EmbedMessage => ({
   color: 11640433,
   title: `**${info.mission}**`,
-  description:
-    info.description !== '' ? `_${info.description.split('\n')[0]}_` : `_No description_`,
+  description: info.description !== '' ? `_${info.description.split('\n')[0]}_` : `_No description_`,
   thumbnail: {
     url: 'https://units.arma3.com/groups/img/1222/vSClUszph6.png'
   },
@@ -330,8 +330,7 @@ export const flightsMessage = (flights: Flight[]): EmbedMessage => {
         : [
             {
               name: 'No active pickup flights waiting for players...',
-              value:
-                'To create a flight, use the command `!flight create <BMS|DCS> <HHMM> <MM/DD> <details>`.'
+              value: 'To create a flight, use the command `!flight create <BMS|DCS> <HHMM> <MM/DD> <details>`.'
             }
           ]
   }
@@ -346,9 +345,7 @@ export const flightsMessage = (flights: Flight[]): EmbedMessage => {
 export const groupCreatedMessage = (g: Group): EmbedMessage => ({
   color: 11640433,
   title: `👥 _**${g.owner.username}**_ Created Group **${g.name}**`,
-  description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${
-    g.id
-  }\`. This group will expire in 12 hours._`
+  description: `_Looking for **${g.needed}** players! To join use \`!lfg join ${g.id}\`. This group will expire in 12 hours._`
 })
 
 /**
@@ -360,9 +357,7 @@ export const groupCreatedMessage = (g: Group): EmbedMessage => ({
 export const flightCreatedMessage = (f: Flight): EmbedMessage => ({
   color: 11640433,
   title: `🛩 _**${f.owner.username}**_ Created Flight **${f.game}-${f.id}**`,
-  description: `_You can join this pickup flight by running \`!flight join ${
-    f.id
-  }\`. This flight will expire in 12 hours._`
+  description: `_You can join this pickup flight by running \`!flight join ${f.id}\`. This flight will expire in 12 hours._`
 })
 
 /**
@@ -374,11 +369,7 @@ export const flightCreatedMessage = (f: Flight): EmbedMessage => ({
 export const groupFullMessage = (g: Group): EmbedMessage => ({
   color: 11640433,
   title: `**🎉 LFG - ${g.name} is Full**`,
-  description: `_All ${
-    g.needed
-  } players required for the group have been found! Get in contact with ${
-    g.owner.username
-  } to play._`
+  description: `_All ${g.needed} players required for the group have been found! Get in contact with ${g.owner.username} to play._`
 })
 
 /**
@@ -476,10 +467,11 @@ export const authenticatedUserMessage = (user: UserEntity): EmbedMessage => ({
       name: 'Discord ID',
       value: user.discord_id
     },
-    {
-      name: 'Forums ID',
-      value: user.forums_id
-    },
+    /** @deprecated as of v4.0.0 */
+    // {
+    //   name: 'Forums ID',
+    //   value: user.forums_id
+    // },
     {
       name: 'TeamSpeak ID',
       value: user.teamspeak_id
@@ -538,11 +530,7 @@ export const messageDeletedLogMessage = (time: string, msg: Message): EmbedMessa
  * @param {Discord.Message} newMsg
  * @returns {EmbedMessage}
  */
-export const messageUpdatedLogMessage = (
-  time: string,
-  oldMsg: Message,
-  newMsg: Message
-): EmbedMessage => ({
+export const messageUpdatedLogMessage = (time: string, oldMsg: Message, newMsg: Message): EmbedMessage => ({
   color: 11617254,
   author: {
     name: 'Message Updated',
@@ -615,11 +603,7 @@ export const commandUseLogMessage = (msg: Message, output: string): EmbedMessage
  * @param {string} result
  * @returns {EmbedMessage}
  */
-export const rolesUpdatedLogMessage = (
-  member: GuildMember,
-  action: string,
-  result: string
-): EmbedMessage => ({
+export const rolesUpdatedLogMessage = (member: GuildMember, action: string, result: string): EmbedMessage => ({
   color: 15110979,
   author: {
     name: 'Roles Updated',

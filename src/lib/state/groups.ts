@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,16 +92,12 @@ class GroupStore {
     if (t === GroupType.LFG) {
       if (!this._groups.has(g.id)) {
         this._groups.set(g.id, g as Group)
-        schedule.scheduleJob(`remove_group:${g.id}`, addHour(new Date(), 8), () =>
-          this.remove(g.id, GroupType.LFG)
-        )
+        schedule.scheduleJob(`remove_group:${g.id}`, addHour(new Date(), 8), () => this.remove(g.id, GroupType.LFG))
       }
     } else {
       if (!this._flights.has(g.id)) {
         this._flights.set(g.id, g as Flight)
-        schedule.scheduleJob(`remove_group:${g.id}`, addHour(new Date(), 8), () =>
-          this.remove(g.id, GroupType.Flight)
-        )
+        schedule.scheduleJob(`remove_group:${g.id}`, addHour(new Date(), 8), () => this.remove(g.id, GroupType.Flight))
       }
     }
   }

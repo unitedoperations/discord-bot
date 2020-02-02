@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,7 @@ import { Alarms } from '../state'
  */
 export async function ready(_guild: Guild, msg: Message, args: string[]): Promise<string> {
   if (args.length !== 1) {
-    await msg.author.send(
-      'The command takes the player count required for the server to trigger your alarm.'
-    )
+    await msg.author.send('The command takes the player count required for the server to trigger your alarm.')
     return 'INVALID_ARGS'
   }
 
@@ -50,9 +48,7 @@ export async function ready(_guild: Guild, msg: Message, args: string[]): Promis
         `Your previous alarm has been overridden and you will be alerted when the primary server reaches or exceeds **${num}** players.`
       )
     } else {
-      await msg.author.send(
-        `You will be alerted when the primary server reaches or exceeds **${num}** players.`
-      )
+      await msg.author.send(`You will be alerted when the primary server reaches or exceeds **${num}** players.`)
     }
 
     return 'READY_ALARM_OUTPUT'

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ export class CalendarHandler implements Routinable {
 
           // Parse the event title and description for the target player group
           // and the url for the image if one is present in the description
-          const imgUrl: string = this._findImage(e.description)
+          const imgUrl: string | undefined = this._findImage(e.description)
           const group: string = this._findGroup(e.title)
 
           const newEvent: CalendarEvent = {
@@ -133,8 +133,7 @@ export class CalendarHandler implements Routinable {
               : subDay(newEvent.date, parseInt(amt))
 
             // Schedule reminder job if its in the future
-            if (isFuture(time))
-              schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
+            if (isFuture(time)) schedule.scheduleJob(`${e.title}*@*${r}`, time, () => this._sendReminder(r, newEvent))
           })
 
           Events.add(newEvent)
@@ -160,14 +159,13 @@ export class CalendarHandler implements Routinable {
    * RSS event's summary that is being passed in
    * @private
    * @param {string} html
-   * @returns {string | null}
+   * @returns {string | undefined}
    */
-  private _findImage(html: string): string {
+  private _findImage(html: string): string | undefined {
     const $: CheerioStatic = cheerio.load(html)
-    const img: string = $('img.bbc_img')
+    return $('img.bbc_img')
       .first()
       .attr('src')
-    return img
   }
 
   /**
