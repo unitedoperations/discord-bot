@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,15 +41,20 @@ type ServiceCall = {
  * @returns {grpc.Server}
  */
 export function init(bot: Bot): grpc.Server {
-  const definition: PackageDefinition = loadSync(join(__dirname, 'roles.proto'))
+  const definition: PackageDefinition = loadSync(join(__dirname, 'protos/provision.proto'))
   const descriptor: grpc.GrpcObject = grpc.loadPackageDefinition(definition)
   const server = new grpc.Server()
 
   // @ts-ignore: TypeScript doesn't recognize the nested services on a GrpcObject instance
-  server.addProtoService(descriptor.RoleService.service, {
+  server.addService(descriptor.ProvisionService.service, {
     get: (call: ServiceCall, callback: any) => {
       const res: UserRoleSets = bot.getUserRoles(call.request.id)
       callback(null, res)
+    },
+    provision: async (call: ServiceCall, callback: any) => {
+      const { id, assign, revoke }: { id: string; assign: string[]; revoke: string[] } = call.request
+      const res: boolean = await bot.provisionUserRoles(id, assign, revoke)
+      callback(null, { success: res })
     }
   })
 

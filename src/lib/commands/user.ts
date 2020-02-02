@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,5 +60,5 @@ export async function user(_guild: Guild, msg: Message, args: string[]): Promise
   }
 
   await msg.author.send({ embed: authenticatedUserMessage(resJson.users![0]) })
-  return 'MISSION_SEARCH_OUTPUT'
+  return 'USER_AUTH_OUTPUT'
 }

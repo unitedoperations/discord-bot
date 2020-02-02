@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,8 +43,6 @@ export async function ratio(_guild: Guild, msg: Message, args: string[]): Promis
   const sideB = players - sideA
 
   // Send caluclation message
-  await msg.author.send(
-    `Ratio for ${players} ${ratioA}:${ratioB}\nSide A: ${sideA}\nSide B: ${sideB}`
-  )
+  await msg.author.send(`Ratio for ${players} ${ratioA}:${ratioB}\nSide A: ${sideA}\nSide B: ${sideB}`)
   return 'RATIO_CALCULATION_RESULTS'
 }

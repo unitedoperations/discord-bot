@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,13 @@
  */
 
 enum Tags {
-  info = '[INFO]',
-  error = '[ERROR]',
-  fav = '[FAV]',
-  cmd = '[COMMAND]',
-  event = '[EVENT]',
-  poll = '[POLL]',
-  alert = '[ALERT]'
+  INFO = '[INFO]',
+  ERROR = '[ERROR]',
+  SYS = '[SYS]',
+  CMD = '[COMMAND]',
+  EVENT = '[EVENT]',
+  POLL = '[POLL]',
+  ALERT = '[ALERT]'
 }
 
 function withTimestamp(header: string, str: string) {
@@ -30,29 +30,29 @@ function withTimestamp(header: string, str: string) {
 }
 
 export function info(str: string) {
-  withTimestamp(Tags.info, str)
+  withTimestamp(Tags.INFO, str)
 }
 
 export function error(str: string) {
-  withTimestamp(Tags.error, str)
+  withTimestamp(Tags.ERROR, str)
 }
 
-export function fav(str: string) {
-  withTimestamp(Tags.fav, str)
+export function sys(str: string) {
+  withTimestamp(Tags.SYS, str)
 }
 
 export function cmd(str: string) {
-  withTimestamp(Tags.cmd, str)
+  withTimestamp(Tags.CMD, str)
 }
 
 export function event(str: string) {
-  withTimestamp(Tags.event, str)
+  withTimestamp(Tags.EVENT, str)
 }
 
 export function poll(str: string) {
-  withTimestamp(Tags.poll, str)
+  withTimestamp(Tags.POLL, str)
 }
 
 export function alert(str: string, iteration: string) {
-  withTimestamp(Tags.alert, `${str} (${iteration})`)
+  withTimestamp(Tags.ALERT, `${str} (${iteration})`)
 }

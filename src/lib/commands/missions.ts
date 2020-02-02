@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,7 @@ enum MissionField {
 
 /**
  * Searches the mission file FTP server for names that match the argued name
+ * @deprecated
  * @export
  * @async
  * @param {Discord.Guild} _guild

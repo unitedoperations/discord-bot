@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,9 +75,7 @@ async function lfgJoin(msg: Message, args: string[]): Promise<string> {
     // Alert the command sender and group owner of the newly joined member
     output = `GROUP_JOIN: ${args[1]}`
     await msg.author.send(`You have joined the group **${res.group.name}**.`)
-    await res.group.owner.send(
-      `_**${msg.author.username}**_ has joined your group **${res.group.name}**.`
-    )
+    await res.group.owner.send(`_**${msg.author.username}**_ has joined your group **${res.group.name}**.`)
 
     // Send the full group alert message to all members of the group and owner
     // and delete the group from the LFG storage
@@ -92,9 +90,7 @@ async function lfgJoin(msg: Message, args: string[]): Promise<string> {
     // If no group was found with the argued ID
     output = `GROUP_NOT_FOUND`
     await msg.author.send(
-      `No group with the ID of ${
-        args[1]
-      } was found. Run the \`!lfg list\` command to see the active groups.`
+      `No group with the ID of ${args[1]} was found. Run the \`!lfg list\` command to see the active groups.`
     )
   }
 
@@ -155,9 +151,7 @@ async function lfgCreate(guild: Guild, msg: Message, args: string[]): Promise<st
 
   Groups.add(g, GroupType.LFG)
   await msg.author.send(
-    `You have created the new group **${
-      args[2]
-    }**! You will be alerted when new players join your group and when it is full.`
+    `You have created the new group **${args[2]}**! You will be alerted when new players join your group and when it is full.`
   )
 
   // Send creation announcement to main Discord channel

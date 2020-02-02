@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,9 +74,7 @@ function permissioned(group: string[]): (fn: BotAction) => BotAction {
  */
 export function disabled(cmd: BotAction): BotAction {
   return async (_guild: Guild, msg: Message, _args: string[]): Promise<string> => {
-    const output: string = `The \`${
-      cmd.name
-    }\` command is currently broken or temporaryily disabled. Please contact the developers or post a GitHub issue at the link found by running \`!?\`.`
+    const output: string = `The \`${cmd.name}\` command is currently broken or temporaryily disabled. Please contact the developers or post a GitHub issue at the link found by running \`!?\`.`
     await msg.author.send(output)
     return output
   }
