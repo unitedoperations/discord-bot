@@ -1,5 +1,11 @@
 # Changelog
 
+## v3.3.0
+
+- UPDATE UOAF event posting channel in Discord
+- UPDATE GRPC protobufs for new rpc services
+- REMOVE Pusher support in favor of GRPC services
+
 ## v3.2.0
 
 - ADD `!user` command for admins to get authentication information about a given user

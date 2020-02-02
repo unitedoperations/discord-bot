@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,9 +61,7 @@ class EnvStore {
   public readonly ALLOWED_GROUPS: string[] = process.env.DISCORD_ALLOWED_GROUPS!.split(',')
   public readonly ADMIN_ROLES: string[] = process.env.ADMIN_ROLES!.split(',')
   public readonly ALERT_TIMES: string[] = process.env.ALERT_TIMES!.split(',').map(t => t.trim())
-  public readonly HOURS_TO_REFRESH_FROM_FORUMS: number = parseInt(
-    process.env.HOURS_TO_REFRESH_FROM_FORUMS!
-  )
+  public readonly HOURS_TO_REFRESH_FROM_FORUMS: number = parseInt(process.env.HOURS_TO_REFRESH_FROM_FORUMS!)
   public readonly FORUMS_API_BASE: string = process.env.FORUMS_API_BASE!
   public readonly FORUMS_API_KEY: string = process.env.FORUMS_API_KEY!
   public readonly AUTH_API_BASE: string = process.env.AUTH_API_BASE!

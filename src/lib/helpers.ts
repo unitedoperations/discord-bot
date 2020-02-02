@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ export async function getFeedbackURL(name: string): Promise<string> {
 
     // Parse the HTML with Cheerio to retrieve the URL
     const $: CheerioStatic = cheerio.load(body)
-    const url: string = $('table a').attr('href')
+    const url: string | undefined = $('table a').attr('href')
     return `${url}#fast_reply`
   } catch (e) {
     log.error(`FEEDBACK_URL_PULL: ${e.message}`)

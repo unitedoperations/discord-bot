@@ -2,7 +2,7 @@ FROM node:latest
 
 LABEL author="Matthew Callens <callensm>"
 LABEL description="Discord chat bot for United Operations"
-LABEL repository="https://github.com/unitedoperations/uo-discordbot.git"
+LABEL repository="https://github.com/unitedoperations/discord-bot.git"
 
 EXPOSE 50051/tcp
 

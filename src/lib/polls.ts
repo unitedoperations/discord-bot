@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -162,9 +162,7 @@ export class PollsHandler implements Routinable {
           await this._sendAlert(newPoll, 'open')
 
           // Schedule the poll closed message for the closure date
-          schedule.scheduleJob(`poll_closed_${p.id}`, closeDate, () =>
-            this._sendAlert(newPoll, 'closed')
-          )
+          schedule.scheduleJob(`poll_closed_${p.id}`, closeDate, () => this._sendAlert(newPoll, 'closed'))
         } else {
           Polls.update(p.id, p.poll.questions[0].options)
         }

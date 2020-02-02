@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  United Operations
+ * Copyright (C) 2020  United Operations
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,17 +74,13 @@ async function flightJoin(msg: Message, args: string[]): Promise<string> {
   if (joined) {
     // Alert the flight owner and command sender that a new member joined
     await msg.author.send(`You have joined the flight **${flight!.game}-${flight!.id}**.`)
-    await flight!.owner.send(
-      `_**${msg.author.username}**_ has joined your flight **${flight!.game}-${flight!.id}**.`
-    )
+    await flight!.owner.send(`_**${msg.author.username}**_ has joined your flight **${flight!.game}-${flight!.id}**.`)
 
     return `FLIGHT_JOIN ${flight!.game}-${flight!.id}`
   } else {
     // No flight found with argued ID
     await msg.author.send(
-      `No flight exists with ID: **${
-        args[1]
-      }**. Run the \`!flight list\` command to see the active flights.`
+      `No flight exists with ID: **${args[1]}**. Run the \`!flight list\` command to see the active flights.`
     )
     return 'GROUP_NOT_FOUND'
   }
@@ -155,9 +151,7 @@ async function flightCreate(guild: Guild, msg: Message, args: string[]): Promise
 
   Groups.add(f, GroupType.Flight)
   await msg.author.send(
-    `You have created a new **${f.game}** flight! Players can now join using your flight ID: **${
-      f.id
-    }**.`
+    `You have created a new **${f.game}** flight! Players can now join using your flight ID: **${f.id}**.`
   )
 
   // Send creation announcement to uoaf_flights channel

@@ -16,7 +16,7 @@ new_version() {
   elif [ "$1" == "minor" ]; then
     curr_minor=$(($curr_minor + 1))
     curr_revision="0"
-  elif [ "$1" == "revision" ]; then
+  elif [ "$1" == "patch" ]; then
     curr_revision=$(($curr_revision + 1))
   else
     echo "Invalid version type to upgrade."

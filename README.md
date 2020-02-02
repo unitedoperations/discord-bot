@@ -1,8 +1,8 @@
 # UO Discord Bot
 
-![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/unitedoperations/uo-discordbot/master.svg?label=Version&color=blue&style=flat-square)
-![GitHub](https://img.shields.io/github/license/unitedoperations/uo-discordbot.svg?color=red&style=flat-square)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/unitedoperations/uo-discordbot.svg?color=gr&style=flat-square)
+![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/unitedoperations/discord-bot/master.svg?label=Version&color=blue&style=flat-square)
+![GitHub](https://img.shields.io/github/license/unitedoperations/discord-bot.svg?color=red&style=flat-square)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/unitedoperations/discord-bot.svg?color=gr&style=flat-square)
 ![Discord](https://img.shields.io/discord/94842918803615744.svg?color=%23b19e71&label=Discord&style=flat-square)
 
 [_**Contributing Guide**_](./.github/CONTRIBUTING.md)
@@ -70,8 +70,6 @@ _**`*`-prefixed variable names are available to changed via the `!config` admin 
   - `FORUMS_API_KEY`: _API key provided by forums admin for access to the REST API_
   - `AUTH_API_BASE`: _base url for the UO authentication system API_
   - `AUTH_API_KEY`: _API key provided for access to UO authenticatino system API calls_
-  - `PUSHER_CLUSTER`: _cluster that the Pusher application and channels are in_
-  - `PUSHER_KEY`: _application key for accessing the Pusher channels to listen for events_
   - `GRPC_PORT`: _port for the lightweight gRPC server to run on_
 
 ### Discord
